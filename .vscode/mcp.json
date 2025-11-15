@@ -1,0 +1,17 @@
+{
+  "servers": {
+    "local-memory": {
+      "command": "local-memory",
+      "args": ["--mcp"],
+
+    },
+    "github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+
+    }
+  }
+}
