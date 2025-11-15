@@ -12,6 +12,16 @@
         "@modelcontextprotocol/server-sequential-thinking"
       ],
 
+    },
+    "docs-mcp-server":{
+      "command": "npx",
+      "args": ["@arabold/docs-mcp-server@latest"],
+      "env": {
+        "OPENAI_API_KEY": "ollama",
+        "OPENAI_API_BASE": "http://localhost:11434/v1",
+        "DOCS_MCP_EMBEDDING_MODEL": "nomic-embed-text"
+      },
+
     }
   }
 }
