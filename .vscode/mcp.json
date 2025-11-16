@@ -22,6 +22,10 @@
         "DOCS_MCP_EMBEDDING_MODEL": "nomic-embed-text"
       },
 
+    },
+    "CopilotKit MCP": {
+      "url": "https://mcp.copilotkit.ai/sse",
+
     }
   }
 }
