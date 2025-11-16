@@ -30,13 +30,27 @@ Use Socket.io with native room concept for all real-time features.
 
 ```typescript
 // Client → Server Events
-create_room, join_room, roll_dice, reveal_roll, set_dc, 
-promote_to_dm, kick_player, disconnect
+create_room,
+  join_room,
+  roll_dice,
+  reveal_roll,
+  set_dc,
+  promote_to_dm,
+  kick_player,
+  disconnect;
 
 // Server → Client Events
-room_created, player_joined, player_left, roll_result, 
-roll_revealed, dc_updated, room_mode_changed, 
-room_expiring, room_closed, player_kicked, error
+room_created,
+  player_joined,
+  player_left,
+  roll_result,
+  roll_revealed,
+  dc_updated,
+  room_mode_changed,
+  room_expiring,
+  room_closed,
+  player_kicked,
+  error;
 ```
 
 ## Consequences

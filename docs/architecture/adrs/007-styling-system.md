@@ -22,6 +22,7 @@ Replace Chakra UI with Tailwind CSS + headless UI components.
 ## Component Library
 
 Use **Headless UI** for accessible components:
+
 - Modal, Dialog, Menu, Popover
 - Unstyled, full Tailwind control
 - React-focused, hooks-based
@@ -39,13 +40,13 @@ npx tailwindcss init -p
 ```javascript
 // tailwind.config.js
 module.exports = {
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        'dice-red': '#DC2626',
-        'dice-green': '#16A34A',
-        'dm-purple': '#9333EA',
+        "dice-red": "#DC2626",
+        "dice-green": "#16A34A",
+        "dm-purple": "#9333EA",
       },
     },
   },

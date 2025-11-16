@@ -14,12 +14,12 @@ Use Zustand for global state management.
 
 ## Why Zustand Over Alternatives
 
-| Library | Pros | Cons | Verdict |
-|---------|------|------|------|
-| Context API | Built-in, simple | Re-render issues, verbose | ❌ Too basic |
-| Redux Toolkit | Powerful, devtools | Boilerplate, overkill | ❌ Too heavy |
-| Zustand | Minimal, hooks-based | Smaller ecosystem | ✅ Perfect fit |
-| Jotai | Atomic, elegant | Less mature | ❌ Less proven |
+| Library       | Pros                 | Cons                      | Verdict        |
+| ------------- | -------------------- | ------------------------- | -------------- |
+| Context API   | Built-in, simple     | Re-render issues, verbose | ❌ Too basic   |
+| Redux Toolkit | Powerful, devtools   | Boilerplate, overkill     | ❌ Too heavy   |
+| Zustand       | Minimal, hooks-based | Smaller ecosystem         | ✅ Perfect fit |
+| Jotai         | Atomic, elegant      | Less mature               | ❌ Less proven |
 
 ## State Structure
 
@@ -27,31 +27,31 @@ Use Zustand for global state management.
 interface AppState {
   // Connection
   socket: Socket | null;
-  connectionStatus: 'connected' | 'reconnecting' | 'disconnected';
-  
+  connectionStatus: "connected" | "reconnecting" | "disconnected";
+
   // Room
   roomCode: string | null;
-  roomMode: 'open' | 'dm-led';
+  roomMode: "open" | "dm-led";
   currentDC: number | null;
   expiresIn: number | null; // seconds
-  
+
   // Player
   playerId: string | null;
   playerName: string | null;
   isDM: boolean;
   isRoomCreator: boolean;
-  
+
   // Players List
   players: Player[];
-  
+
   // Roll History
   rolls: Roll[];
-  
+
   // UI State
   showAdvancedRollInput: boolean;
   historyDrawerOpen: boolean;
   presets: RollPreset[];
-  
+
   // Actions
   setConnectionStatus: (status) => void;
   addRoll: (roll) => void;
@@ -67,14 +67,14 @@ interface AppState {
 const useAppStore = create<AppState>((set) => ({
   socket: null,
   setSocket: (socket) => set({ socket }),
-  
+
   // Socket event handlers update store
   initSocketListeners: () => {
     const socket = useAppStore.getState().socket;
-    socket?.on('roll_result', (roll) => {
+    socket?.on("roll_result", (roll) => {
       set((state) => ({ rolls: [...state.rolls, roll] }));
     });
-  }
+  },
 }));
 ```
 

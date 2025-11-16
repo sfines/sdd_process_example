@@ -13,6 +13,7 @@ Starting from scratch would require weeks of boilerplate setup (Docker, CI/CD, t
 Use `fastapi/full-stack-fastapi-template` as the foundation.
 
 **Command:**
+
 ```bash
 pipx run copier copy https://github.com/fastapi/full-stack-fastapi-template dnd-dice-roller --trust
 ```

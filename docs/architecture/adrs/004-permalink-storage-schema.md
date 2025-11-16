@@ -40,6 +40,7 @@ CREATE INDEX idx_created_at ON roll_permalinks(created_at);
 ## Why Rich Context
 
 Permalinks are shareable on social media. Rich context makes them more engaging:
+
 - Room mode shows game style
 - DC check shows stakes
 - Advantage/disadvantage shows tactical choice
@@ -56,7 +57,7 @@ Permalinks are shareable on social media. Rich context makes them more engaging:
 
 ```python
 # Daily cron: Delete expired permalinks
-DELETE FROM roll_permalinks 
+DELETE FROM roll_permalinks
 WHERE expires_at < datetime('now')
 ```
 

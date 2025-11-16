@@ -91,52 +91,52 @@ All architectural decisions are documented as individual ADRs:
 
 ### Backend Stack
 
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| **Runtime** | Python | 3.11+ | Backend language |
-| **Framework** | FastAPI | 0.104+ | REST API + WebSocket server |
-| **WebSocket** | python-socketio | 5.10+ | Real-time bidirectional communication |
-| **Validation** | Pydantic | 2.5+ | Request/response validation |
-| **ORM** | SQLModel | 0.0.14+ | Database models (SQLAlchemy wrapper) |
-| **Database** | SQLite | 3.40+ | Permalink storage (MVP) |
-| **Cache/State** | Valkey | 8.0+ | Room state (Redis fork) |
-| **Testing** | Pytest | 7.4+ | Unit + integration tests |
-| **ASGI Server** | Uvicorn | 0.24+ | Production server |
+| Component       | Technology      | Version | Purpose                               |
+| --------------- | --------------- | ------- | ------------------------------------- |
+| **Runtime**     | Python          | 3.11+   | Backend language                      |
+| **Framework**   | FastAPI         | 0.104+  | REST API + WebSocket server           |
+| **WebSocket**   | python-socketio | 5.10+   | Real-time bidirectional communication |
+| **Validation**  | Pydantic        | 2.5+    | Request/response validation           |
+| **ORM**         | SQLModel        | 0.0.14+ | Database models (SQLAlchemy wrapper)  |
+| **Database**    | SQLite          | 3.40+   | Permalink storage (MVP)               |
+| **Cache/State** | Valkey          | 8.0+    | Room state (Redis fork)               |
+| **Testing**     | Pytest          | 7.4+    | Unit + integration tests              |
+| **ASGI Server** | Uvicorn         | 0.24+   | Production server                     |
 
 ### Frontend Stack
 
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| **Runtime** | Node.js | 20 LTS | Build environment |
-| **Framework** | React | 18.2+ | UI library |
-| **Language** | TypeScript | 5.3+ | Type safety |
-| **Build Tool** | Vite | 5.0+ | Dev server + bundler |
-| **State** | Zustand | 4.4+ | Global state management |
-| **WebSocket** | socket.io-client | 4.6+ | Real-time client |
-| **Styling** | Tailwind CSS | 3.4+ | Utility-first CSS |
-| **Components** | Headless UI | 1.7+ | Accessible unstyled components |
-| **Testing** | Vitest | 1.0+ | Unit tests |
-| **E2E Testing** | Playwright | 1.40+ | End-to-end tests |
+| Component       | Technology       | Version | Purpose                        |
+| --------------- | ---------------- | ------- | ------------------------------ |
+| **Runtime**     | Node.js          | 20 LTS  | Build environment              |
+| **Framework**   | React            | 18.2+   | UI library                     |
+| **Language**    | TypeScript       | 5.3+    | Type safety                    |
+| **Build Tool**  | Vite             | 5.0+    | Dev server + bundler           |
+| **State**       | Zustand          | 4.4+    | Global state management        |
+| **WebSocket**   | socket.io-client | 4.6+    | Real-time client               |
+| **Styling**     | Tailwind CSS     | 3.4+    | Utility-first CSS              |
+| **Components**  | Headless UI      | 1.7+    | Accessible unstyled components |
+| **Testing**     | Vitest           | 1.0+    | Unit tests                     |
+| **E2E Testing** | Playwright       | 1.40+   | End-to-end tests               |
 
 ### Infrastructure Stack
 
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| **Containerization** | Docker | 24+ | Application packaging |
-| **Orchestration** | Docker Compose | 2.23+ | Multi-container management |
-| **CI/CD** | GitHub Actions | Latest | Automated pipeline |
-| **Registry** | GHCR | Latest | Docker image storage |
-| **Web Server** | Nginx | 1.25+ | Reverse proxy + SSL termination |
-| **SSL** | Let's Encrypt | Latest | HTTPS certificates (Certbot) |
-| **VPS** | DigitalOcean/Linode | - | Production hosting |
+| Component            | Technology          | Version | Purpose                         |
+| -------------------- | ------------------- | ------- | ------------------------------- |
+| **Containerization** | Docker              | 24+     | Application packaging           |
+| **Orchestration**    | Docker Compose      | 2.23+   | Multi-container management      |
+| **CI/CD**            | GitHub Actions      | Latest  | Automated pipeline              |
+| **Registry**         | GHCR                | Latest  | Docker image storage            |
+| **Web Server**       | Nginx               | 1.25+   | Reverse proxy + SSL termination |
+| **SSL**              | Let's Encrypt       | Latest  | HTTPS certificates (Certbot)    |
+| **VPS**              | DigitalOcean/Linode | -       | Production hosting              |
 
 ### Observability Stack
 
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| **Logging** | structlog | 23.2+ | Structured JSON logs |
-| **Error Tracking** | Sentry | Latest | Frontend + backend errors |
-| **Monitoring** | UptimeRobot | Free tier | Uptime monitoring |
+| Component          | Technology  | Version   | Purpose                   |
+| ------------------ | ----------- | --------- | ------------------------- |
+| **Logging**        | structlog   | 23.2+     | Structured JSON logs      |
+| **Error Tracking** | Sentry      | Latest    | Frontend + backend errors |
+| **Monitoring**     | UptimeRobot | Free tier | Uptime monitoring         |
 
 ---
 
@@ -192,6 +192,7 @@ All architectural decisions are documented as individual ADRs:
 ### Component Interaction Flow
 
 #### Flow 1: Create Room
+
 ```
 1. User clicks "Create Room" in React app
 2. Client emits Socket.io "create_room" event
@@ -204,6 +205,7 @@ All architectural decisions are documented as individual ADRs:
 ```
 
 #### Flow 2: Roll Dice
+
 ```
 1. User configures roll (1d20+5) and clicks "Roll"
 2. Client emits "roll_dice" event with {dice, modifier, hidden}
@@ -219,6 +221,7 @@ All architectural decisions are documented as individual ADRs:
 ```
 
 #### Flow 3: Reconnection After Disconnect
+
 ```
 1. Client detects Socket.io disconnect event
 2. Socket.io-client begins exponential backoff reconnection
@@ -240,61 +243,63 @@ All architectural decisions are documented as individual ADRs:
 
 ```typescript
 interface Room {
-  room_code: string;           // WORD-#### format (e.g., "ALPHA-1234")
-  mode: 'open' | 'dm-led';     // Room mode
-  created_at: number;          // Unix timestamp (ms)
-  last_activity: number;       // Unix timestamp (ms)
-  ttl: number;                 // Seconds (1800 for DM-led, 18000 for Open)
-  creator_player_id: string;   // UUID (room admin)
-  dm_player_id?: string;       // UUID (only in DM-led mode)
-  dc?: number;                 // Current DC threshold (1-30)
-  players: Player[];           // Array of connected players
-  roll_history: Roll[];        // Immutable roll log
-  kicked_sessions: string[];   // Hashed session IDs (IP+fingerprint)
+  room_code: string; // WORD-#### format (e.g., "ALPHA-1234")
+  mode: "open" | "dm-led"; // Room mode
+  created_at: number; // Unix timestamp (ms)
+  last_activity: number; // Unix timestamp (ms)
+  ttl: number; // Seconds (1800 for DM-led, 18000 for Open)
+  creator_player_id: string; // UUID (room admin)
+  dm_player_id?: string; // UUID (only in DM-led mode)
+  dc?: number; // Current DC threshold (1-30)
+  players: Player[]; // Array of connected players
+  roll_history: Roll[]; // Immutable roll log
+  kicked_sessions: string[]; // Hashed session IDs (IP+fingerprint)
   mode_change_history: ModeChange[]; // Track Open → DM-led transitions
 }
 
 interface Player {
-  player_id: string;           // UUID
-  name: string;                // 1-20 characters
-  connected: boolean;          // Real-time connection status
-  joined_at: number;           // Unix timestamp (ms)
-  session_hash: string;        // SHA256(IP + User-Agent) for kick tracking
-  last_seen: number;           // Unix timestamp (ms)
+  player_id: string; // UUID
+  name: string; // 1-20 characters
+  connected: boolean; // Real-time connection status
+  joined_at: number; // Unix timestamp (ms)
+  session_hash: string; // SHA256(IP + User-Agent) for kick tracking
+  last_seen: number; // Unix timestamp (ms)
 }
 
 interface Roll {
-  roll_id: string;             // UUID
-  player_id: string;           // UUID
-  player_name: string;         // Snapshot at roll time
-  timestamp: number;           // Unix timestamp (ms)
-  sequence: number;            // Deterministic ordering within room
-  dice_formula: string;        // Display string "3d6+5"
-  dice_type: number;           // Die sides (4, 6, 8, 10, 12, 20, 100)
-  dice_count: number;          // Number of dice rolled
-  modifier: number;            // Added/subtracted from total
-  advantage: 'none' | 'advantage' | 'disadvantage';
+  roll_id: string; // UUID
+  player_id: string; // UUID
+  player_name: string; // Snapshot at roll time
+  timestamp: number; // Unix timestamp (ms)
+  sequence: number; // Deterministic ordering within room
+  dice_formula: string; // Display string "3d6+5"
+  dice_type: number; // Die sides (4, 6, 8, 10, 12, 20, 100)
+  dice_count: number; // Number of dice rolled
+  modifier: number; // Added/subtracted from total
+  advantage: "none" | "advantage" | "disadvantage";
   individual_results: number[]; // Raw die results [4, 2, 6]
-  total: number;               // Final result (sum + modifier)
-  hidden: boolean;             // DM hidden roll flag
-  revealed: boolean;           // Hidden roll revelation status
-  dc_check?: {                 // Optional DC evaluation
+  total: number; // Final result (sum + modifier)
+  hidden: boolean; // DM hidden roll flag
+  revealed: boolean; // Hidden roll revelation status
+  dc_check?: {
+    // Optional DC evaluation
     dc: number;
     passed: boolean;
   };
-  permalink: string;           // URL path "/roll/{roll_id}"
+  permalink: string; // URL path "/roll/{roll_id}"
 }
 
 interface ModeChange {
-  timestamp: number;           // Unix timestamp (ms)
-  from_mode: 'open';
-  to_mode: 'dm-led';
-  dm_player_id: string;        // Newly designated DM
-  initiated_by: string;        // player_id of room creator
+  timestamp: number; // Unix timestamp (ms)
+  from_mode: "open";
+  to_mode: "dm-led";
+  dm_player_id: string; // Newly designated DM
+  initiated_by: string; // player_id of room creator
 }
 ```
 
 **Valkey Key Pattern:**
+
 ```
 Key: room:{ROOM_CODE}
 Value: JSON.stringify(Room)
@@ -302,6 +307,7 @@ TTL: room.ttl seconds
 ```
 
 **Example Valkey Storage:**
+
 ```json
 {
   "room_code": "ALPHA-1234",
@@ -346,7 +352,7 @@ TTL: room.ttl seconds
       "total": 23,
       "hidden": false,
       "revealed": false,
-      "dc_check": {"dc": 15, "passed": true},
+      "dc_check": { "dc": 15, "passed": true },
       "permalink": "/roll/uuid-roll-1"
     }
   ],
@@ -361,21 +367,21 @@ TTL: room.ttl seconds
 
 ```sql
 CREATE TABLE roll_permalinks (
-  roll_id TEXT PRIMARY KEY,              
-  room_code TEXT NOT NULL,               
+  roll_id TEXT PRIMARY KEY,
+  room_code TEXT NOT NULL,
   room_mode TEXT NOT NULL CHECK (room_mode IN ('open', 'dm-led')),
-  player_name TEXT NOT NULL,             
-  dice_formula TEXT NOT NULL,            
-  dice_type INTEGER NOT NULL,            
-  dice_count INTEGER NOT NULL,           
-  modifier INTEGER NOT NULL,             
+  player_name TEXT NOT NULL,
+  dice_formula TEXT NOT NULL,
+  dice_type INTEGER NOT NULL,
+  dice_count INTEGER NOT NULL,
+  modifier INTEGER NOT NULL,
   advantage TEXT NOT NULL CHECK (advantage IN ('none', 'advantage', 'disadvantage')),
   individual_results TEXT NOT NULL,      -- JSON array
-  total INTEGER NOT NULL,                
+  total INTEGER NOT NULL,
   dc_check TEXT,                         -- JSON object or NULL
-  timestamp INTEGER NOT NULL,            
+  timestamp INTEGER NOT NULL,
   created_at TEXT DEFAULT (datetime('now')),
-  expires_at TEXT NOT NULL               
+  expires_at TEXT NOT NULL
 );
 
 CREATE INDEX idx_expires_at ON roll_permalinks(expires_at);
@@ -384,8 +390,9 @@ CREATE INDEX idx_room_code ON roll_permalinks(room_code);
 ```
 
 **Cleanup Job (Daily Cron):**
+
 ```sql
-DELETE FROM roll_permalinks 
+DELETE FROM roll_permalinks
 WHERE datetime(expires_at) < datetime('now');
 ```
 
@@ -396,9 +403,11 @@ WHERE datetime(expires_at) < datetime('now');
 ### REST API Endpoints
 
 #### GET /api/health
+
 **Purpose:** Health check for uptime monitoring
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -411,9 +420,11 @@ WHERE datetime(expires_at) < datetime('now');
 ```
 
 #### GET /api/version
+
 **Purpose:** API version information
 
 **Response:**
+
 ```json
 {
   "version": "1.0.0",
@@ -423,20 +434,22 @@ WHERE datetime(expires_at) < datetime('now');
 ```
 
 #### GET /api/permalink/{roll_id}
+
 **Purpose:** Retrieve permalink roll data (public, no auth)
 
 **Response:**
+
 ```json
 {
   "roll_id": "uuid-roll-1",
-  "room_code": "ALPH****",  // Anonymized
+  "room_code": "ALPH****", // Anonymized
   "room_mode": "dm-led",
   "player_name": "Alice",
   "dice_formula": "1d20+5",
   "advantage": "none",
   "individual_results": [18],
   "total": 23,
-  "dc_check": {"dc": 15, "passed": true},
+  "dc_check": { "dc": 15, "passed": true },
   "timestamp": 1700000100000,
   "created_at": "2025-11-15T19:45:00Z",
   "expires_at": "2025-12-15T19:45:00Z"
@@ -444,6 +457,7 @@ WHERE datetime(expires_at) < datetime('now');
 ```
 
 **Error Response (404):**
+
 ```json
 {
   "error": "Permalink not found or expired",
@@ -458,7 +472,9 @@ WHERE datetime(expires_at) < datetime('now');
 #### Client → Server Events
 
 ##### create_room
+
 **Payload:**
+
 ```typescript
 {
   mode: 'open' | 'dm-led',
@@ -467,6 +483,7 @@ WHERE datetime(expires_at) < datetime('now');
 ```
 
 **Response (via callback):**
+
 ```typescript
 {
   room_code: string,      // "ALPHA-1234"
@@ -476,6 +493,7 @@ WHERE datetime(expires_at) < datetime('now');
 ```
 
 **Error Response:**
+
 ```typescript
 {
   error: string,
@@ -486,7 +504,9 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### join_room
+
 **Payload:**
+
 ```typescript
 {
   room_code: string,      // "ALPHA-1234"
@@ -495,6 +515,7 @@ WHERE datetime(expires_at) < datetime('now');
 ```
 
 **Response (via callback):**
+
 ```typescript
 {
   player_id: string,
@@ -503,6 +524,7 @@ WHERE datetime(expires_at) < datetime('now');
 ```
 
 **Error Codes:**
+
 - `ROOM_NOT_FOUND`
 - `ROOM_FULL` (8 players max)
 - `KICKED` (session previously kicked)
@@ -511,7 +533,9 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### roll_dice
+
 **Payload:**
+
 ```typescript
 {
   dice: string,           // "1d20", "3d6", etc.
@@ -524,6 +548,7 @@ WHERE datetime(expires_at) < datetime('now');
 **Response:** None (broadcasts to room)
 
 **Error Codes:**
+
 - `NOT_IN_ROOM`
 - `INVALID_DICE_FORMAT`
 - `HIDDEN_NOT_ALLOWED` (non-DM in DM-led room)
@@ -532,16 +557,19 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### reveal_roll
+
 **Payload:**
+
 ```typescript
 {
-  roll_id: string         // UUID of hidden roll
+  roll_id: string; // UUID of hidden roll
 }
 ```
 
 **Response:** None (broadcasts to room)
 
 **Error Codes:**
+
 - `NOT_DM`
 - `ROLL_NOT_FOUND`
 - `ROLL_NOT_HIDDEN`
@@ -549,32 +577,38 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### set_dc
+
 **Payload:**
+
 ```typescript
 {
-  dc: number | null       // 1-30 or null to clear
+  dc: number | null; // 1-30 or null to clear
 }
 ```
 
 **Response:** None (broadcasts to room)
 
 **Error Codes:**
+
 - `NOT_DM`
 - `INVALID_DC` (out of range)
 
 ---
 
 ##### promote_to_dm
+
 **Payload:**
+
 ```typescript
 {
-  new_dm_player_id: string  // UUID
+  new_dm_player_id: string; // UUID
 }
 ```
 
 **Response:** None (broadcasts to room)
 
 **Error Codes:**
+
 - `NOT_ROOM_CREATOR`
 - `PLAYER_NOT_FOUND`
 - `ALREADY_DM_LED`
@@ -582,16 +616,19 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### kick_player
+
 **Payload:**
+
 ```typescript
 {
-  player_id: string       // UUID to kick
+  player_id: string; // UUID to kick
 }
 ```
 
 **Response:** None (broadcasts to room)
 
 **Error Codes:**
+
 - `NOT_ADMIN`
 - `CANNOT_KICK_SELF`
 - `PLAYER_NOT_FOUND`
@@ -601,7 +638,9 @@ WHERE datetime(expires_at) < datetime('now');
 #### Server → Client Events
 
 ##### room_created
+
 **Payload:**
+
 ```typescript
 {
   room_code: string,
@@ -612,17 +651,21 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### player_joined
+
 **Payload:**
+
 ```typescript
 {
-  player: Player
+  player: Player;
 }
 ```
 
 ---
 
 ##### player_left
+
 **Payload:**
+
 ```typescript
 {
   player_id: string,
@@ -633,10 +676,12 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### roll_result
+
 **Payload:**
+
 ```typescript
 {
-  roll: Roll
+  roll: Roll;
 }
 ```
 
@@ -645,7 +690,9 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### roll_revealed
+
 **Payload:**
+
 ```typescript
 {
   roll_id: string,
@@ -657,17 +704,21 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### dc_updated
+
 **Payload:**
+
 ```typescript
 {
-  dc: number | null
+  dc: number | null;
 }
 ```
 
 ---
 
 ##### room_mode_changed
+
 **Payload:**
+
 ```typescript
 {
   mode: 'dm-led',
@@ -679,37 +730,45 @@ WHERE datetime(expires_at) < datetime('now');
 ---
 
 ##### room_expiring
+
 **Payload:**
+
 ```typescript
 {
-  seconds_remaining: number  // 180 or 30
+  seconds_remaining: number; // 180 or 30
 }
 ```
 
 ---
 
 ##### room_closed
+
 **Payload:**
+
 ```typescript
 {
-  reason: 'expired' | 'creator_closed' | 'server_shutdown'
+  reason: "expired" | "creator_closed" | "server_shutdown";
 }
 ```
 
 ---
 
 ##### player_kicked
+
 **Payload:**
+
 ```typescript
 {
-  player_id: string
+  player_id: string;
 }
 ```
 
 ---
 
 ##### error
+
 **Payload:**
+
 ```typescript
 {
   message: string,
@@ -724,19 +783,20 @@ WHERE datetime(expires_at) < datetime('now');
 
 ### Threat Model
 
-| Threat | Risk Level | Mitigation |
-|--------|-----------|------------|
-| **Roll Manipulation** | High | Server-side generation only, cryptographic randomness |
-| **Room Spam** | Medium | Rate limiting (1 room per IP per 5 min), CAPTCHA |
-| **Kicked Player Re-Entry** | Medium | Session-based kick tracking (IP+fingerprint hash) |
-| **WebSocket DoS** | Low | Connection limits, rate limiting on events |
-| **XSS via Player Names** | Medium | Input sanitization, output escaping |
-| **Permalink Scraping** | Low | Public by design, rate limit GET requests |
-| **MITM Attacks** | High | HTTPS/WSS required, HSTS headers |
+| Threat                     | Risk Level | Mitigation                                            |
+| -------------------------- | ---------- | ----------------------------------------------------- |
+| **Roll Manipulation**      | High       | Server-side generation only, cryptographic randomness |
+| **Room Spam**              | Medium     | Rate limiting (1 room per IP per 5 min), CAPTCHA      |
+| **Kicked Player Re-Entry** | Medium     | Session-based kick tracking (IP+fingerprint hash)     |
+| **WebSocket DoS**          | Low        | Connection limits, rate limiting on events            |
+| **XSS via Player Names**   | Medium     | Input sanitization, output escaping                   |
+| **Permalink Scraping**     | Low        | Public by design, rate limit GET requests             |
+| **MITM Attacks**           | High       | HTTPS/WSS required, HSTS headers                      |
 
 ### Security Implementation
 
 #### 1. Roll Integrity
+
 ```python
 # backend/app/core/dice.py
 import secrets
@@ -746,7 +806,7 @@ def generate_roll(dice_type: int, count: int, modifier: int) -> dict:
     rng = secrets.SystemRandom()
     results = [rng.randint(1, dice_type) for _ in range(count)]
     total = sum(results) + modifier
-    
+
     return {
         "individual_results": results,
         "total": total,
@@ -755,6 +815,7 @@ def generate_roll(dice_type: int, count: int, modifier: int) -> dict:
 ```
 
 #### 2. Rate Limiting
+
 ```python
 # backend/app/middleware/rate_limit.py
 from slowapi import Limiter
@@ -776,15 +837,16 @@ def check_roll_rate_limit(player_id: str) -> bool:
     now = time.time()
     recent = [t for t in roll_rate_limit[player_id] if now - t < 10]
     roll_rate_limit[player_id] = recent
-    
+
     if len(recent) >= 10:
         return False  # Rate limit exceeded
-    
+
     roll_rate_limit[player_id].append(now)
     return True
 ```
 
 #### 3. Input Validation
+
 ```python
 # backend/app/schemas.py
 from pydantic import BaseModel, Field, validator
@@ -793,7 +855,7 @@ import re
 class CreateRoomRequest(BaseModel):
     mode: Literal['open', 'dm-led']
     player_name: str = Field(min_length=1, max_length=20)
-    
+
     @validator('player_name')
     def validate_player_name(cls, v):
         # Alphanumeric + spaces only
@@ -809,6 +871,7 @@ class RollDiceRequest(BaseModel):
 ```
 
 #### 4. Session Security
+
 ```python
 # backend/app/core/security.py
 from fastapi import Cookie
@@ -825,19 +888,21 @@ def is_session_kicked(room: Room, session_hash: str) -> bool:
 ```
 
 #### 5. XSS Prevention
+
 ```typescript
 // frontend/src/utils/sanitize.ts
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 
 export function sanitizePlayerName(name: string): string {
   return DOMPurify.sanitize(name, {
-    ALLOWED_TAGS: [],  // Strip all HTML
-    ALLOWED_ATTR: []
+    ALLOWED_TAGS: [], // Strip all HTML
+    ALLOWED_ATTR: [],
   });
 }
 ```
 
 #### 6. HTTPS/WSS Enforcement
+
 ```nginx
 # nginx/nginx.conf
 server {
@@ -849,14 +914,14 @@ server {
 server {
     listen 443 ssl http2;
     server_name dice.example.com;
-    
+
     ssl_certificate /etc/letsencrypt/live/dice.example.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/dice.example.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    
+
     # HSTS
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    
+
     # CSP
     add_header Content-Security-Policy "default-src 'self'; connect-src 'self' wss://dice.example.com" always;
 }
@@ -870,7 +935,7 @@ server {
 
 ```yaml
 # docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
@@ -894,7 +959,7 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-        order: start-first  # Zero-downtime
+        order: start-first # Zero-downtime
 
   frontend:
     build:
@@ -946,12 +1011,14 @@ networks:
 ### Production VPS Setup
 
 **Server Specs (DigitalOcean $20/month):**
+
 - 4 GB RAM
 - 2 vCPUs
 - 80 GB SSD
 - Ubuntu 22.04 LTS
 
 **Installation Script:**
+
 ```bash
 #!/bin/bash
 # setup-vps.sh
@@ -995,6 +1062,7 @@ echo "0 3 * * * certbot renew --quiet && docker-compose restart nginx" | crontab
 ### Deployment Workflow
 
 **GitHub Actions Deployment:**
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy to Production
@@ -1008,10 +1076,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Login to GHCR
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      
+
       - name: Build and Push Images
         run: |
           docker-compose build
@@ -1023,7 +1091,7 @@ jobs:
           docker push ghcr.io/sfines/dnd-dice-roller-backend:latest
           docker push ghcr.io/sfines/dnd-dice-roller-frontend:${{ github.sha }}
           docker push ghcr.io/sfines/dnd-dice-roller-frontend:latest
-      
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -1036,12 +1104,12 @@ jobs:
             docker-compose pull
             docker-compose up -d
             docker system prune -af
-      
+
       - name: Health Check
         run: |
           sleep 10
           curl -f https://dice.example.com/api/health || exit 1
-      
+
       - name: Notify Sentry
         run: |
           curl -X POST https://sentry.io/api/0/organizations/your-org/releases/ \
@@ -1072,6 +1140,7 @@ jobs:
 ### Key Metrics Dashboard
 
 **Operational Metrics:**
+
 - Rooms created per hour
 - Active rooms (current)
 - Players online (current)
@@ -1079,18 +1148,21 @@ jobs:
 - Permalink shares per day
 
 **Performance Metrics:**
+
 - Roll generation latency (p50, p95, p99)
 - WebSocket connection time
 - Valkey response time
 - Database query time
 
 **Error Metrics:**
+
 - WebSocket disconnect rate
 - Roll generation failures
 - Rate limit hits
 - 5xx error rate
 
 **Business Metrics:**
+
 - New vs returning players
 - Average session length
 - Rolls per session
@@ -1099,6 +1171,7 @@ jobs:
 ### Sentry Configuration
 
 **Alert Rules:**
+
 - Error rate > 1% (immediate)
 - Latency p95 > 1s (warning)
 - WebSocket disconnect rate > 10% (immediate)
@@ -1110,24 +1183,27 @@ jobs:
 
 ### Test Coverage Requirements
 
-| Test Type | Coverage Target | Tools | When |
-|-----------|----------------|-------|------|
-| **Backend Unit** | 80% | Pytest | Every commit |
-| **Backend Integration** | Critical paths | Pytest + WebSocket | Every commit |
-| **Frontend Unit** | 60% | Vitest + Testing Library | Every commit |
-| **E2E** | Walking skeleton + 3 flows | Playwright | Week 1, then continuous |
-| **Load** | 50 concurrent rooms | Locust | Week 8 |
-| **Security** | OWASP Top 10 | Manual + Bandit | Week 9 |
+| Test Type               | Coverage Target            | Tools                    | When                    |
+| ----------------------- | -------------------------- | ------------------------ | ----------------------- |
+| **Backend Unit**        | 80%                        | Pytest                   | Every commit            |
+| **Backend Integration** | Critical paths             | Pytest + WebSocket       | Every commit            |
+| **Frontend Unit**       | 60%                        | Vitest + Testing Library | Every commit            |
+| **E2E**                 | Walking skeleton + 3 flows | Playwright               | Week 1, then continuous |
+| **Load**                | 50 concurrent rooms        | Locust                   | Week 8                  |
+| **Security**            | OWASP Top 10               | Manual + Bandit          | Week 9                  |
 
 ### Critical E2E Test Paths
 
 1. **Walking Skeleton** (Week 1)
+
    - Create room → Join room → Roll dice → View result
 
 2. **DM Features** (Week 6)
+
    - Create DM-led room → Hidden roll → Reveal → Set DC → DC check
 
 3. **Room Promotion** (Week 6)
+
    - Create Open room → Multiple rolls → Promote to DM-led → Verify history marker
 
 4. **Reconnection** (Week 7)
@@ -1138,6 +1214,7 @@ jobs:
 ## Implementation Roadmap
 
 ### Week 1: Walking Skeleton + E2E Foundation
+
 - Initialize project from template
 - Remove auth system
 - Add Valkey service
@@ -1147,6 +1224,7 @@ jobs:
 - **Deliverable:** Create → Join → Roll → View (no DM features)
 
 ### Week 2-3: Backend Core
+
 - Room lifecycle management
 - All dice types + modifiers
 - Advantage/disadvantage
@@ -1156,6 +1234,7 @@ jobs:
 - Session tracking
 
 ### Week 4-6: Frontend Development
+
 - Replace Chakra with Tailwind
 - Roll input UI (simple + advanced)
 - Roll history feed
@@ -1166,6 +1245,7 @@ jobs:
 - Permalink copy button
 
 ### Week 7: Edge Cases & Integration
+
 - Race condition handling (sequence numbers)
 - DM disconnect grace period
 - Kick session tracking
@@ -1174,6 +1254,7 @@ jobs:
 - E2E test suite completion
 
 ### Week 8-9: Testing & Polish
+
 - iOS Safari testing
 - Load testing (50 rooms)
 - Permalink public page
@@ -1182,6 +1263,7 @@ jobs:
 - Security audit
 
 ### Week 10: Buffer & Production
+
 - CI/CD pipeline finalization
 - VPS production deployment
 - Documentation
@@ -1204,6 +1286,7 @@ The architecture supports the 8-10 week timeline while ensuring production-grade
 ---
 
 **Next Steps:**
+
 1. Review and approve architecture decisions
 2. Initialize project from template (Week 1, Story 1)
 3. Begin walking skeleton implementation

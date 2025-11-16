@@ -47,12 +47,15 @@ TDD for walking skeleton (Week 1), comprehensive coverage for core features, E2E
 ## Critical E2E Test Paths
 
 1. **Walking Skeleton** (Week 1)
+
    - Create room → Join room → Roll dice → View result
 
 2. **DM Features** (Week 6)
+
    - Create DM-led room → Hidden roll → Reveal → Set DC → DC check
 
 3. **Room Promotion** (Week 6)
+
    - Create Open room → Multiple rolls → Promote to DM-led → Verify history marker
 
 4. **Reconnection** (Week 7)

@@ -59,7 +59,7 @@ services:
       update_config:
         parallelism: 1
         delay: 10s
-        order: start-first  # New container starts before old stops
+        order: start-first # New container starts before old stops
 ```
 
 ## Consequences
