@@ -2,9 +2,9 @@ name: Lint
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, "feature/**", "bugfix/**"]
   pull_request:
-    branches: [develop]
+    branches: [develop, "feature/**", "bugfix/**"]
 
 jobs:
   lint:
