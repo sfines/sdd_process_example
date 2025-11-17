@@ -229,19 +229,15 @@ A dedicated web-based D&D dice roller that does one thing exceptionally well: sy
 3. **Room spam/abuse**: Anyone can create rooms, could be abused
    - _Mitigation_: Room auto-expiration (DM-led: 30 min idle, Open: 5 hours after last roll), rate limiting (1 room per IP per 5 minutes), simple CAPTCHA on room creation
 4. **Cheating concerns**: Could players manipulate rolls?
-
    - _Mitigation_: All rolls generated server-side with cryptographic randomness, clients receive and display results only
 
 5. **Kicked player re-entry**: Kicked players can rejoin with different names
-
    - _Mitigation_: Session-based kick tracking (IP + browser fingerprint), kicked sessions blocked for room lifetime
 
 6. **Race conditions**: Simultaneous rolls could cause ordering issues
-
    - _Mitigation_: Server-side timestamp + sequence number for deterministic history ordering
 
 7. **Load/Performance**: Roll history with 500+ rolls could slow down UI
-
    - _Mitigation_: Virtual scrolling for history, pagination after 100 visible rolls
 
 8. **Browser compatibility**: Safari iOS has known WebSocket quirks

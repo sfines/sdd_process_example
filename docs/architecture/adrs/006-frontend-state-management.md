@@ -2,6 +2,7 @@
 
 **Status:** Approved
 **Date:** 2025-11-15
+**Verification Date:** 2025-11-15
 **Decision Maker:** Steve
 
 ## Context
@@ -27,11 +28,11 @@ Use Zustand for global state management.
 interface AppState {
   // Connection
   socket: Socket | null;
-  connectionStatus: "connected" | "reconnecting" | "disconnected";
+  connectionStatus: 'connected' | 'reconnecting' | 'disconnected';
 
   // Room
   roomCode: string | null;
-  roomMode: "open" | "dm-led";
+  roomMode: 'open' | 'dm-led';
   currentDC: number | null;
   expiresIn: number | null; // seconds
 
@@ -71,7 +72,7 @@ const useAppStore = create<AppState>((set) => ({
   // Socket event handlers update store
   initSocketListeners: () => {
     const socket = useAppStore.getState().socket;
-    socket?.on("roll_result", (roll) => {
+    socket?.on('roll_result', (roll) => {
       set((state) => ({ rolls: [...state.rolls, roll] }));
     });
   },

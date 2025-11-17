@@ -2,6 +2,7 @@
 
 **Status:** Approved
 **Date:** 2025-11-15
+**Verification Date:** 2025-11-15
 **Decision Maker:** Steve
 
 ## Context

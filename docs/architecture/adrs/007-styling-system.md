@@ -2,6 +2,7 @@
 
 **Status:** Approved
 **Date:** 2025-11-15
+**Verification Date:** 2025-11-15
 **Decision Maker:** Steve
 
 ## Context
@@ -40,13 +41,13 @@ npx tailwindcss init -p
 ```javascript
 // tailwind.config.js
 module.exports = {
-  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        "dice-red": "#DC2626",
-        "dice-green": "#16A34A",
-        "dm-purple": "#9333EA",
+        'dice-red': '#DC2626',
+        'dice-green': '#16A34A',
+        'dm-purple': '#9333EA',
       },
     },
   },

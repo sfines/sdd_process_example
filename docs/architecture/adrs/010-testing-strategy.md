@@ -2,6 +2,7 @@
 
 **Status:** Approved
 **Date:** 2025-11-15
+**Verification Date:** 2025-11-15
 **Decision Maker:** Steve
 
 ## Context
@@ -14,21 +15,18 @@ TDD for walking skeleton (Week 1), comprehensive coverage for core features, E2E
 
 ## Testing Pyramid
 
-```
-         /\
-        /  \    E2E Tests (Playwright)
-       /----\   - Create room flow
-      /      \  - Join room flow
-     /--------\ - Roll dice flow
-    /          \ Integration Tests (Pytest + WebSocket)
-   /------------\ - Room lifecycle
-  /              \ - Roll generation & broadcast
- /----------------\ - Player management
-/------------------\ Unit Tests (Pytest + Vitest)
-- Dice rolling logic
-- Room state management
-- Validation functions
-- UI components
+```mermaid
+graph TD
+    subgraph E2E Tests (Playwright)
+        A["- Create room flow<br>- Join room flow<br>- Roll dice flow"]
+    end
+    subgraph Integration Tests (Pytest + WebSocket)
+        B["- Room lifecycle<br>- Roll generation & broadcast<br>- Player management"]
+    end
+    subgraph Unit Tests (Pytest + Vitest)
+        C["- Dice rolling logic<br>- Room state management<br>- Validation functions<br>- UI components"]
+    end
+    A --> B --> C
 ```
 
 ## Coverage Targets
@@ -47,15 +45,12 @@ TDD for walking skeleton (Week 1), comprehensive coverage for core features, E2E
 ## Critical E2E Test Paths
 
 1. **Walking Skeleton** (Week 1)
-
    - Create room → Join room → Roll dice → View result
 
 2. **DM Features** (Week 6)
-
    - Create DM-led room → Hidden roll → Reveal → Set DC → DC check
 
 3. **Room Promotion** (Week 6)
-
    - Create Open room → Multiple rolls → Promote to DM-led → Verify history marker
 
 4. **Reconnection** (Week 7)

@@ -2,6 +2,7 @@
 
 **Status:** Approved
 **Date:** 2025-11-15
+**Verification Date:** 2025-11-15
 **Decision Maker:** Steve
 
 ## Context
@@ -30,17 +31,17 @@ Use Socket.io with native room concept for all real-time features.
 
 ```typescript
 // Client → Server Events
-create_room,
+(create_room,
   join_room,
   roll_dice,
   reveal_roll,
   set_dc,
   promote_to_dm,
   kick_player,
-  disconnect;
+  disconnect);
 
 // Server → Client Events
-room_created,
+(room_created,
   player_joined,
   player_left,
   roll_result,
@@ -50,7 +51,7 @@ room_created,
   room_expiring,
   room_closed,
   player_kicked,
-  error;
+  error);
 ```
 
 ## Consequences

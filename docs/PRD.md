@@ -460,7 +460,7 @@ A multiplayer D&D dice roller web application enabling gaming groups to share di
 ```typescript
 interface Room {
   room_code: string; // WORD-#### format
-  mode: "open" | "dm-led";
+  mode: 'open' | 'dm-led';
   created_at: number; // Unix timestamp
   last_activity: number; // Unix timestamp
   ttl: number; // Seconds (1800 for DM-led, 18000 for Open)
@@ -491,7 +491,7 @@ interface Roll {
   dice_type: number; // e.g., 6
   dice_count: number; // e.g., 3
   modifier: number; // e.g., 5
-  advantage: "none" | "advantage" | "disadvantage";
+  advantage: 'none' | 'advantage' | 'disadvantage';
   individual_results: number[]; // e.g., [4, 2, 6]
   total: number; // e.g., 17
   hidden: boolean; // DM hidden roll
@@ -502,8 +502,8 @@ interface Roll {
 
 interface ModeChange {
   timestamp: number;
-  from_mode: "open";
-  to_mode: "dm-led";
+  from_mode: 'open';
+  to_mode: 'dm-led';
   dm_player_id: string;
 }
 ```
@@ -533,27 +533,23 @@ CREATE INDEX idx_expires_at ON roll_permalinks(expires_at);
 ### System Components
 
 1. **Frontend (React + TypeScript)**
-
    - Socket.io-client for WebSocket connection
    - Zustand for state management
    - Tailwind CSS for styling
    - PWA manifest and service worker
 
 2. **Backend (FastAPI + Python)**
-
    - python-socketio for WebSocket server
    - Pydantic models for validation
    - Redis client for room state
    - SQLite/PostgreSQL for permalinks
 
 3. **State Layer (Redis)**
-
    - In-memory room state
    - TTL-based auto-expiration
    - Persistence to disk (AOF or RDB)
 
 4. **Permalink Storage (SQLite/PostgreSQL)**
-
    - 30-day roll history
    - Indexed by expiration date for cleanup
 

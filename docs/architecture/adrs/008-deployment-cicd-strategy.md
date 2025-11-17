@@ -2,6 +2,7 @@
 
 **Status:** Approved
 **Date:** 2025-11-15
+**Verification Date:** 2025-11-15
 **Decision Maker:** Steve
 
 ## Context
@@ -14,32 +15,10 @@ Use GitHub Actions with GitHub Container Registry (GHCR) for Docker images.
 
 ## Pipeline Flow
 
-```
-┌─────────────────────────────────────┐
-│  Push to develop                    │
-│  - Lint (backend + frontend)        │
-│  - Unit tests (backend)             │
-│  - Type check (frontend)            │
-└────────────┬────────────────────────┘
-             │
-             v
-┌─────────────────────────────────────┐
-│  Merge to main                      │
-│  - Run full test suite              │
-│  - Build Docker images              │
-│  - Push to ghcr.io                  │
-│  - Tag with git SHA + 'latest'      │
-└────────────┬────────────────────────┘
-             │
-             v
-┌─────────────────────────────────────┐
-│  Deploy to VPS                      │
-│  - SSH to production server         │
-│  - Pull latest images from ghcr.io  │
-│  - docker-compose pull              │
-│  - docker-compose up -d             │
-│  - Health check                     │
-└─────────────────────────────────────┘
+```mermaid
+graph TD
+    A["Push to develop<br>- Lint (backend + frontend)<br>- Unit tests (backend)<br>- Type check (frontend)"] --> B["Merge to main<br>- Run full test suite<br>- Build Docker images<br>- Push to ghcr.io<br>- Tag with git SHA + 'latest'"]
+    B --> C["Deploy to VPS<br>- SSH to production server<br>- Pull latest images from ghcr.io<br>- docker-compose pull<br>- docker-compose up -d<br>- Health check"]
 ```
 
 ## Why GHCR Over Docker Hub
