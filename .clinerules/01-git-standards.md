@@ -5,7 +5,6 @@
 - Git flow is the standard git workflow for this project
 
 - Base branch standard names are:
-
   - Production branch: main
   - Development branch: develop
   - Feature branches: feature/\*

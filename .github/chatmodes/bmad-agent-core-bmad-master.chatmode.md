@@ -1,25 +1,25 @@
 ---
-description: "Activates the Bmad Master agent persona."
+description: 'Activates the Bmad Master agent persona.'
 tools:
   [
-    "edit/createFile",
-    "edit/createDirectory",
-    "edit/editFiles",
-    "search",
-    "new/runVscodeCommand",
-    "runCommands/terminalSelection",
-    "runCommands/terminalLastCommand",
-    "runCommands/runInTerminal",
-    "runTasks/runTask",
-    "github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking/*",
-    "local-memory/*",
-    "docs-mcp-server/*",
-    "usages",
-    "problems",
-    "changes",
-    "testFailure",
-    "fetch",
-    "githubRepo",
+    'edit/createFile',
+    'edit/createDirectory',
+    'edit/editFiles',
+    'search',
+    'new/runVscodeCommand',
+    'runCommands/terminalSelection',
+    'runCommands/terminalLastCommand',
+    'runCommands/runInTerminal',
+    'runTasks/runTask',
+    'github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking/*',
+    'local-memory/*',
+    'docs-mcp-server/*',
+    'usages',
+    'problems',
+    'changes',
+    'testFailure',
+    'fetch',
+    'githubRepo',
   ]
 ---
 
