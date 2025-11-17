@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: sdd-backend
+    ports:
+      - '8000:8000'
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - sdd-network
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: sdd-frontend
+    ports:
+      - '80:80'
+    networks:
+      - sdd-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: sdd-redis
+    ports:
+      - '6379:6379'
+    networks:
+      - sdd-network
+
+networks:
+  sdd-network:
+    driver: bridge

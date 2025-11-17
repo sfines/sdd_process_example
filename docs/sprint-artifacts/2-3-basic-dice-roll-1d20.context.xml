@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story_context>
+  <metadata>
+    <story_id>2-3</story_id>
+    <story_title>Basic Dice Roll (1d20)</story_title>
+    <epic_id>2</epic_id>
+    <epic_title>Core Dice Rolling - D&D Mechanics</epic_title>
+    <status>drafted</status>
+    <created_date>2025-11-17T02:41:25.298Z</created_date>
+    <context_generated_at>2025-11-17T02:41:25.298Z</context_generated_at>
+  </metadata>
+
+  <story_summary>
+    First dice rolling mechanic. Implements the foundation for all rolling features: 1d20 (one twenty-sided die). This is the core mechanic used in D&D 5e for attack rolls, ability checks, and saving throws.
+  </story_summary>
+
+  <architectural_context>
+    <layer name="backend">
+      <component id="dice-engine">
+        <description>Core dice rolling engine (deterministic, testable)</description>
+        <responsibility>
+          - Parse dice notation (1d20)
+          - Generate cryptographically secure random numbers
+          - Calculate totals
+          - Return roll details (individual die results, total, metadata)
+        </responsibility>
+        <technology>Node.js backend (Express or similar)</technology>
+        <api_endpoint>POST /api/rooms/{roomId}/rolls</api_endpoint>
+        <example_request>{
+  "notation": "1d20",
+  "playerId": "player-uuid",
+  "timestamp": "2025-11-17T02:41:25.298Z"
+}</example_request>
+        <example_response>{
+  "rollId": "roll-uuid-1",
+  "notation": "1d20",
+  "individual_rolls": [15],
+  "total": 15,
+  "playerId": "player-uuid",
+  "roomId": "room-uuid",
+  "timestamp": "2025-11-17T02:41:25.298Z"
+}</example_response>
+      </component>
+
+      <component id="socket-io-broadcast">
+        <description>Real-time roll delivery to all players in room</description>
+        <responsibility>
+          - Receive roll from API
+          - Broadcast to all connected clients in room
+          - Handle connection failures gracefully
+        </responsibility>
+        <event_name>roll:new</event_name>
+        <event_payload>
+          {
+            "rollId": "roll-uuid-1",
+            "notation": "1d20",
+            "individual_rolls": [15],
+            "total": 15,
+            "playerName": "Alice",
+            "timestamp": "2025-11-17T02:41:25.298Z"
+          }
+        </event_payload>
+      </component>
+
+      <component id="roll-history-persistence">
+        <description>Store rolls in database for retrieval</description>
+        <responsibility>
+          - Save roll to database
+          - Retrieve roll history for room
+          - Support pagination (from Story 2.10)
+        </responsibility>
+        <database_table>rolls</database_table>
+        <schema>
+          rolls:
+            - id (UUID primary key)
+            - room_id (foreign key to rooms)
+            - player_id (foreign key to players)
+            - notation (string: "1d20")
+            - individual_rolls (JSON array: [15])
+            - total (integer: 15)
+            - created_at (timestamp)
+        </schema>
+      </component>
+    </layer>
+
+    <layer name="frontend">
+      <component id="dice-input">
+        <description>UI for submitting dice rolls</description>
+        <responsibility>
+          - Text input field for dice notation
+          - Validate notation before submission
+          - Submit to backend API
+          - Show loading state during submission
+          - Clear input on successful roll
+        </responsibility>
+        <file_path>frontend/src/components/DiceInput.tsx</file_path>
+        <framework>React + TypeScript</framework>
+        <form_fields>
+          - notation (text input, placeholder: "1d20", default: "1d20")
+          - submit button (label: "Roll")
+        </form_fields>
+        <validation_rules>
+          - Must match dice notation regex: /^\d+d\d+$/
+          - Must have die count between 1-100
+          - Must have die size between 1-100
+          - Example valid: "1d20", "2d6", "3d8"
+          - Example invalid: "d20" (no die count), "1d" (no die size), "1.5d20" (float)
+        </validation_rules>
+        <state_management>Zustand (hook: useRollStore())</state_management>
+      </component>
+
+      <component id="roll-result-display">
+        <description>Shows individual die rolls and total</description>
+        <responsibility>
+          - Display roll result as it arrives
+          - Show individual die results
+          - Highlight the total
+          - Show player name and timestamp
+        </responsibility>
+        <file_path>frontend/src/components/RollResult.tsx</file_path>
+        <visual_format>
+          Player Name: 1d20
+          [15] = 15
+          2:41:25 PM
+        </visual_format>
+      </component>
+
+      <component id="roll-history">
+        <description>List of all rolls in chronological order</description>
+        <responsibility>
+          - Display rolls in a scrollable list
+          - Most recent at top (reverse chronological)
+          - Show notation, individual results, total
+          - Fetch from backend on mount
+        </responsibility>
+        <file_path>frontend/src/components/RollHistory.tsx</file_path>
+        <fetch_endpoint>GET /api/rooms/{roomId}/rolls?limit=50&offset=0</fetch_endpoint>
+      </component>
+
+      <component id="socket-listener">
+        <description>Listen for roll:new events from backend</description>
+        <responsibility>
+          - Connect to Socket.io
+          - Join room namespace
+          - Listen for roll:new events
+          - Update local state with new roll
+          - Trigger animation/notification
+        </responsibility>
+        <hook>useRollSocket(roomId)</hook>
+        <events_consumed>
+          - roll:new (broadcast from other players)
+          - roll:user-new (confirmation for own roll)
+        </events_consumed>
+      </component>
+    </layer>
+
+    <layer name="data_model">
+      <entity name="Roll">
+        <description>Single dice roll result</description>
+        <fields>
+          - rollId: UUID (unique identifier)
+          - roomId: UUID (which room)
+          - playerId: UUID (who rolled)
+          - playerName: string (display name)
+          - notation: string (input, e.g., "1d20")
+          - individualRolls: number[] (each die result, e.g., [15])
+          - total: number (sum of individual rolls)
+          - createdAt: ISO8601 timestamp
+        </fields>
+      </entity>
+    </layer>
+  </architectural_context>
+
+  <dependencies>
+    <technical>
+      <dependency type="backend-api">
+        <name>Express.js (or framework)</name>
+        <file>backend/src/routes/rolls.ts</file>
+        <methods>
+          POST /api/rooms/{roomId}/rolls - Submit new roll
+          GET /api/rooms/{roomId}/rolls - Fetch roll history
+        </methods>
+      </dependency>
+      <dependency type="database">
+        <name>PostgreSQL or MongoDB</name>
+        <requirement>Must support JSONB or similar for individual_rolls array</requirement>
+      </dependency>
+      <dependency type="realtime">
+        <name>Socket.io</name>
+        <requirement>Already in place from Story 1.2</requirement>
+        <events>
+          - roll:new (broadcast to room)
+          - roll:user-new (confirmation to sender)
+        </events>
+      </dependency>
+      <dependency type="frontend-state">
+        <name>Zustand</name>
+        <store>useRollStore()</store>
+        <state_keys>
+          - rolls: Roll[]
+          - addRoll: (roll: Roll) => void
+          - clearRolls: () => void
+          - loading: boolean
+          - error: string | null
+        </state_keys>
+      </dependency>
+    </technical>
+
+    <story_dependencies>
+      <depends_on>
+        <story>2-1 (Create a New Room)</story>
+        <reason>Must have a room context to roll in</reason>
+      </depends_on>
+      <depends_on>
+        <story>2-2 (Join an Existing Room)</story>
+        <reason>Must be in a room to roll</reason>
+      </depends_on>
+      <depends_on>
+        <story>1-2 (Hello World WebSocket)</story>
+        <reason>Socket.io foundation must be established</reason>
+      </depends_on>
+    </story_dependencies>
+
+    <story_enables>
+      <enables>
+        <story>2-4 (Roll All Standard Dice Types)</story>
+        <reason>Extends 1d20 to support all dice types (d4, d6, d8, d10, d12, d20, d100)</reason>
+      </enables>
+      <enables>
+        <story>2-5 (Advantage/Disadvantage)</story>
+        <reason>Requires roll notation validation and result calculation</reason>
+      </enables>
+      <enables>
+        <story>2-7 (Multiple Dice in Single Roll)</story>
+        <reason>Foundation for NdN notation (e.g., "3d6+2")</reason>
+      </enables>
+      <enables>
+        <story>2-10 (Virtual Scrolling)</story>
+        <reason>Roll history storage and pagination needed</reason>
+      </enables>
+    </story_enables>
+  </dependencies>
+
+  <acceptance_criteria_breakdown>
+    <criterion id="1">
+      <text>User can type "1d20" into input field and click Roll</text>
+      <dev_task>Create DiceInput component with form</dev_task>
+      <test_approach>Unit test: render input, type "1d20", verify submit called</test_approach>
+    </criterion>
+    <criterion id="2">
+      <text>Roll result shows individual die result (e.g., 15) and total</text>
+      <dev_task>Create RollResult component to display roll</dev_task>
+      <test_approach>Unit test: pass mock roll object, verify display format</test_approach>
+    </criterion>
+    <criterion id="3">
+      <text>Result shows player name and timestamp</text>
+      <dev_task>Update RollResult to include playerName and createdAt from roll object</dev_task>
+      <test_approach>Unit test: verify playerName and timestamp rendered</test_approach>
+    </criterion>
+    <criterion id="4">
+      <text>Roll is sent to backend API immediately upon submission</text>
+      <dev_task>Hook DiceInput submit to POST /api/rooms/{roomId}/rolls</dev_task>
+      <test_approach>Integration test: mock API, verify POST call with correct payload</test_approach>
+    </criterion>
+    <criterion id="5">
+      <text>Backend validates notation matches "1d20" (or allows future flexibility)</text>
+      <dev_task>Implement dice notation regex validator in backend</dev_task>
+      <test_approach>Unit test: test valid/invalid notation strings</test_approach>
+    </criterion>
+    <criterion id="6">
+      <text>Roll is stored in database</text>
+      <dev_task>Implement DB save in POST /api/rooms/{roomId}/rolls endpoint</dev_task>
+      <test_approach>Integration test: verify roll exists in DB after request</test_approach>
+    </criterion>
+    <criterion id="7">
+      <text>Roll is broadcast to all players in room via Socket.io real-time</text>
+      <dev_task>Emit roll:new event to room namespace after DB save</dev_task>
+      <test_approach>E2E test: 2 browsers, roll in one, verify receives in other</test_approach>
+    </criterion>
+    <criterion id="8">
+      <text>Other players see roll appear in their history automatically</text>
+      <dev_task>Hook Socket.io listener to update Zustand store on roll:new event</dev_task>
+      <test_approach>E2E test: verify UI updates without page refresh</test_approach>
+    </criterion>
+    <criterion id="9">
+      <text>Individual die results are cryptographically random (1-20 range)</text>
+      <dev_task>Use Node.js crypto.randomInt() or similar in backend</dev_task>
+      <test_approach>Statistical test: roll 10,000x, verify distribution is uniform</test_approach>
+    </criterion>
+    <criterion id="10">
+      <text>Roll persists across page refresh (in database)</text>
+      <dev_task>Fetch rolls from DB on RoomView mount</dev_task>
+      <test_approach>E2E test: roll, refresh page, verify roll still visible</test_approach>
+    </criterion>
+  </acceptance_criteria_breakdown>
+
+  <tech_decisions>
+    <decision id="TS-001">
+      <title>Use TypeScript for type safety</title>
+      <impact>All components must be .tsx, all backend .ts</impact>
+      <adr>ADR-003</adr>
+    </decision>
+    <decision id="RAND-001">
+      <title>Cryptographically secure random number generation</title>
+      <implementation>Node.js crypto.randomInt() for backend rolls</implementation>
+      <rationale>Prevents predictable rolls, maintains fairness for tabletop experience</rationale>
+      <adr>ADR-005</adr>
+    </decision>
+    <decision id="API-001">
+      <title>RESTful API for roll submission</title>
+      <endpoint>POST /api/rooms/{roomId}/rolls</endpoint>
+      <rationale>Standard pattern, easy to extend with logging/validation</rationale>
+      <adr>ADR-004</adr>
+    </decision>
+    <decision id="STATE-001">
+      <title>Zustand for frontend state management</title>
+      <store>useRollStore()</store>
+      <rationale>Lightweight, minimal boilerplate, works well with React hooks</rationale>
+      <adr>ADR-008</adr>
+    </decision>
+  </tech_decisions>
+
+  <known_constraints>
+    <constraint id="PERF-001">
+      <description>Roll result display must appear within 500ms of submission</description>
+      <implication>Optimize Socket.io event delivery, minimize component render time</implication>
+    </constraint>
+    <constraint id="COMPAT-001">
+      <description>Must work on both mobile (375px) and desktop (1200px)</description>
+      <implication>Use responsive Tailwind classes, tested in Story 2.11</implication>
+    </constraint>
+    <constraint id="DATA-001">
+      <description>Roll history must support 100+ rolls per room without UI lag</description>
+      <implication>Virtual scrolling required in Story 2.10</implication>
+    </constraint>
+  </known_constraints>
+
+  <environment_setup>
+    <backend_structure>
+      backend/
+      ├── src/
+      │   ├── routes/
+      │   │   └── rolls.ts (NEW)
+      │   ├── models/
+      │   │   └── Roll.ts (NEW)
+      │   ├── services/
+      │   │   └── DiceService.ts (NEW - contains rolling logic)
+      │   ├── db/
+      │   │   └── migrations/ (NEW - rolls table)
+      │   └── websocket/
+      │       └── handlers/ (update: add roll event handler)
+      └── tests/
+          └── rolls.test.ts (NEW)
+    </backend_structure>
+
+    <frontend_structure>
+      frontend/
+      ├── src/
+      │   ├── components/
+      │   │   ├── DiceInput.tsx (NEW)
+      │   │   ├── RollResult.tsx (NEW)
+      │   │   ├── RollHistory.tsx (NEW)
+      │   │   └── __tests__/
+      │   │       ├── DiceInput.test.tsx (NEW)
+      │   │       ├── RollResult.test.tsx (NEW)
+      │   │       └── RollHistory.test.tsx (NEW)
+      │   ├── hooks/
+      │   │   ├── useRollSocket.ts (NEW)
+      │   │   └── useRollStore.ts (NEW - Zustand hook)
+      │   ├── pages/
+      │   │   └── RoomView.tsx (update: add DiceInput and RollHistory)
+      │   └── __tests__/
+      │       └── dice-rolling.integration.test.tsx (NEW)
+      └── e2e/
+          └── dice-rolling.spec.ts (NEW)
+    </frontend_structure>
+
+    <database_schema>
+      CREATE TABLE rolls (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+        player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+        notation VARCHAR(20) NOT NULL,
+        individual_rolls JSONB NOT NULL,
+        total INTEGER NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_room_rolls (room_id, created_at DESC),
+        INDEX idx_player_rolls (player_id, created_at DESC)
+      );
+    </database_schema>
+  </environment_setup>
+
+  <team_notes>
+    <note type="design">
+      The DiceInput component should accept a default value (e.g., "1d20") so users don't have to type it every time. This is a nice UX touch that encourages quick rolling.
+    </note>
+    <note type="backend">
+      Keep DiceService.roll() pure and deterministic. Pass in a random seed if needed for testing. This makes unit testing much easier and allows future features like "replay roll" without additional complexity.
+    </note>
+    <note type="testing">
+      For crypto random testing, don't test the RNG itself (crypto module is trusted). Instead, test that your dice logic correctly interprets random numbers in the 1-20 range.
+    </note>
+    <note type="frontend">
+      Use loading state on DiceInput button while waiting for API response. This prevents accidental double-submissions and gives user feedback.
+    </note>
+    <note type="performance">
+      Socket.io events should include just the roll ID initially, then fetch full roll data if needed. This minimizes message size and network latency.
+    </note>
+  </team_notes>
+
+  <testing_strategy>
+    <unit_tests>
+      <test_file>backend/tests/DiceService.test.ts</test_file>
+      <test_case>test_dice_service_rolls_1d20_in_correct_range</test_case>
+      <test_case>test_dice_service_calculates_total_correctly</test_case>
+      <test_case>test_dice_service_parses_notation_correctly</test_case>
+
+      <test_file>frontend/src/components/__tests__/DiceInput.test.tsx</test_file>
+      <test_case>test_dice_input_renders_with_default_1d20</test_case>
+      <test_case>test_dice_input_submits_notation_on_click</test_case>
+      <test_case>test_dice_input_clears_after_submit</test_case>
+      <test_case>test_dice_input_validates_notation</test_case>
+
+      <test_file>frontend/src/components/__tests__/RollResult.test.tsx</test_file>
+      <test_case>test_roll_result_displays_individual_rolls</test_case>
+      <test_case>test_roll_result_displays_total</test_case>
+      <test_case>test_roll_result_displays_player_name_and_time</test_case>
+    </unit_tests>
+
+    <integration_tests>
+      <test_file>frontend/src/__tests__/dice-rolling.integration.test.tsx</test_file>
+      <test_case>test_full_roll_workflow_input_to_display</test_case>
+      <test_case>test_roll_history_updates_on_new_roll</test_case>
+      <test_case>test_zustand_store_syncs_with_socket_events</test_case>
+    </integration_tests>
+
+    <e2e_tests>
+      <test_file>frontend/e2e/dice-rolling.spec.ts</test_file>
+      <test_case>test_two_players_both_see_each_others_rolls</test_case>
+      <test_case>test_roll_persists_after_page_refresh</test_case>
+      <test_case>test_roll_result_appears_within_500ms</test_case>
+      <test_case>test_mobile_responsive_dice_input</test_case>
+    </e2e_tests>
+  </testing_strategy>
+
+  <success_metrics>
+    <metric name="Roll Submission Latency">
+      <target>&lt;500ms (from click to result visible)</target>
+      <measurement>E2E test with performance timing</measurement>
+    </metric>
+    <metric name="Roll Distribution Fairness">
+      <target>Chi-square p-value &gt;0.05 for 10k rolls</target>
+      <measurement>Statistical analysis script</measurement>
+    </metric>
+    <metric name="Code Coverage">
+      <target>&gt;80% for DiceService and DiceInput</target>
+      <measurement>Jest coverage report</measurement>
+    </metric>
+    <metric name="Database Query Performance">
+      <target>&lt;100ms for roll retrieval (50 rolls)</target>
+      <measurement>EXPLAIN ANALYZE on fetch query</measurement>
+    </metric>
+  </success_metrics>
+
+  <open_questions>
+    <question id="Q1">
+      <text>Should we support modifiers in this story (e.g., "1d20+5") or defer to a later story?</text>
+      <answer>Defer to Story 2-7 (Multiple Dice). Keep 2-3 focused on basic rolling.</answer>
+    </question>
+    <question id="Q2">
+      <text>Should individual die results be hidden from other players or visible?</text>
+      <answer>Visible. Transparency is important for trust in tabletop experiences.</answer>
+    </question>
+    <question id="Q3">
+      <text>Do we need to support rolling multiple 1d20s (e.g., rolling with advantage) in this story?</text>
+      <answer>No. Story 2-5 handles advantage/disadvantage explicitly.</answer>
+    </question>
+  </open_questions>
+
+</story_context>

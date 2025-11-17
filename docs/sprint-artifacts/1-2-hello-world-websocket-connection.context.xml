@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.2</storyId>
+    <title>"Hello World" WebSocket Connection</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-16T22:18:18.235Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/1-2-hello-world-websocket-connection.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>the frontend to establish a WebSocket connection with the backend</iWant>
+    <soThat>real-time communication is proven to work end-to-end</soThat>
+    <tasks>
+      <task n="1">Backend Socket.io Setup - Install python-socketio, create AsyncServer instance</task>
+      <task n="2">Backend Event Handlers - Implement connect, disconnect, hello_message handlers</task>
+      <task n="3">Backend Structlog Setup - Configure JSON logging with structlog</task>
+      <task n="4">Frontend Socket.io Client - Initialize Socket.io client service</task>
+      <task n="5">Frontend Zustand Store - Create store for WebSocket connection state</task>
+      <task n="6">Frontend Connect Handler - Handle connect/disconnect events</task>
+      <task n="7">Frontend Message Send & Receive - Send hello_message, receive world_message</task>
+      <task n="8">Frontend Display Success Message - ConnectionStatus component with Tailwind styling</task>
+      <task n="9">E2E Test with Playwright - Complete hello → world flow validation</task>
+      <task n="10">Manual Testing & Validation - Browser console, backend logs, cross-browser testing</task>
+      <task n="11">Documentation & Logging Verification - README updates, logging end-to-end validation</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Application runs locally via docker-compose up without errors</criterion>
+    <criterion id="2">Frontend loads successfully at http://localhost in browser</criterion>
+    <criterion id="3">Frontend WebSocket successfully connects to backend via Socket.io within 500ms</criterion>
+    <criterion id="4">Frontend emits connect event upon successful connection</criterion>
+    <criterion id="5">Backend receives connect event and logs it with structlog in JSON format</criterion>
+    <criterion id="6">Frontend sends hello_message event with payload {"message": "Hello from client!"}</criterion>
+    <criterion id="7">Backend receives hello_message, processes it, and emits world_message with payload {"message": "World from server!"} back to client</criterion>
+    <criterion id="8">Frontend receives world_message event and displays message: "Connection established: World from server!"</criterion>
+    <criterion id="9">All connection, message, and disconnect events logged on both backend and frontend</criterion>
+    <criterion id="10">E2E test (Playwright) validates complete hello → world flow</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-1.md</path>
+        <title>Epic 1 Technical Specification</title>
+        <section>APIs and Interfaces, Workflows and Sequencing, Non-Functional Requirements</section>
+        <snippet>WebSocket Events: Client emits hello_message with {"message": "Hello from client!"}, server responds with world_message {"message": "World from server!"}. Connection latency target: 500ms. Structured logging required for all events.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Technology Stack, System Architecture, Architectural Decisions</section>
+        <snippet>WebSocket Architecture (ADR-002): Socket.io with native room concept for real-time features. Frontend State Management (ADR-006): Zustand for global state management. Observability (ADR-009): Structured JSON logging for all events.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Architecture Pattern, API Specification</section>
+        <snippet>Socket.io for bidirectional real-time events, automatic reconnection with exponential backoff. WebSocket Events include connect, disconnect, roll_dice, reveal_roll. Server-side roll generation ensures fairness and prevents client manipulation.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <codeArtifact>
+        <path>backend/app/</path>
+        <kind>module_directory</kind>
+        <symbol>FastAPI application modules</symbol>
+        <reason>Create socket_manager.py, event_handlers.py, logging.py modules for Socket.io integration</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/app/main.py</path>
+        <kind>application_entry</kind>
+        <symbol>FastAPI app instance</symbol>
+        <reason>Integrate Socket.io server with FastAPI app via ASGI middleware (Task 1)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/pyproject.toml</path>
+        <kind>dependency_manifest</kind>
+        <symbol>Python dependencies</symbol>
+        <reason>Add python-socketio[asyncio_client], aiofiles, structlog packages (Task 1, 3)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/tests/</path>
+        <kind>test_directory</kind>
+        <symbol>Backend unit tests</symbol>
+        <reason>Create test_socket.py, test_logging.py for Socket.io handlers and structlog config</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/services/socket.ts</path>
+        <kind>service_module</kind>
+        <symbol>Socket.io client initialization</symbol>
+        <reason>Create Socket.io client instance configured for http://localhost:8000 (Task 4)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/store/socketStore.ts</path>
+        <kind>state_store</kind>
+        <symbol>Zustand store for WebSocket state</symbol>
+        <reason>Manage isConnected, connectionMessage, connectionError state (Task 5)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/hooks/useSocket.ts</path>
+        <kind>custom_hook</kind>
+        <symbol>Socket.io integration hook</symbol>
+        <reason>Initialize Socket.io in useEffect, set up event listeners, update store (Task 5, 6, 7)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/components/ConnectionStatus.tsx</path>
+        <kind>react_component</kind>
+        <symbol>Connection status display component</symbol>
+        <reason>Render connection state and success message with Tailwind styling (Task 8)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/e2e/hello-world.spec.ts</path>
+        <kind>e2e_test</kind>
+        <symbol>Playwright end-to-end test</symbol>
+        <reason>Validate complete hello → world flow in real browser environment (Task 9)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>.github/workflows/test.yml</path>
+        <kind>ci_workflow</kind>
+        <symbol>GitHub Actions test execution</symbol>
+        <reason>Update to run Playwright E2E tests on develop branch push (Task 9)</reason>
+      </codeArtifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="python">
+        <package name="python-socketio" version="5.10+" purpose="Backend WebSocket server" />
+        <package name="aiofiles" version="23.2+" purpose="Async file operations" />
+        <package name="structlog" version="23.2+" purpose="Structured JSON logging" />
+        <package name="fastapi" version="0.104+" purpose="Web framework (reuse from Story 1.1)" />
+        <package name="pytest" version="7.4+" purpose="Unit testing framework" />
+      </ecosystem>
+      <ecosystem name="nodejs">
+        <package name="socket.io-client" version="4.6+" purpose="Frontend WebSocket client" />
+        <package name="zustand" version="4.4+" purpose="State management" />
+        <package name="react" version="18.2+" purpose="UI library (reuse from Story 1.1)" />
+        <package name="typescript" version="5.3+" purpose="Type safety" />
+        <package name="@playwright/test" version="1.40+" purpose="E2E testing" />
+        <package name="vitest" version="1.0+" purpose="Unit testing (reuse from Story 1.1)" />
+      </ecosystem>
+      <ecosystem name="infrastructure">
+        <package name="docker-compose" version="2.23+" purpose="Local development orchestration (reuse from Story 1.1)" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Implement ADR-002 (Socket.io WebSocket) and ADR-006 (Zustand state management); proven patterns from architecture decisions</constraint>
+    <constraint type="backend">Use python-socketio with FastAPI; implement connect/disconnect/hello_message event handlers; log all events with structlog in JSON format</constraint>
+    <constraint type="frontend">Use socket.io-client to connect to backend; manage connection state with Zustand store; follow React hooks patterns (useEffect for initialization)</constraint>
+    <constraint type="performance">WebSocket connection must succeed within 500ms (AC 3); no blocking operations in event handlers</constraint>
+    <constraint type="logging">All events (connect, message, disconnect) must be logged: backend with structlog JSON, frontend with console.log</constraint>
+    <constraint type="testing">E2E tests must validate complete flow: connect → send hello → receive world → display message (AC 10)</constraint>
+    <constraint type="cors">Configure Socket.io CORS explicitly for http://localhost:3000 (frontend dev server) and http://localhost (production via Nginx)</constraint>
+    <constraint type="reuse">Story 1.1 provides Docker Compose environment; do not modify docker-compose.yml. Reuse existing GitHub Actions workflows (lint, type-check, test).</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Socket.io Client → Server Events</name>
+      <kind>websocket_event</kind>
+      <signature>socket.emit('hello_message', { message: 'Hello from client!' })</signature>
+      <path>frontend/src/hooks/useSocket.ts, backend/app/event_handlers.py</path>
+      <reason>Core message exchange for AC 6 validation</reason>
+    </interface>
+    <interface>
+      <name>Socket.io Server → Client Events</name>
+      <kind>websocket_event</kind>
+      <signature>socket.emit('world_message', { message: 'World from server!' })</signature>
+      <path>backend/app/event_handlers.py, frontend/src/hooks/useSocket.ts</path>
+      <reason>Core message exchange for AC 7, 8 validation</reason>
+    </interface>
+    <interface>
+      <name>Socket.io Connection Metadata</name>
+      <kind>connection_data</kind>
+      <signature>On connect: receive session_id in backend; track connection status in frontend store</signature>
+      <path>backend/app/event_handlers.py, frontend/src/store/socketStore.ts</path>
+      <reason>Required for logging (AC 5, 9) and debugging connection issues</reason>
+    </interface>
+    <interface>
+      <name>Zustand Socket Store</name>
+      <kind>state_interface</kind>
+      <signature>{ isConnected: boolean, connectionMessage: string | null, connectionError: string | null, setConnected, setConnectionMessage, setConnectionError }</signature>
+      <path>frontend/src/store/socketStore.ts</path>
+      <reason>Manage WebSocket state for ConnectionStatus component rendering (AC 8)</reason>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Backend: pytest with FastAPI TestClient; mock Socket.io server for unit tests. Frontend: vitest + React Testing Library for component tests; mock Socket.io for hook tests. E2E: Playwright against live docker-compose environment. All tests run in CI before merge. Target 80% backend coverage, 60% frontend coverage.
+    </standards>
+    <locations>
+      <location>backend/tests/test_socket.py (Socket.io handler tests)</location>
+      <location>backend/tests/test_logging.py (structlog config tests)</location>
+      <location>frontend/tests/ (component and hook tests)</location>
+      <location>frontend/e2e/hello-world.spec.ts (Playwright E2E test)</location>
+      <location>.github/workflows/test.yml (CI execution)</location>
+    </locations>
+    <ideas>
+      <idea acId="1">Test docker-compose up starts backend, frontend, redis without errors</idea>
+      <idea acId="2">Test frontend loads at http://localhost and renders without errors</idea>
+      <idea acId="3">Test Socket.io client connects to http://localhost:8000 within 500ms</idea>
+      <idea acId="4">Test useSocket hook emits connect event and sets isConnected = true</idea>
+      <idea acId="5">Test backend logs [CONNECT] event in JSON format via structlog</idea>
+      <idea acId="6">Test frontend hook emits hello_message event with correct payload</idea>
+      <idea acId="7">Test backend event handler receives hello_message and responds with world_message</idea>
+      <idea acId="8">Test ConnectionStatus component displays "Connection established: World from server!" when message received</idea>
+      <idea acId="9">Test all events logged: [CONNECT], [MESSAGE], [DISCONNECT] on backend; WebSocket events on frontend console</idea>
+      <idea acId="10">E2E test: Open browser → wait for connection → verify success message displayed</idea>
+      <idea acId="10">E2E test: Verify no JavaScript errors in console; WebSocket frames visible in network panel</idea>
+    </ideas>
+  </tests>
+</story-context>

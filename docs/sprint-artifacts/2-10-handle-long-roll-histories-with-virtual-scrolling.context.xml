@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story_context>
+  <metadata>
+    <story_id>2-10</story_id>
+    <story_title>Handle Long Roll Histories with Virtual Scrolling</story_title>
+    <epic_id>2</epic_id>
+    <epic_title>Core Dice Rolling - D&D Mechanics</epic_title>
+    <status>drafted</status>
+    <created_date>2025-11-17T02:41:25.298Z</created_date>
+    <context_generated_at>2025-11-17T02:41:25.298Z</context_generated_at>
+  </metadata>
+
+  <story_summary>
+    Optimizes roll history display for long sessions with 100+ rolls. Uses virtual scrolling (react-window) to render only visible items, maintaining 60fps performance even with thousands of rolls in history.
+  </story_summary>
+
+  <architectural_context>
+    <layer name="frontend">
+      <component id="virtual-roll-history">
+        <description>Virtualized list of rolls using react-window</description>
+        <responsibility>
+          - Render only visible rolls (e.g., 5-10 at a time)
+          - Auto-scroll to newest roll as new rolls arrive
+          - Support smooth scrolling without janks
+          - Handle 1000+ rolls without performance degradation
+        </responsibility>
+        <file_path>frontend/src/components/VirtualRollHistory.tsx (NEW)</file_path>
+        <library>react-window (VariableList or FixedSizeList)</library>
+        <height>Auto-calculated based on container or 500px default</height>
+        <item_height>60px (estimated for roll result display)</item_height>
+        <overscan>5 items (render 5 items beyond visible area for smooth scroll)</overscan>
+      </component>
+
+      <component id="roll-history-virtualization">
+        <description>Integration of VirtualRollHistory into RoomView</description>
+        <responsibility>
+          - Replace RollHistory with VirtualRollHistory in layout
+          - Manage scroll position (auto-scroll to bottom on new roll)
+          - Pass rolls from Zustand store to virtual list
+        </responsibility>
+        <file_path>frontend/src/pages/RoomView.tsx (update)</file_path>
+        <hook>useEffect(() => { scrollToBottom when rolls.length increases })</hook>
+      </component>
+
+      <component id="infinite-scroll-pagination">
+        <description>Load more rolls as user scrolls up (optional)</description>
+        <responsibility>
+          - Detect when user scrolls near top of history
+          - Fetch older rolls via GET /api/rooms/{roomId}/rolls?offset=50&limit=50
+          - Prepend to roll list (not append)
+        </responsibility>
+        <optional>Can defer to future story if time-constrained</optional>
+        <note>This assumes pagination is already available from Story 2-3 backend</note>
+      </component>
+    </layer>
+
+    <layer name="data_model">
+      <no_schema_changes>All data model from Story 2-3 applies. No new fields needed.</no_schema_changes>
+      <indexing_note>
+        Database should have index on (room_id, created_at DESC) for efficient pagination:
+        CREATE INDEX idx_room_rolls ON rolls(room_id, created_at DESC);
+      </indexing_note>
+    </layer>
+  </architectural_context>
+
+  <dependencies>
+    <technical>
+      <dependency type="library">
+        <name>react-window</name>
+        <version>^1.8.0 or latest</version>
+        <purpose>Virtual scrolling for large lists</purpose>
+        <install>npm install react-window @types/react-window</install>
+      </dependency>
+      <dependency type="extends">
+        <story>2-3 through 2-7 (Rolling mechanics)</story>
+        <purpose>Renders results from all rolling stories</purpose>
+      </dependency>
+    </technical>
+
+    <story_dependencies>
+      <depends_on>
+        <story>2-3, 2-4, 2-5, 2-7 (Rolling mechanics)</story>
+        <reason>Optimizes display of rolls from these stories</reason>
+      </depends_on>
+    </story_dependencies>
+
+    <story_enables>
+      <enables>
+        <story>2-11 (Mobile Responsive)</story>
+        <reason>Virtual scrolling essential for mobile performance</reason>
+      </enables>
+    </story_enables>
+  </dependencies>
+
+  <acceptance_criteria_breakdown>
+    <criterion id="1">
+      <text>Roll history displays smoothly (60fps) with 100+ rolls</text>
+      <dev_task>Implement VirtualRollHistory with react-window</dev_task>
+      <test_approach>Performance test: render 100+ rolls, measure frame rate (60fps ±1)</test_approach>
+    </criterion>
+    <criterion id="2">
+      <text>Only visible rolls are rendered (5-10 at a time)</text>
+      <dev_task>Configure react-window FixedSizeList with item height</dev_task>
+      <test_approach>Dev tools inspection: verify only ~10 DOM nodes when 100+ rolls exist</test_approach>
+    </criterion>
+    <criterion id="3">
+      <text>New roll auto-scrolls to bottom of history</text>
+      <dev_task>Hook useEffect to scroll to bottom when rolls.length increases</dev_task>
+      <test_approach>E2E test: roll, verify newest roll visible at bottom without manual scroll</test_approach>
+    </criterion>
+    <criterion id="4">
+      <text>Scroll is smooth and responsive (no jank or stutter)</text>
+      <dev_task>Configure overscan count and item height correctly</dev_task>
+      <test_approach>Manual testing: scroll through history, verify smooth 60fps</test_approach>
+    </criterion>
+    <criterion id="5">
+      <text>Zooming to 200% doesn't break layout or performance</text>
+      <dev_task>Use responsive item heights or calculate dynamically</dev_task>
+      <test_approach>Browser zoom test: zoom to 200%, scroll, verify still 60fps</test_approach>
+    </criterion>
+    <criterion id="6">
+      <text>Pagination works (load older rolls on scroll up)</text>
+      <dev_task>Detect scroll near top, fetch older rolls, prepend to list</dev_task>
+      <test_approach>E2E test: have 100 rolls, scroll to top, auto-load older rolls</test_approach>
+      <optional>Can defer to future if time-constrained</optional>
+    </criterion>
+  </acceptance_criteria_breakdown>
+
+  <tech_decisions>
+    <decision id="VIRT-001">
+      <title>Use react-window for virtual scrolling</title>
+      <implementation>FixedSizeList or VariableList depending on item heights</implementation>
+      <rationale>Industry standard, proven performance, extensive documentation</rationale>
+      <alternatives>react-virtualized (more complex), custom implementation (not recommended)</alternatives>
+    </decision>
+    <decision id="SCROLL-001">
+      <title>Auto-scroll to bottom on new roll (user-friendly)</title>
+      <implementation>useEffect hook scrolls to bottom when rolls.length increases</implementation>
+      <rationale>Users expect latest rolls at bottom, matching chat/messaging app patterns</rationale>
+    </decision>
+    <decision id="HEIGHT-001">
+      <title>Fixed item height (60px) for predictable scrolling</title>
+      <implementation>Each roll entry (notation, result, player name, timestamp) = 60px</implementation>
+      <rationale>Simpler than variable heights, faster rendering. Adjust if design changes.</rationale>
+    </decision>
+  </tech_decisions>
+
+  <known_constraints>
+    <constraint id="PERF-001">
+      <description>Must maintain 60fps when scrolling 1000+ rolls</description>
+      <implication>Virtual scrolling is non-negotiable. Don't render all rolls at once.</implication>
+    </constraint>
+    <constraint id="MEMORY-001">
+      <description>Roll data must fit in memory (Zustand store is in-memory)</description>
+      <implication>For very large sessions (10,000+ rolls), may need to implement pagination to server and lazy-load</implication>
+    </constraint>
+  </known_constraints>
+
+  <environment_setup>
+    <dependencies_to_install>
+      npm install react-window @types/react-window
+    </dependencies_to_install>
+
+    <frontend_changes>
+      - Add: frontend/src/components/VirtualRollHistory.tsx (NEW)
+        - Import FixedSizeList from react-window
+        - Accept rolls array and item renderer function
+        - Configure height, itemSize, overscan
+      - Update: frontend/src/components/RollHistory.tsx
+        - Keep old RollHistory for backward compatibility (used in non-virtualized scenarios)
+        - Or replace with VirtualRollHistory
+      - Update: frontend/src/pages/RoomView.tsx
+        - Use VirtualRollHistory instead of RollHistory
+        - Add useEffect hook for auto-scroll
+      - Add: frontend/src/components/__tests__/VirtualRollHistory.test.tsx (NEW)
+    </frontend_changes>
+
+    <no_backend_changes>Virtual scrolling is frontend-only optimization</no_backend_changes>
+
+    <no_database_changes>No schema changes needed</no_database_changes>
+  </environment_setup>
+
+  <team_notes>
+    <note type="performance">
+      Virtual scrolling is a must-have for any app with scrollable lists. Rendering 100+ DOM nodes severely impacts browser performance. This story is non-optional for good UX.
+    </note>
+    <note type="item_height">
+      The 60px item height is an estimate. Measure actual roll entry height in design and adjust. If items have variable heights (e.g., due to text wrapping), use VariableList instead of FixedSizeList.
+    </note>
+    <note type="auto_scroll">
+      Auto-scroll to bottom is standard UX for chat/message apps but can be annoying if user is reading history. Consider adding a "Scroll to latest" button as fallback.
+    </note>
+    <note type="memory">
+      In-memory roll history is fine up to ~10,000 rolls. Beyond that, implement pagination (load on demand from server). This can be done in a follow-up story.
+    </note>
+  </team_notes>
+
+  <testing_strategy>
+    <unit_tests>
+      <test_file>frontend/src/components/__tests__/VirtualRollHistory.test.tsx (NEW)</test_file>
+      <test_case>test_virtual_roll_history_renders_with_fixed_size_list</test_case>
+      <test_case>test_virtual_roll_history_accepts_100_rolls</test_case>
+      <test_case>test_virtual_roll_history_renders_only_visible_items</test_case>
+    </unit_tests>
+
+    <performance_tests>
+      <test_file>frontend/src/__tests__/roll-history-performance.test.tsx (NEW)</test_file>
+      <test_case>test_render_1000_rolls_in_less_than_500ms</test_case>
+      <test_case>test_scroll_through_1000_rolls_maintains_60fps</test_case>
+      <test_case>test_memory_usage_stable_with_1000_rolls</test_case>
+    </performance_tests>
+
+    <e2e_tests>
+      <test_file>frontend/e2e/virtual-scrolling.spec.ts (NEW)</test_file>
+      <test_case>test_new_roll_auto_scrolls_to_bottom</test_case>
+      <test_case>test_scroll_up_to_older_rolls_and_back_down</test_case>
+      <test_case>test_smooth_scrolling_with_100_rolls</test_case>
+      <test_case>test_two_players_see_shared_roll_history_virtualized</test_case>
+    </e2e_tests>
+  </testing_strategy>
+
+  <success_metrics>
+    <metric name="Frame Rate">
+      <target>60fps ±1 when scrolling through history with 100+ rolls</target>
+      <measurement>DevTools Performance tab, measure frame rate while scrolling</measurement>
+    </metric>
+    <metric name="DOM Nodes">
+      <target>&lt;20 roll DOM nodes visible at any time (even with 1000+ rolls in memory)</target>
+      <measurement>DevTools Elements tab, count actual DOM nodes</measurement>
+    </metric>
+    <metric name="Memory Usage">
+      <target>Stable memory usage (~50MB) even with 1000+ rolls</target>
+      <measurement>DevTools Memory tab, take heap snapshots</measurement>
+    </metric>
+    <metric name="Scroll Responsiveness">
+      <target>&lt;100ms between scroll event and visual update</target>
+      <measurement>Manual testing with stopwatch or performance API</measurement>
+    </metric>
+  </success_metrics>
+
+  <open_questions>
+    <question id="Q1">
+      <text>Should rolls be paginated from the server or all loaded at once?</text>
+      <answer>For MVP, load all rolls at once (easier). After 10,000 rolls, implement lazy loading. Pagination endpoints already exist from Story 2-3.</answer>
+    </question>
+    <question id="Q2">
+      <text>What if items have variable heights (due to text wrapping on small screens)?</text>
+      <answer>Use react-window VariableList instead of FixedSizeList. Slightly less performant but handles variable heights.</answer>
+    </question>
+    <question id="Q3">
+      <text>Should we include a "Jump to Latest" button for when user is scrolled up?</text>
+      <answer>Yes, as a nice-to-have. Show button only when not at bottom, clicking scrolls to latest roll.</answer>
+    </question>
+  </open_questions>
+
+</story_context>
