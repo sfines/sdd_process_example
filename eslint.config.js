@@ -5,7 +5,17 @@ import prettier from 'eslint-plugin-prettier/recommended';
 
 export default [
   {
-    ignores: ['node_modules', 'dist', '.venv', 'build'],
+    ignores: [
+      'node_modules',
+      'dist',
+      '.venv',
+      'build',
+      '.pytest_cache',
+      '.mypy_cache',
+      'htmlcov',
+      '.ruff_cache',
+      '.nox',
+    ],
   },
   {
     files: ['**/*.{js,jsx,mjs}'],

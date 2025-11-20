@@ -2,9 +2,7 @@ name: Build and Push
 
 on:
   push:
-    branches: [main, "feature/**", "bugfix/**", "develop"]
-  pull_request:
-    branches: [main, "feature/**", "bugfix/**", "develop"]
+    branches: [main]
 
 
 jobs:
