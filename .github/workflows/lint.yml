@@ -22,7 +22,7 @@ jobs:
         run: pip install uv
 
       - name: Sync Python dependencies
-        run: uv sync
+        run: uv sync --all-extras
 
       - name: Set up Node
         uses: actions/setup-node@v4
