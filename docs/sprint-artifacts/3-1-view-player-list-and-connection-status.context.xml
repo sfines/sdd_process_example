@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story_context>
+  <metadata>
+    <story_id>3-1</story_id>
+    <story_title>View Player List and Connection Status</story_title>
+    <epic_id>3</epic_id>
+    <epic_title>Session Management & Presence</epic_title>
+    <status>drafted</status>
+    <created_date>2025-11-17T02:41:25.298Z</created_date>
+    <context_generated_at>2025-11-17T02:41:25.298Z</context_generated_at>
+  </metadata>
+
+  <story_summary>
+    Displays a list of all players in the current room with connection status indicators (online/offline). Users can see who's connected, disconnected, or away. This is essential for multiplayer awareness and session presence management.
+  </story_summary>
+
+  <architectural_context>
+    <layer name="backend">
+      <component id="player-presence-tracking">
+        <description>Track player connection status in real-time</description>
+        <responsibility>
+          - Monitor Socket.io connections
+          - Track online/offline state
+          - Update room state when players connect/disconnect
+          - Broadcast presence updates to all players
+        </responsibility>
+        <events>
+          - player:online (player just connected)
+          - player:offline (player just disconnected)
+          - player:away (player idle for 5+ minutes, optional)
+          - player:back (player returns from away state, optional)
+        </events>
+      </component>
+
+      <component id="room-players-api">
+        <description>REST API endpoint to fetch current player list</description>
+        <responsibility>
+          - GET /api/rooms/{roomId}/players
+          - Return: list of players with names, status, join time
+        </responsibility>
+        <response_format>
+          {
+            "players": [
+              {
+                "playerId": "uuid",
+                "name": "Alice",
+                "status": "online",
+                "joinedAt": "2025-11-17T02:41:25.298Z",
+                "lastSeen": "2025-11-17T02:42:00.000Z"
+              },
+              {
+                "playerId": "uuid",
+                "name": "Bob",
+                "status": "offline",
+                "joinedAt": "2025-11-17T02:35:00.000Z",
+                "lastSeen": "2025-11-17T02:39:30.000Z"
+              }
+            ]
+          }
+        </response_format>
+      </component>
+
+      <component id="player-idle-detection">
+        <description>Detect idle players (optional for MVP)</description>
+        <responsibility>
+          - Track last activity timestamp for each player
+          - Mark as "away" if idle >5 minutes
+          - Mark as "online" on next activity
+        </responsibility>
+        <optional>Can defer to future story if time-constrained</optional>
+      </component>
+    </layer>
+
+    <layer name="frontend">
+      <component id="player-list-panel">
+        <description>Sidebar or panel displaying all players</description>
+        <responsibility>
+          - Display list of all players in room
+          - Show connection status (online/offline/away)
+          - Show join time or time since disconnect
+          - Update in real-time as players connect/disconnect
+        </responsibility>
+        <file_path>frontend/src/components/PlayerList.tsx (NEW)</file_path>
+        <mobile_behavior>
+          - On mobile (<768px): Show in drawer (from Story 2-11)
+          - On tablet/desktop: Show in sidebar or right panel
+        </mobile_behavior>
+        <status_indicators>
+          - Online: Green dot, "Online"
+          - Offline: Gray dot, "Offline since 5:30pm"
+          - Away: Yellow dot, "Away for 15 min" (optional)
+        </status_indicators>
+      </component>
+
+      <component id="presence-socket-listener">
+        <description>Listen for player presence events</description>
+        <responsibility>
+          - Subscribe to player:online, player:offline, player:away events
+          - Update local player list in Zustand store
+          - Trigger UI update when presence changes
+        </responsibility>
+        <hook>usePlayerPresence(roomId)</hook>
+        <events_consumed>
+          - player:online (new player connected)
+          - player:offline (player disconnected)
+          - player:away (player idle, optional)
+          - player:back (player returns, optional)
+        </events_consumed>
+      </component>
+
+      <component id="connection-status-badge">
+        <description>Visual indicator for player connection status</description>
+        <responsibility>
+          - Render colored dot (green/gray/yellow)
+          - Show status text ("Online", "Offline", "Away")
+          - Optional: Show time since last change
+        </responsibility>
+        <file_path>frontend/src/components/ConnectionStatusBadge.tsx (NEW)</file_path>
+        <colors>
+          - Online: Green (#10B981)
+          - Offline: Gray (#6B7280)
+          - Away: Yellow (#FBBF24)
+        </colors>
+      </component>
+
+      <component id="room-view-with-players">
+        <description>Integrate PlayerList into RoomView</description>
+        <responsibility>
+          - Add PlayerList to layout (sidebar on desktop, drawer on mobile)
+          - Keep player list in sync with room state
+          - Show player count in header
+        </responsibility>
+        <file_path>frontend/src/pages/RoomView.tsx (update)</file_path>
+        <mobile_note>
+          On mobile, add "Players (3)" button to NavigationDrawer
+          that expands to show PlayerList in drawer
+        </mobile_note>
+      </component>
+    </layer>
+
+    <layer name="data_model">
+      <entity name="Player">
+        <description>Player information in a room</description>
+        <fields>
+          - playerId: UUID (unique identifier)
+          - roomId: UUID (which room)
+          - name: string (display name, e.g., "Alice")
+          - status: enum ("online" | "offline" | "away")
+          - joinedAt: ISO8601 timestamp
+          - lastSeen: ISO8601 timestamp
+          - lastActivity: ISO8601 timestamp (for idle detection)
+        </fields>
+      </entity>
+
+      <entity name="Room" update="true">
+        <new_field name="playerCount">
+          <type>integer</type>
+          <description>Number of currently online players</description>
+        </new_field>
+        <new_field name="players">
+          <type>Player[]</type>
+          <description>Array of all players in room (from GET /players endpoint)</description>
+        </new_field>
+      </entity>
+    </layer>
+  </architectural_context>
+
+  <dependencies>
+    <technical>
+      <dependency type="backend-api">
+        <name>Socket.io room events</name>
+        <requirement>Already in place from Story 1-2</requirement>
+        <new_events>
+          - player:online
+          - player:offline
+          - player:away (optional)
+          - player:back (optional)
+        </new_events>
+      </dependency>
+      <dependency type="backend-api">
+        <name>REST API endpoint</name>
+        <endpoint>GET /api/rooms/{roomId}/players</endpoint>
+        <framework>Express.js or similar</framework>
+      </dependency>
+      <dependency type="frontend-state">
+        <name>Zustand store extension</name>
+        <store>usePlayerStore()</store>
+        <new_state>
+          - players: Player[]
+          - setPlayers: (players: Player[]) => void
+          - updatePlayerStatus: (playerId: string, status: "online" | "offline") => void
+        </new_state>
+      </dependency>
+    </technical>
+
+    <story_dependencies>
+      <depends_on>
+        <story>2-1 (Create a New Room)</story>
+        <reason>Must have a room to display players in</reason>
+      </depends_on>
+      <depends_on>
+        <story>2-2 (Join an Existing Room)</story>
+        <reason>Player joins room, adds to player list</reason>
+      </depends_on>
+      <depends_on>
+        <story>1-2 (Hello World WebSocket)</story>
+        <reason>Socket.io foundation for presence events</reason>
+      </depends_on>
+    </story_dependencies>
+
+    <story_enables>
+      <enables>
+        <story>3-2 (Room Expiration and Warnings)</story>
+        <reason>Shows when room will close due to inactivity</reason>
+      </enables>
+      <enables>
+        <story>3-3 (Kick a Player from a Room)</story>
+        <reason>DM right-clicks player in list to kick</reason>
+      </enables>
+      <enables>
+        <story>4 (Advanced DM Controls)</story>
+        <reason>DM features interact with player list</reason>
+      </enables>
+    </story_enables>
+  </dependencies>
+
+  <acceptance_criteria_breakdown>
+    <criterion id="1">
+      <text>Player list displays all players in room by name</text>
+      <dev_task>Create PlayerList component, fetch from GET /api/rooms/{roomId}/players</dev_task>
+      <test_approach>Component test: pass mock players array, verify all names rendered</test_approach>
+    </criterion>
+    <criterion id="2">
+      <text>Connection status shown for each player (online/offline)</text>
+      <dev_task>Add status field to player object, display with visual indicator</dev_task>
+      <test_approach>Component test: pass players with different statuses, verify indicators show</test_approach>
+    </criterion>
+    <criterion id="3">
+      <text>Status updates in real-time when player connects/disconnects</text>
+      <dev_task>Subscribe to Socket.io player:online and player:offline events</dev_task>
+      <test_approach>E2E test: 2 browsers, one disconnects, verify other sees status change instantly</test_approach>
+    </criterion>
+    <criterion id="4">
+      <text>Green indicator for online players</text>
+      <dev_task>Use green color (#10B981) for online status</dev_task>
+      <test_approach>Visual test or screenshot comparison</test_approach>
+    </criterion>
+    <criterion id="5">
+      <text>Gray indicator for offline players</text>
+      <dev_task>Use gray color (#6B7280) for offline status</dev_task>
+      <test_approach>Visual test or screenshot comparison</test_approach>
+    </criterion>
+    <criterion id="6">
+      <text>Offline player shows time since disconnect</text>
+      <dev_task>Display "Offline since 5:30pm" or similar</dev_task>
+      <test_approach>Component test: pass offline player with lastSeen time, verify format</test_approach>
+    </criterion>
+    <criterion id="7">
+      <text>Player list visible on desktop sidebar</text>
+      <dev_task>Add PlayerList to RoomView layout on desktop</dev_task>
+      <test_approach>Component test at 1200px, verify PlayerList visible on side</test_approach>
+    </criterion>
+    <criterion id="8">
+      <text>Player list accessible via drawer on mobile</text>
+      <dev_task>Add "Players (3)" button to NavigationDrawer, expand to show list</dev_task>
+      <test_approach>Component test at 375px, verify button in drawer, click shows list</test_approach>
+    </criterion>
+    <criterion id="9">
+      <text>Room header shows player count (e.g., "Room: 3 Players")</text>
+      <dev_task>Update Header component to display playerCount</dev_task>
+      <test_approach>Component test: verify "3 Players" displayed in header</test_approach>
+    </criterion>
+    <criterion id="10">
+      <text>Player list persists across page refresh</text>
+      <dev_task>Fetch players from API on RoomView mount</dev_task>
+      <test_approach>E2E test: view player list, refresh, verify list reappears</test_approach>
+    </criterion>
+  </acceptance_criteria_breakdown>
+
+  <tech_decisions>
+    <decision id="PRESENCE-001">
+      <title>Use Socket.io for real-time presence updates</title>
+      <implementation>Broadcast player:online/offline events to room namespace</implementation>
+      <rationale>Real-time, low-latency, already in place from Story 1-2</rationale>
+    </decision>
+    <decision id="STATUS-001">
+      <title>Two status levels for MVP: online and offline</title>
+      <implementation>Simple boolean: online/offline (no "away" state yet)</implementation>
+      <rationale>Simpler implementation, covers main use case. "Away" can be added later.</rationale>
+    </decision>
+    <decision id="DISPLAY-001">
+      <title>Show player list in sidebar on desktop, drawer on mobile</title>
+      <implementation>Conditional rendering based on breakpoint (md: breakpoint)</implementation>
+      <rationale>Maximizes mobile space, standard layout pattern</rationale>
+    </decision>
+    <decision id="COLOR-001">
+      <title>Use green (online) and gray (offline) indicators</title>
+      <implementation>Tailwind colors: green-600, gray-400</implementation>
+      <rationale>Universal convention, accessible for color-blind users (also use shape/text)</rationale>
+    </decision>
+  </tech_decisions>
+
+  <known_constraints>
+    <constraint id="REALTIME-001">
+      <description>Presence updates must be delivered within 1 second of connection change</description>
+      <implication>Socket.io is essential, polling would be too slow</implication>
+    </constraint>
+    <constraint id="SPACE-001">
+      <description>Mobile screen space is limited</description>
+      <implication>Player list in drawer, not main view. Keep compact.</implication>
+    </constraint>
+    <constraint id="ACCURACY-001">
+      <description>Disconnection detection must be accurate (no false positives)</description>
+      <implication>Use Socket.io disconnect event, not timeout-based detection</implication>
+    </constraint>
+  </known_constraints>
+
+  <environment_setup>
+    <backend_changes>
+      - Add: backend/src/websocket/handlers/playerPresence.ts (NEW)
+        - Handle socket.io connect/disconnect events
+        - Emit player:online and player:offline to room
+      - Add: backend/src/routes/players.ts (NEW)
+        - GET /api/rooms/{roomId}/players endpoint
+      - Update: backend/src/models/Player.ts (create if not exists)
+        - Fields: playerId, name, status, joinedAt, lastSeen
+      - Database migration:
+        - Create or update players table
+        - Add index on (room_id, status)
+    </backend_changes>
+
+    <frontend_changes>
+      - Add: frontend/src/components/PlayerList.tsx (NEW)
+      - Add: frontend/src/components/ConnectionStatusBadge.tsx (NEW)
+      - Update: frontend/src/pages/RoomView.tsx
+        - Add PlayerList to layout
+        - Conditional rendering by breakpoint
+      - Update: frontend/src/hooks/usePlayerStore.ts (NEW)
+        - Zustand store for player data
+      - Update: frontend/src/hooks/usePlayerPresence.ts (NEW)
+        - Subscribe to Socket.io presence events
+      - Update: frontend/src/components/NavigationDrawer.tsx
+        - Add "Players (N)" expandable section
+      - Add: frontend/src/components/__tests__/PlayerList.test.tsx (NEW)
+      - Add: frontend/src/hooks/__tests__/usePlayerPresence.test.ts (NEW)
+    </frontend_changes>
+
+    <database_schema>
+      CREATE TABLE IF NOT EXISTS players (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+        name VARCHAR(100) NOT NULL,
+        status VARCHAR(20) DEFAULT 'online',
+        joined_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        last_seen TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        last_activity TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_room_players (room_id, status),
+        INDEX idx_last_seen (last_seen)
+      );
+    </database_schema>
+  </environment_setup>
+
+  <team_notes>
+    <note type="disconnect">
+      Socket.io automatically emits a "disconnect" event when a connection is lost. Listen for this and broadcast player:offline to the room immediately.
+    </note>
+    <note type="status">
+      Keep status field simple for MVP (online/offline). Adding "away" or "idle" states is a natural extension but adds complexity. Defer if needed.
+    </note>
+    <note type="colors">
+      Use both color and text for status indicators (not just color) for accessibility. "Green dot = Online" and "Online" text together.
+    </note>
+    <note type="mobile">
+      On mobile, player list should be in NavigationDrawer (from Story 2-11) as an expandable section. Don't remove it to a separate page.
+    </note>
+    <note type="performance">
+      Fetching player list on room join is fast (small number of players). No pagination needed for typical sessions (max ~20 players).
+    </note>
+  </team_notes>
+
+  <testing_strategy>
+    <unit_tests>
+      <test_file>frontend/src/components/__tests__/PlayerList.test.tsx (NEW)</test_file>
+      <test_case>test_player_list_renders_all_players</test_case>
+      <test_case>test_online_player_shows_green_indicator</test_case>
+      <test_case>test_offline_player_shows_gray_indicator</test_case>
+      <test_case>test_offline_player_shows_disconnect_time</test_case>
+
+      <test_file>backend/tests/playerPresence.test.ts (NEW)</test_file>
+      <test_case>test_player_join_broadcasts_player_online_event</test_case>
+      <test_case>test_player_disconnect_broadcasts_player_offline_event</test_case>
+    </unit_tests>
+
+    <integration_tests>
+      <test_file>frontend/src/__tests__/player-presence.integration.test.tsx (NEW)</test_file>
+      <test_case>test_socket_listener_updates_zustand_store_on_event</test_case>
+      <test_case>test_player_list_updates_when_store_changes</test_case>
+    </integration_tests>
+
+    <e2e_tests>
+      <test_file>frontend/e2e/player-presence.spec.ts (NEW)</test_file>
+      <test_case>test_player_a_sees_player_b_join_room_in_real_time</test_case>
+      <test_case>test_player_a_sees_player_b_disconnect_in_real_time</test_case>
+      <test_case>test_two_players_see_each_other_in_player_list</test_case>
+      <test_case>test_player_list_shows_correct_count_for_multiple_players</test_case>
+      <test_case>test_mobile_player_list_in_drawer</test_case>
+      <test_case>test_desktop_player_list_in_sidebar</test_case>
+    </e2e_tests>
+  </testing_strategy>
+
+  <success_metrics>
+    <metric name="Presence Latency">
+      <target>&lt;500ms from disconnect to status update visible</target>
+      <measurement>E2E test with timing</measurement>
+    </metric>
+    <metric name="Accuracy">
+      <target>100% of players correctly shown as online/offline</target>
+      <measurement>E2E test with multiple players</measurement>
+    </metric>
+    <metric name="Code Coverage">
+      <target>&gt;80% for PlayerList and presence logic</target>
+      <measurement>Jest coverage report</measurement>
+    </metric>
+  </success_metrics>
+
+  <open_questions>
+    <question id="Q1">
+      <text>Should we show "Away" status for idle players (no activity >5 min)?</text>
+      <answer>For MVP, no. Just online/offline. "Away" can be added in future.</answer>
+    </question>
+    <question id="Q2">
+      <text>Should we show last activity time (e.g., "Last rolled 2 min ago")?</text>
+      <answer>Optional nice-to-have. For MVP, just online/offline is sufficient.</answer>
+    </question>
+    <question id="Q3">
+      <text>Should we show player avatars or just names?</text>
+      <answer>Just names for MVP. Avatars can be added in future.</answer>
+    </question>
+  </open_questions>
+
+</story_context>

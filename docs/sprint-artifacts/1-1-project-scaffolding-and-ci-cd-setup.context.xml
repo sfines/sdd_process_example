@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.1</storyId>
+    <title>Project Scaffolding and CI/CD Setup</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-16T22:18:18.235Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/1-1-project-scaffolding-and-ci-cd-setup.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Developer</asA>
+    <iWant>a complete project structure with a basic CI/CD pipeline</iWant>
+    <soThat>I can build, test, and deploy a "Hello World" version of the application</soThat>
+    <tasks>
+      <task n="1">Project Initialization - Initialize from fastapi/full-stack-fastapi-template, remove auth system</task>
+      <task n="2">Backend Dockerfile - Multi-stage, Python 3.11-slim, FastAPI + Uvicorn</task>
+      <task n="3">Frontend Dockerfile - Multi-stage, Node 20 Alpine build + Nginx Alpine runtime</task>
+      <task n="4">Docker Compose - Backend, frontend, redis services with proper networking</task>
+      <task n="5">GitHub Actions Linting - ruff + mypy (backend), eslint + tsc (frontend)</task>
+      <task n="6">GitHub Actions Type-Checking - strict mypy for Python, tsc for TypeScript</task>
+      <task n="7">GitHub Actions Testing - pytest + vitest for unit tests</task>
+      <task n="8">GitHub Actions Build - Docker build and push to GHCR on main merge</task>
+      <task n="9">Workflow Verification - Test all workflows pass on develop and main branches</task>
+      <task n="10">Documentation - README with setup instructions, CONTRIBUTING.md with guidelines</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Monorepo structure exists with backend/ and frontend/ directories</criterion>
+    <criterion id="2">Backend Dockerfile is multi-stage, uses python:3.11-slim, runs FastAPI via Uvicorn</criterion>
+    <criterion id="3">Frontend Dockerfile is multi-stage, uses node:20-alpine for build, nginx:alpine for serving</criterion>
+    <criterion id="4">docker-compose.yml defines backend, frontend, and redis services with proper networking</criterion>
+    <criterion id="5">docker-compose up starts all services without errors and app is accessible at http://localhost</criterion>
+    <criterion id="6">GitHub Actions workflow runs on develop branch: ruff check (0 errors) + mypy (0 errors) for Python</criterion>
+    <criterion id="7">GitHub Actions workflow runs on develop branch: eslint (0 errors) + tsc (0 errors) for TypeScript</criterion>
+    <criterion id="8">GitHub Actions workflow runs on develop branch: pytest (all pass) + vitest (all pass)</criterion>
+    <criterion id="9">Merge to main branch triggers Docker build and push to GHCR for both backend and frontend images</criterion>
+    <criterion id="10">Linting and type-checking are strict—no warnings allowed, all workflows fail on violations</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-1.md</path>
+        <title>Epic 1 Technical Specification</title>
+        <section>Detailed Design, Dependencies and Integrations</section>
+        <snippet>Backend Dockerfile should be multi-stage, using python:3.11-slim as base. Frontend Dockerfile should be multi-stage, using node:20-alpine for build and nginx:alpine for serving. docker-compose.yml should define backend, frontend, and redis services.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Technology Stack, System Architecture</section>
+        <snippet>Backend Stack: FastAPI 0.104+, Uvicorn 0.24+, Python 3.11+. Frontend Stack: React 18.2+, TypeScript 5.3+, Vite 5.0+. Infrastructure: Docker 24+, Docker Compose 2.23+, GitHub Actions CI/CD.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Project Classification, Technical Requirements</section>
+        <snippet>Stack: Backend Python + FastAPI + python-socketio, Frontend TypeScript + React + Socket.io-client, State Redis, Infrastructure Docker + GitHub Actions CI/CD + VPS</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <codeArtifact>
+        <path>.github/workflows/</path>
+        <kind>workflow_directory</kind>
+        <symbol>GitHub Actions workflows</symbol>
+        <reason>Create lint.yml, type-check.yml, test.yml, build.yml workflows per AC requirements</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/Dockerfile</path>
+        <kind>dockerfile</kind>
+        <symbol>Backend container definition</symbol>
+        <reason>Multi-stage build for Python FastAPI service (AC 2)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/Dockerfile</path>
+        <kind>dockerfile</kind>
+        <symbol>Frontend container definition</symbol>
+        <reason>Multi-stage build for React SPA served via Nginx (AC 3)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>docker-compose.yml</path>
+        <kind>orchestration_config</kind>
+        <symbol>Docker Compose service definition</symbol>
+        <reason>Define backend, frontend, redis services with networking (AC 4, 5)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>README.md</path>
+        <kind>documentation</kind>
+        <symbol>Project setup documentation</symbol>
+        <reason>Provide setup instructions and quick start (Task 11)</reason>
+      </codeArtifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="python">
+        <package name="fastapi" version="0.104+" purpose="REST API framework" />
+        <package name="uvicorn" version="0.24+" purpose="ASGI server" />
+        <package name="pytest" version="7.4+" purpose="Python unit testing" />
+        <package name="ruff" version="latest" purpose="Python linting" />
+        <package name="mypy" version="latest" purpose="Python type checking" />
+      </ecosystem>
+      <ecosystem name="nodejs">
+        <package name="react" version="18.2+" purpose="UI library" />
+        <package name="typescript" version="5.3+" purpose="Type safety" />
+        <package name="vite" version="5.0+" purpose="Build tool" />
+        <package name="vitest" version="1.0+" purpose="Unit testing" />
+        <package name="eslint" version="latest" purpose="JavaScript linting" />
+      </ecosystem>
+      <ecosystem name="infrastructure">
+        <package name="docker" version="24+" purpose="Containerization" />
+        <package name="docker-compose" version="2.23+" purpose="Multi-container orchestration" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Use full-stack FastAPI template as foundation (ADR-001); monorepo structure with backend/ and frontend/ directories</constraint>
+    <constraint type="build">Dockerfiles must be multi-stage for efficiency; base images: python:3.11-slim (backend), node:20-alpine + nginx:alpine (frontend)</constraint>
+    <constraint type="ci_cd">GitHub Actions workflows must pass on develop (lint, type-check, test) and main (Docker build/push)</constraint>
+    <constraint type="code_quality">Linting/type-checking are strict: ruff, mypy, eslint, tsc must pass with zero errors/warnings</constraint>
+    <constraint type="dependencies">Pin to exact major versions per architecture.md; test compatibility before merging</constraint>
+    <constraint type="development">Use docker-compose for local development; all services must start without errors</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Docker Compose Services</name>
+      <kind>service_network</kind>
+      <signature>backend:8000, frontend:80, redis:6379 on same Docker network</signature>
+      <path>docker-compose.yml</path>
+      <reason>All services must be resolvable by hostname for inter-service communication (AC 4, 5)</reason>
+    </interface>
+    <interface>
+      <name>GitHub Actions Workflow Triggers</name>
+      <kind>ci_cd_event</kind>
+      <signature>Trigger on: push to develop (lint, test), merge to main (Docker build)</signature>
+      <path>.github/workflows/</path>
+      <reason>Automate code quality checks and image deployment (AC 6-9)</reason>
+    </interface>
+    <interface>
+      <name>Application Entry Points</name>
+      <kind>endpoint</kind>
+      <signature>Frontend: http://localhost/, Backend: http://localhost:8000</signature>
+      <path>docker-compose.yml, backend/main.py, frontend/src/App.tsx</path>
+      <reason>Users access frontend via port 80; backend internally accessible for Socket.io (AC 5)</reason>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit tests use pytest (backend) and vitest (frontend). All tests must pass in CI before merge. Aim for 80% backend coverage, 60% frontend coverage. Write tests during implementation, not after. Test critical paths and error handling.
+    </standards>
+    <locations>
+      <location>backend/tests/</location>
+      <location>frontend/tests/</location>
+      <location>.github/workflows/test.yml (CI execution)</location>
+    </locations>
+    <ideas>
+      <idea acId="2">Test that backend Dockerfile builds successfully without errors</idea>
+      <idea acId="3">Test that frontend Dockerfile builds successfully without errors</idea>
+      <idea acId="5">Test that docker-compose up brings up all services without errors; curl http://localhost returns 200/HTML</idea>
+      <idea acId="6">Test ruff linting passes on all Python files; mypy type-checking passes</idea>
+      <idea acId="7">Test eslint linting passes on all TypeScript/JavaScript files; tsc type-checking passes</idea>
+      <idea acId="8">Test pytest backend tests all pass; vitest frontend tests all pass</idea>
+      <idea acId="9">Test that Docker images are built and pushed to GHCR on main merge with correct tags</idea>
+    </ideas>
+  </tests>
+</story-context>

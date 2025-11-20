@@ -191,6 +191,14 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
+# Node modules
+node_modules/
+
+# IDE settings
+.idea/
+.devcontainer/
+.gemini/
+
 # PyPI configuration file
 .pypirc
 
@@ -205,3 +213,4 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+.pnpm-store/

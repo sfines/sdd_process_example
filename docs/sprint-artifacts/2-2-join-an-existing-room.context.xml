@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.2</storyId>
+    <title>Join an Existing Room</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-17T02:24:09.391Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-2-join-an-existing-room.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>join an existing game room using a room code</iWant>
+    <soThat>I can play with my friends</soThat>
+    <tasks>
+      <task n="1">Frontend Join Room Form - Room code and player name inputs on Home page</task>
+      <task n="2">Backend Join Room Validation - Verify room exists, capacity check (&lt;8 players)</task>
+      <task n="3">Backend Socket.io Handler - join_room event with player_joined broadcast</task>
+      <task n="4">Backend Room Query Methods - get_room(), room_exists(), get_room_capacity()</task>
+      <task n="5">Frontend Socket.io Handler - join_room event emission and room_joined listening</task>
+      <task n="6">Frontend PlayerList Component - Display connected players with status</task>
+      <task n="7">Frontend Room View Integration - Load full room state on join</task>
+      <task n="8">Pydantic Models - Player, JoinRoomRequest, JoinRoomResponse</task>
+      <task n="9">Integration Tests - Join validation, capacity, sanitization</task>
+      <task n="10">E2E Test (Playwright) - 2-browser flow: create room + join from second browser</task>
+      <task n="11">Error Handling - Specific error toasts for not found, full, invalid format</task>
+      <task n="12">Manual Testing & Documentation - Verification and README updates</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Home Screen displays "Room Code" input field and "Player Name" input field for joining</criterion>
+    <criterion id="2">Entering a valid room code and player name → Click "Join" → Successfully added to room</criterion>
+    <criterion id="3">Room code validation: Backend verifies room exists in Redis before allowing join</criterion>
+    <criterion id="4">Capacity validation: Backend rejects joins when room has 8 players (capacity full)</criterion>
+    <criterion id="5">Player list visible in Room View showing all connected players in room</criterion>
+    <criterion id="6">All other players in room receive "player_joined" event with new player's name</criterion>
+    <criterion id="7">Roll history loaded and displayed for joining player (shows all rolls so far in room)</criterion>
+    <criterion id="8">Player name sanitized (html.escape) to prevent XSS on join</criterion>
+    <criterion id="9">New player assigned unique player_id (UUID) on join</criterion>
+    <criterion id="10">Player connection status tracked (connected/disconnected) for all players in room</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Workflows and Sequencing, Data Models, APIs and Interfaces</section>
+        <snippet>Room Join Flow: Validate room exists, check capacity (&lt;8 players), add player to players array, broadcast player_joined event. Room state: room_code (key), players array, roll_history. Player model: player_id (UUID), name, joined_at timestamp, connected status.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/2-1-create-a-new-room.md</path>
+        <title>Story 2.1: Create a New Room (Drafted)</title>
+        <section>Tasks, Dev Notes, Project Structure</section>
+        <snippet>Story 2.1 establishes RoomManager, Redis hash pattern, Socket.io event handlers, Home page, Room View. Story 2.2 reuses these: extend RoomManager with join_room() method, extend Socket.io handlers, extend Home page with Join section, add PlayerList component to Room View.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Technology Stack, System Architecture, ADRs</section>
+        <snippet>ADR-002: Socket.io broadcasting events to room members. ADR-003: Redis hash per room; players stored as JSON array. ADR-006: Zustand for frontend room state. ADR-007: Tailwind CSS responsive layout.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <codeArtifact>
+        <path>backend/app/services/room_manager.py</path>
+        <kind>service_module</kind>
+        <symbol>RoomManager class extended with join_room(), get_room(), room_exists() methods</symbol>
+        <reason>Core business logic for room joining with validation: room exists check, capacity enforcement, player addition (AC 3, 4, 9)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/app/event_handlers.py</path>
+        <kind>event_handler</kind>
+        <symbol>@sio.event join_room handler with player_joined broadcast</symbol>
+        <reason>Socket.io event handler for room joining; broadcasts player_joined event to all room members (AC 2, 6)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/app/models.py</path>
+        <kind>data_model</kind>
+        <symbol>Player, JoinRoomRequest, JoinRoomResponse Pydantic models</symbol>
+        <reason>Type-safe models for player data and join requests; Player includes player_id, name, joined_at, connected status (AC 9, 10)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/pages/Home.tsx</path>
+        <kind>react_page</kind>
+        <symbol>Home page updated with Join Room section</symbol>
+        <reason>Extend Home page (from Story 2.1) with room code input, player name input, Join button (AC 1)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/components/PlayerList.tsx</path>
+        <kind>react_component</kind>
+        <symbol>PlayerList component rendering all players in room</symbol>
+        <reason>Display player list with connection status badges (AC 5, 10)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/pages/RoomView.tsx</path>
+        <kind>react_page</kind>
+        <symbol>RoomView updated to integrate PlayerList component</symbol>
+        <reason>Render room code header, PlayerList, and roll history placeholder (AC 5, 7)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/hooks/useSocket.ts</path>
+        <kind>custom_hook</kind>
+        <symbol>useSocket hook extended with join_room() and player_joined listener</symbol>
+        <reason>Socket.io event handling for room joining; listen for room_joined response and player_joined broadcasts (AC 2, 6)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/store/socketStore.ts</path>
+        <kind>state_store</kind>
+        <symbol>Zustand store extended with players array and join state</symbol>
+        <reason>Persist joined players list in global state; update on player_joined broadcast (AC 5, 10)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/e2e/join-room.spec.ts</path>
+        <kind>e2e_test</kind>
+        <symbol>Playwright E2E test for 2-browser join flow</symbol>
+        <reason>Validate full multiplayer flow: Browser A creates room, Browser B joins via code, both see same room and players (AC 2, 5, 6)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/tests/test_room_joining.py</path>
+        <kind>integration_test</kind>
+        <symbol>Integration tests for room joining with Redis</symbol>
+        <reason>Verify room validation, capacity enforcement, player addition, sanitization, unique player IDs (AC 3, 4, 8, 9)</reason>
+      </codeArtifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="python">
+        <package name="redis" version="5.0+" purpose="Query room capacity, update players array" />
+        <package name="pydantic" version="2.5+" purpose="Player, JoinRoomRequest, JoinRoomResponse models" />
+        <package name="python-socketio" version="5.10+" purpose="join_room handler, player_joined broadcast" />
+        <package name="structlog" version="23.2+" purpose="Structured logging for join events" />
+        <package name="uuid" version="builtin" purpose="Generate unique player_id for each joiner" />
+        <package name="pytest" version="7.4+" purpose="Integration testing" />
+      </ecosystem>
+      <ecosystem name="nodejs">
+        <package name="socket.io-client" version="4.6+" purpose="Emit join_room event, listen for room_joined/player_joined" />
+        <package name="zustand" version="4.4+" purpose="Store joined players list" />
+        <package name="react" version="18.2+" purpose="PlayerList component, Home form" />
+        <package name="typescript" version="5.3+" purpose="Type-safe Player interface" />
+        <package name="tailwindcss" version="3.4+" purpose="PlayerList styling, responsive layout" />
+        <package name="vitest" version="1.0+" purpose="Unit testing for PlayerList component" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Extend RoomManager from Story 2.1; implement Socket.io broadcast pattern per ADR-002; extend Zustand store for players</constraint>
+    <constraint type="backend">Validate room exists (GET from Redis), enforce 8-player capacity, generate unique player_id (UUID), sanitize player name, refresh TTL on join</constraint>
+    <constraint type="frontend">Update Home page with Join section (consistent styling with Create); extend Room View with PlayerList; handle navigation to room on successful join</constraint>
+    <constraint type="performance">Room join validation must succeed within 200ms (p95); broadcast player_joined to all room members in &lt;500ms</constraint>
+    <constraint type="security">Sanitize player names on backend (html.escape); validate room code format; never expose player list until joined; enforce capacity limit</constraint>
+    <constraint type="testing">E2E test with 2 concurrent browsers; test capacity limit (8-player rejection); test invalid room code rejection; 80% backend coverage, 60% frontend</constraint>
+    <constraint type="ui">Room code input format validation (WORD-#### pattern); error toasts for "not found", "full", "invalid format"; Player list shows connection status</constraint>
+    <constraint type="logging">Log all join attempts (success and failure) with room_code, player_name, player_id, error reason if applicable</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Socket.io join_room Event</name>
+      <kind>websocket_event</kind>
+      <signature>Client emits: { room_code: string, player_name: string }; Server responds: { room_joined: { player_id, room_state } } or { error: string }</signature>
+      <path>backend/app/event_handlers.py, frontend/src/hooks/useSocket.ts</path>
+      <reason>Core event for room joining; server validates and adds player, broadcasts to room (AC 2, 6)</reason>
+    </interface>
+    <interface>
+      <name>Socket.io player_joined Event (Broadcast)</name>
+      <kind>websocket_event</kind>
+      <signature>Server broadcasts to room: { player_joined: { player_id, name, joined_at } }</signature>
+      <path>backend/app/event_handlers.py, frontend/src/hooks/useSocket.ts</path>
+      <reason>Notify all room members when new player joins; triggers frontend PlayerList update (AC 5, 6)</reason>
+    </interface>
+    <interface>
+      <name>RoomManager.join_room() Method</name>
+      <kind>class_interface</kind>
+      <signature>join_room(room_code: str, player_name: str) -> RoomState; Raises: RoomNotFoundError, RoomCapacityExceededError</signature>
+      <path>backend/app/services/room_manager.py</path>
+      <reason>Backend service logic for room joining; validates room and capacity, adds player, returns updated state (AC 3, 4, 9)</reason>
+    </interface>
+    <interface>
+      <name>PlayerList React Component</name>
+      <kind>react_component_interface</kind>
+      <signature>Props: { players: Player[] }; Renders: list with player name, joined_at, connection status badge</signature>
+      <path>frontend/src/components/PlayerList.tsx</path>
+      <reason>Display all room members with status; highlights current user (AC 5, 10)</reason>
+    </interface>
+    <interface>
+      <name>Player Data Model</name>
+      <kind>data_structure</kind>
+      <signature>{ player_id: UUID, name: string, joined_at: ISO8601, connected: bool }</signature>
+      <path>backend/app/models.py</path>
+      <reason>Persistent player representation; stored in room.players array (AC 9, 10)</reason>
+    </interface>
+    <interface>
+      <name>Room Capacity Validation</name>
+      <kind>business_rule</kind>
+      <signature>Max 8 players per room; enforce on backend in join_room() method; return RoomCapacityExceededError if full</signature>
+      <path>backend/app/services/room_manager.py</path>
+      <reason>Enforce game design constraint; prevent overflow (AC 4)</reason>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Backend: pytest with Redis test fixtures; test join_room() method with valid/invalid room codes, at-capacity scenarios, player uniqueness. Frontend: vitest for PlayerList component rendering; mock Socket.io for hook behavior. E2E: Playwright with 2 concurrent browser instances to validate multi-player flow. Manual: Create room in Browser A, copy code, join in Browser B, verify both see same room and player list.
+    </standards>
+    <locations>
+      <location>backend/tests/test_room_joining.py (integration tests with Redis)</location>
+      <location>backend/tests/test_models.py (Player model validation)</location>
+      <location>frontend/src/components/__tests__/PlayerList.test.tsx (component tests)</location>
+      <location>frontend/src/hooks/__tests__/useSocket.test.ts (join_room hook tests)</location>
+      <location>frontend/e2e/join-room.spec.ts (2-browser E2E test)</location>
+      <location>.github/workflows/test.yml (CI execution)</location>
+    </locations>
+    <ideas>
+      <idea acId="1">Unit test: Home component renders Join form with room code and name inputs</idea>
+      <idea acId="2">E2E test: Enter valid room code and name, click Join, verify room loaded</idea>
+      <idea acId="3">Integration test: join_room() queries Redis for room existence</idea>
+      <idea acId="3">Integration test: RoomNotFoundError raised for non-existent room code</idea>
+      <idea acId="4">Integration test: join_room() counts existing players and rejects if &gt;= 8</idea>
+      <idea acId="4">E2E test: Attempt to join with 8 players already in room, verify error: "Room is full"</idea>
+      <idea acId="5">Unit test: PlayerList component renders all players with names</idea>
+      <idea acId="5">E2E test: Both players in room see same player list with both names</idea>
+      <idea acId="6">Integration test: player_joined broadcast sent to all other room members</idea>
+      <idea acId="6">E2E test: Browser A sees new player appear in list when Browser B joins</idea>
+      <idea acId="7">E2E test: Joining player sees existing roll history (deferred detail to Story 2.3)</idea>
+      <idea acId="8">Unit test: sanitize_player_name() escapes HTML in join requests</idea>
+      <idea acId="8">Integration test: XSS payload in name is sanitized before storing in Redis</idea>
+      <idea acId="9">Integration test: Each joined player assigned unique UUID player_id</idea>
+      <idea acId="9">Unit test: Player model validates player_id is UUID format</idea>
+      <idea acId="10">Unit test: PlayerList shows connection status badge (🟢 connected)</idea>
+      <idea acId="10">Integration test: Player.connected set to true on join</idea>
+    </ideas>
+  </tests>
+</story-context>

@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story_context>
+  <metadata>
+    <story_id>2-4</story_id>
+    <story_title>Roll All Standard Dice Types</story_title>
+    <epic_id>2</epic_id>
+    <epic_title>Core Dice Rolling - D&D Mechanics</epic_title>
+    <status>drafted</status>
+    <created_date>2025-11-17T02:41:25.298Z</created_date>
+    <context_generated_at>2025-11-17T02:41:25.298Z</context_generated_at>
+  </metadata>
+
+  <story_summary>
+    Extends basic 1d20 rolling to support all standard D&D dice types: d4, d6, d8, d10, d12, d20, d100. Users can now roll any single die type, which is essential for damage rolls, skill checks, and other mechanics.
+  </story_summary>
+
+  <architectural_context>
+    <layer name="backend">
+      <component id="dice-engine-extended">
+        <description>Extends DiceService to support all dice types</description>
+        <responsibility>
+          - Parse notation for d4, d6, d8, d10, d12, d20, d100
+          - Validate die size (1-100)
+          - Generate random in correct range (1 to die_size)
+          - Reuse existing roll framework from Story 2-3
+        </responsibility>
+        <supported_notation>
+          1d4, 1d6, 1d8, 1d10, 1d12, 1d20, 1d100
+          (All with form: 1dN where N is die size)
+        </supported_notation>
+        <validation>
+          - Die size must be in [4, 6, 8, 10, 12, 20, 100]
+          - Reject unsupported dice (e.g., 1d5, 1d30)
+          - Error message: "Unsupported die size. Use d4, d6, d8, d10, d12, d20, or d100"
+        </validation>
+      </component>
+
+      <component id="roll-history-filtering">
+        <description>Support filtering rolls by die type in history</description>
+        <responsibility>
+          - GET /api/rooms/{roomId}/rolls?dieType=d20
+          - Support filtering by notation pattern
+        </responsibility>
+        <optional>Can be deferred to future story if time-constrained</optional>
+      </component>
+    </layer>
+
+    <layer name="frontend">
+      <component id="dice-dropdown">
+        <description>Quick-select dropdown for common dice</description>
+        <responsibility>
+          - Display buttons or dropdown: d4, d6, d8, d10, d12, d20, d100
+          - Clicking a button sets DiceInput value to "1dX"
+          - Maintains manual input option for flexibility
+        </responsibility>
+        <file_path>frontend/src/components/DiceSelector.tsx</file_path>
+        <ui_layout>
+          [d4] [d6] [d8] [d10] [d12] [d20] [d100]
+          Or as dropdown menu on mobile (see Story 2-11)
+        </ui_layout>
+        <state_management>Update DiceInput value, let user submit</state_management>
+      </component>
+
+      <component id="roll-history-icons">
+        <description>Visual indicators for die type in history</description>
+        <responsibility>
+          - Show die icon or badge next to each roll
+          - Display notation prominently (e.g., "1d20")
+          - Color-code dice types (optional: d20 red, d6 blue, etc.)
+        </responsibility>
+        <file_path>frontend/src/components/RollResult.tsx (update)</file_path>
+      </component>
+    </layer>
+
+    <layer name="data_model">
+      <no_changes>
+        Same Roll entity as Story 2-3. The notation field already supports all dice types.
+      </no_changes>
+    </layer>
+  </architectural_context>
+
+  <dependencies>
+    <technical>
+      <dependency type="extends">
+        <story>2-3 (Basic Dice Roll 1d20)</story>
+        <extension>Add support for d4, d6, d8, d10, d12, d100 to existing DiceService</extension>
+      </dependency>
+      <dependency type="reuse">
+        <component>DiceInput component (reuse from 2-3)</component>
+        <change>Add DiceSelector component as quick-access buttons</change>
+      </dependency>
+      <dependency type="reuse">
+        <component>RollResult component (reuse from 2-3)</component>
+        <change>Add die type icon/badge display</change>
+      </dependency>
+    </technical>
+
+    <story_dependencies>
+      <depends_on>
+        <story>2-3 (Basic Dice Roll 1d20)</story>
+        <reason>Foundation for all dice rolling. Uses same DiceService pattern.</reason>
+      </depends_on>
+      <depends_on>
+        <story>2-1, 2-2 (Room creation/joining)</story>
+        <reason>Still need room context</reason>
+      </depends_on>
+    </story_dependencies>
+
+    <story_enables>
+      <enables>
+        <story>2-5 (Advantage/Disadvantage)</story>
+        <reason>Supports rolling multiple d20s with different semantics</reason>
+      </enables>
+      <enables>
+        <story>2-7 (Multiple Dice in Single Roll)</story>
+        <reason>Foundation for 3d6, 4d8, etc.</reason>
+      </enables>
+    </story_enables>
+  </dependencies>
+
+  <acceptance_criteria_breakdown>
+    <criterion id="1">
+      <text>User can roll d4, d6, d8, d10, d12, d20, d100 via input</text>
+      <dev_task>Update DiceService to accept any die size in [4,6,8,10,12,20,100]</dev_task>
+      <test_approach>Unit test: verify roll returns value in correct range for each die type</test_approach>
+    </criterion>
+    <criterion id="2">
+      <text>Invalid dice (d3, d5, d30) are rejected with error message</text>
+      <dev_task>Add validation before rolling, return 400 error</dev_task>
+      <test_approach>Unit test: test invalid notation, verify error thrown</test_approach>
+    </criterion>
+    <criterion id="3">
+      <text>Quick-select buttons for common dice appear in UI</text>
+      <dev_task>Create DiceSelector component with 7 buttons</dev_task>
+      <test_approach>Component test: verify 7 buttons render, clicking updates input</test_approach>
+    </criterion>
+    <criterion id="4">
+      <text>Roll history shows die type (e.g., "1d6") clearly</text>
+      <dev_task>Update RollResult to display notation prominently</dev_task>
+      <test_approach>Component test: pass various notations, verify display</test_approach>
+    </criterion>
+    <criterion id="5">
+      <text>Rolls broadcast to room correctly for all die types</text>
+      <dev_task>Reuse Socket.io from Story 2-3, no changes needed</dev_task>
+      <test_approach>E2E test: roll each die type, verify other player receives</test_approach>
+    </criterion>
+    <criterion id="6">
+      <text>Rolls persist correctly for all die types</text>
+      <dev_task>Database already supports this via JSONB, no schema change</dev_task>
+      <test_approach>E2E test: roll each type, refresh, verify still visible</test_approach>
+    </criterion>
+  </acceptance_criteria_breakdown>
+
+  <tech_decisions>
+    <decision id="DICE-001">
+      <title>Support only standard D&D dice (no d3, d7, etc.)</title>
+      <implementation>Whitelist [4, 6, 8, 10, 12, 20, 100] in validation</implementation>
+      <rationale>Matches D&D 5e spec, keeps UI simple with 7 quick-select buttons</rationale>
+      <future_extension>If user requests non-standard dice, add support in a later feature</future_extension>
+    </decision>
+    <decision id="UI-001">
+      <title>Quick-select buttons for dice discovery</title>
+      <implementation>DiceSelector component with 7 buttons</implementation>
+      <rationale>Reduces manual typing, improves UX for non-technical users</rationale>
+      <mobile_note>On mobile (<768px), consider dropdown or scrollable button row (Story 2-11)</mobile_note>
+    </decision>
+  </tech_decisions>
+
+  <known_constraints>
+    <constraint id="COMPAT-001">
+      <description>Must maintain backward compatibility with 1d20 notation from Story 2-3</description>
+      <implication>Existing roll history should still work</implication>
+    </constraint>
+    <constraint id="UI-001">
+      <description>Mobile layout must fit 7 dice buttons without overflow (Story 2-11)</description>
+      <implication>Use responsive button sizing or dropdown menu</implication>
+    </constraint>
+  </known_constraints>
+
+  <environment_setup>
+    <backend_changes>
+      - Update: backend/src/services/DiceService.ts
+        - Extend roll() to accept dieSize parameter
+        - Add validation for [4, 6, 8, 10, 12, 20, 100]
+      - Add: backend/src/services/DiceValidator.ts (optional, for clean separation)
+    </backend_changes>
+
+    <frontend_changes>
+      - Add: frontend/src/components/DiceSelector.tsx (NEW)
+      - Update: frontend/src/components/DiceInput.tsx (add default values, validation)
+      - Update: frontend/src/components/RollResult.tsx (add die type display)
+      - Add: frontend/src/components/__tests__/DiceSelector.test.tsx (NEW)
+    </frontend_changes>
+
+    <no_database_changes>
+      Schema from Story 2-3 already supports all dice types via notation field.
+    </no_database_changes>
+  </environment_setup>
+
+  <team_notes>
+    <note type="design">
+      Consider color-coding the quick-select buttons by die type if design system supports it. This creates nice visual grouping and helps users remember which die is which.
+    </note>
+    <note type="backend">
+      The DiceService.roll(dieSize) function should remain pure. Test with a seeded RNG to verify correctness without relying on crypto randomness in unit tests.
+    </note>
+    <note type="validation">
+      Perform validation both on frontend (for quick feedback) and backend (for security). Frontend validation helps UX, backend validation prevents attacks.
+    </note>
+    <note type="mobile">
+      The 7 quick-select buttons might not fit on a 375px mobile screen. Plan ahead with DiceSelector for responsive behavior (horizontal scroll, dropdown, or hide on mobile).
+    </note>
+  </team_notes>
+
+  <testing_strategy>
+    <unit_tests>
+      <test_file>backend/tests/DiceService.test.ts (update)</test_file>
+      <test_case>test_dice_service_rolls_d4_in_range_1_to_4</test_case>
+      <test_case>test_dice_service_rolls_d6_in_range_1_to_6</test_case>
+      <test_case>test_dice_service_rolls_d100_in_range_1_to_100</test_case>
+      <test_case>test_dice_service_rejects_invalid_die_size</test_case>
+      <test_case>test_dice_service_validates_all_standard_dice</test_case>
+
+      <test_file>frontend/src/components/__tests__/DiceSelector.test.tsx (NEW)</test_file>
+      <test_case>test_dice_selector_renders_7_buttons</test_case>
+      <test_case>test_clicking_button_updates_dice_input_value</test_case>
+      <test_case>test_button_labels_match_die_types</test_case>
+    </unit_tests>
+
+    <integration_tests>
+      <test_file>frontend/src/__tests__/dice-all-types.integration.test.tsx (NEW)</test_file>
+      <test_case>test_roll_each_die_type_from_selector</test_case>
+      <test_case>test_roll_history_displays_all_die_types_correctly</test_case>
+    </integration_tests>
+
+    <e2e_tests>
+      <test_file>frontend/e2e/dice-types.spec.ts (NEW)</test_file>
+      <test_case>test_roll_d4_and_see_result_1_to_4</test_case>
+      <test_case>test_roll_d100_and_see_result_1_to_100</test_case>
+      <test_case>test_two_players_roll_different_dice_types</test_case>
+      <test_case>test_invalid_dice_notation_shows_error</test_case>
+    </e2e_tests>
+  </testing_strategy>
+
+  <success_metrics>
+    <metric name="Code Reuse">
+      <target>80%+ of DiceService logic unchanged from Story 2-3</target>
+      <measurement>Manual code review</measurement>
+    </metric>
+    <metric name="Test Coverage">
+      <target>&gt;85% for DiceService and DiceSelector</target>
+      <measurement>Jest coverage report</measurement>
+    </metric>
+    <metric name="User Acceptance">
+      <target>Quick-select buttons reduce manual typing by 80%</target>
+      <measurement>User testing or analytics (future)</measurement>
+    </metric>
+  </success_metrics>
+
+  <open_questions>
+    <question id="Q1">
+      <text>Should we support percentile dice (d%) notation or just d100?</text>
+      <answer>Support both "1d100" and "1d%" as equivalent. Add alias in validator.</answer>
+    </question>
+    <question id="Q2">
+      <text>Do we need to store die type as a separate field, or is notation sufficient?</text>
+      <answer>Notation is sufficient for now. If filtering by die type becomes common, normalize in future.</answer>
+    </question>
+  </open_questions>
+
+</story_context>
