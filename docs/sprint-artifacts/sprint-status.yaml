@@ -38,7 +38,7 @@ development_status:
   # Epic 1: Initial Product Skeleton
   epic-1: contexted
   1-1-project-scaffolding-and-ci-cd-setup: done
-  1-2-hello-world-websocket-connection: in-progress
+  1-2-hello-world-websocket-connection: done
   epic-1-retrospective: optional
 
   # Epic 2: Core Dice Rolling & Room Experience
