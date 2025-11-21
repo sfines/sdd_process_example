@@ -5,8 +5,9 @@ import Home from '../pages/Home';
 
 // Mock the socket store
 vi.mock('../store/socketStore', () => ({
-  default: vi.fn(() => ({
+  useSocketStore: vi.fn(() => ({
     createRoom: vi.fn(),
+    joinRoom: vi.fn(),
     connectionError: null,
   })),
 }));
