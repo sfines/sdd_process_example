@@ -13,11 +13,13 @@ dependencies = [
     "python-socketio>=5.10.0",
     "aiofiles>=23.2.0",
     "redis>=5.0.0",
+    "structlog>=24.0.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
     "mypy>=1.7.0",
     "ruff>=0.1.0",
     "pre-commit>=3.5.0",
@@ -53,6 +55,8 @@ testpaths = ["backend/tests", "backend/src"]
 python_files = ["test_*.py"]
 addopts = "-v"
 pythonpath = ["backend/src"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.hatch.build.targets.wheel]
 packages = ["backend/src/sdd_process_example"]
