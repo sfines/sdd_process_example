@@ -3,7 +3,6 @@
 import pytest
 from socketio import AsyncServer
 
-from sdd_process_example.models import HelloMessage, WorldMessage
 from sdd_process_example.socket_manager import connect, disconnect, hello_message, sio
 
 
