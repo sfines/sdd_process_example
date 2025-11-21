@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "local-memory": {
+      "command": "/opt/homebrew/bin/local-memory",
+      "args": ["--mcp"]
+    },
+
+    "docs-mcp-server": {
+      "command": "npx",
+      "args": ["@arabold/docs-mcp-server@latest"],
+      "env": {
+        "OPENAI_API_KEY": "ollama",
+        "OPENAI_API_BASE": "http://localhost:11434/v1",
+        "DOCS_MCP_EMBEDDING_MODEL": "nomic-embed-text"
+      }
+    },
+    "CopilotKit MCP": {
+      "url": "https://mcp.copilotkit.ai/sse"
+    }
+  }
+}
