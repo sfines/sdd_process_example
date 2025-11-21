@@ -14,6 +14,7 @@
 **Testability Assessment:** ✅ **PASS** with minor recommendations
 
 **Key Findings:**
+
 - Architecture is highly testable with clear boundaries
 - WebSocket real-time requirements demand specialized testing approach
 - Security testability is strong (server-side rolls, proper auth)
@@ -31,6 +32,7 @@
 **Can we control system state for testing?**
 
 **✅ Strengths:**
+
 - **State Factories**: Valkey (Redis) allows direct state seeding via API
   - Create room state programmatically for any test scenario
   - Seed roll history without UI interaction
@@ -46,6 +48,7 @@
   - File-based SQLite for E2E (cleared via script)
 
 **✅ Testable Scenarios:**
+
 - Create room in any state (Open, DM-led, expired)
 - Inject specific roll results for validation
 - Simulate player disconnect/reconnect
@@ -53,6 +56,7 @@
 - Test hidden roll reveal flows
 
 **⚠️ Minor Concern:**
+
 - WebSocket reconnection backoff requires time manipulation
   - **Mitigation**: Use Playwright clock mocking (`page.clock.fastForward()`)
   - Already planned in architecture
@@ -66,6 +70,7 @@
 **Can we inspect system state and validate outcomes?**
 
 **✅ Strengths:**
+
 - **Structured Logging**: `structlog` provides JSON logs
   - All events logged: room create, join, roll, disconnect
   - Correlation IDs for tracing player actions
@@ -83,6 +88,7 @@
   - Screenshots on failure
 
 **✅ Observable State:**
+
 - Room state (players, rolls, DC, mode) via API or Redis query
 - Player connection status via WebSocket events
 - Roll history complete and immutable
@@ -90,6 +96,7 @@
 - Frontend state via Zustand DevTools
 
 **⚠️ Minor Concern:**
+
 - Real-time synchronization latency hard to observe precisely
   - **Mitigation**: Log timestamps on client and server for delta calculation
   - Already planned: NFR-P1 targets < 500ms (p95)
@@ -103,6 +110,7 @@
 **Are tests isolated, deterministic, and reproducible?**
 
 **✅ Strengths:**
+
 - **Test Isolation**: Each test gets unique room code
   - No shared state between tests
   - Valkey can run in test mode (separate DB index)
@@ -120,12 +128,14 @@
   - Docker Compose tear-down clears Valkey state
 
 **✅ Reproducible Scenarios:**
+
 - Room creation always generates unique code
 - Rolls deterministic when RNG mocked
 - Disconnect/reconnect flows repeatable via clock mocking
 - Kick tracking isolated per room
 
 **⚠️ Minor Concern:**
+
 - WebSocket race conditions in multi-player scenarios
   - **Mitigation**: Use sequence numbers for deterministic ordering (already in architecture)
   - Test with artificial delays to expose races
@@ -136,8 +146,8 @@
 
 ### 1.4 Overall Testability Rating
 
-| Dimension       | Score | Status | Notes                                      |
-| --------------- | ----- | ------ | ------------------------------------------ |
+| Dimension       | Score | Status  | Notes                                      |
+| --------------- | ----- | ------- | ------------------------------------------ |
 | Controllability | 9/10  | ✅ PASS | Excellent state control via Valkey + mocks |
 | Observability   | 9/10  | ✅ PASS | Strong logging + error tracking            |
 | Reliability     | 9/10  | ✅ PASS | Isolated tests, deterministic waits        |
@@ -160,17 +170,20 @@
 All dice rolls must propagate to all players in under 500ms (95th percentile). Slow sync degrades player experience and trust.
 
 **Testability Analysis:**
+
 - ✅ Can simulate load with k6 (50 rooms, 8 players each)
 - ✅ Can measure latency via server/client timestamps
 - ✅ Can inject network delays via Playwright throttling
 - ⚠️ Requires realistic load testing environment (staging)
 
 **Test Approach:**
+
 - **Load Testing (k6):** Simulate 400 concurrent users, measure p95 latency
 - **E2E Testing (Playwright):** Network throttling to simulate 3G/4G, measure sync time
 - **Integration Testing:** Direct WebSocket event timing (no UI)
 
 **Mitigation:**
+
 - Optimize WebSocket event serialization (msgpack vs JSON)
 - Redis pipelining for batch operations
 - WebSocket connection pooling (if needed)
@@ -191,16 +204,19 @@ All dice rolls must propagate to all players in under 500ms (95th percentile). S
 All rolls must be generated server-side using `secrets.SystemRandom()` to prevent client manipulation.
 
 **Testability Analysis:**
+
 - ✅ Easy to test: Client cannot influence roll outcome
 - ✅ Can verify entropy via statistical tests (chi-squared)
 - ✅ Can mock RNG for deterministic tests
 
 **Test Approach:**
+
 - **Unit Testing:** Mock `secrets.SystemRandom()`, verify call count and params
 - **Integration Testing:** Generate 10,000 rolls, verify distribution (chi-squared test)
 - **Security Testing:** Attempt client-side manipulation, verify server rejects
 
 **Mitigation:**
+
 - None required (Python's `secrets` is FIPS 140-2 compliant)
 - Document RNG choice in security audit section
 
@@ -220,16 +236,19 @@ All rolls must be generated server-side using `secrets.SystemRandom()` to preven
 Rooms must auto-expire to prevent Valkey memory exhaustion and zombie rooms.
 
 **Testability Analysis:**
+
 - ✅ Can mock time via Playwright clock (`page.clock.fastForward()`)
 - ✅ Can verify Redis TTL directly
 - ✅ Can test expiration warnings (3 min, 30 sec)
 
 **Test Approach:**
+
 - **Integration Testing:** Create room, fast-forward clock, verify expiration event
 - **E2E Testing:** Verify users see warnings and disconnection message
 - **Load Testing:** Verify no memory leaks over 8-hour soak test
 
 **Mitigation:**
+
 - Redis TTL + EXPIRE command (built-in)
 - Background job for cleanup verification (weekly)
 
@@ -249,16 +268,19 @@ Rooms must auto-expire to prevent Valkey memory exhaustion and zombie rooms.
 DM-led rooms must tolerate DM disconnection for 60 seconds before terminating room.
 
 **Testability Analysis:**
+
 - ✅ Can simulate disconnect via Playwright (`page.context().setOffline(true)`)
 - ✅ Can fast-forward clock to test grace period
 - ✅ Can verify reconnection restores state
 
 **Test Approach:**
+
 - **E2E Testing:** Disconnect DM, wait 30s, reconnect → Verify room survives
 - **E2E Testing:** Disconnect DM, wait 61s → Verify room terminates
 - **Integration Testing:** Test WebSocket reconnection logic
 
 **Mitigation:**
+
 - Socket.io automatic reconnection (built-in)
 - Grace period timer in backend (clear on reconnect)
 
@@ -278,16 +300,19 @@ DM-led rooms must tolerate DM disconnection for 60 seconds before terminating ro
 Roll permalinks must persist for 30 days, then expire gracefully with user-friendly message.
 
 **Testability Analysis:**
+
 - ✅ Can mock database timestamps for expiration testing
 - ✅ Can verify cleanup job runs correctly
 - ✅ Can test expired permalink page renders correctly
 
 **Test Approach:**
+
 - **Unit Testing:** Test cleanup job logic (filter old records)
 - **Integration Testing:** Create permalink, mock expiration, verify deletion
 - **E2E Testing:** Access expired permalink, verify "Link expired" message
 
 **Mitigation:**
+
 - Daily cron job for cleanup (standard pattern)
 - SQLite `created_at` timestamp indexed for fast queries
 
@@ -303,11 +328,13 @@ Based on architecture (real-time WebSocket app with React frontend, FastAPI back
 ### 3.1 Recommended Test Split
 
 **Target Distribution:**
+
 - **Unit:** 50% (business logic, dice rolling, state management)
 - **Integration:** 30% (WebSocket flows, API contracts, Valkey interactions)
 - **E2E:** 20% (critical user journeys, visual validation)
 
 **Rationale:**
+
 - Real-time architecture requires heavy integration testing (WebSocket flows)
 - Business logic (dice rolling, room state) benefits from fast unit tests
 - UI is relatively simple → Lower E2E percentage
@@ -329,18 +356,21 @@ Based on architecture (real-time WebSocket app with React frontend, FastAPI back
 ### 3.3 Test Environment Requirements
 
 **Local Development:**
+
 - Docker Compose (backend, frontend, Valkey, SQLite in-memory)
 - Playwright for E2E (headed mode for debugging)
 - Pytest for backend unit/integration
 - Vitest for frontend unit tests
 
 **CI Pipeline:**
+
 - GitHub Actions with matrix strategy (Node 24, Python 3.13)
 - Valkey service container
 - SQLite file-based (cleared between runs)
 - Playwright sharding (4 workers for parallel E2E)
 
 **Staging:**
+
 - VPS with production-like environment
 - k6 load testing (50 rooms, 400 users)
 - Sentry error tracking enabled
@@ -356,20 +386,21 @@ Based on architecture (real-time WebSocket app with React frontend, FastAPI back
 
 **Test Scenarios:**
 
-| Scenario                        | Test Level  | Priority | Tool       |
-| ------------------------------- | ----------- | -------- | ---------- |
-| Server-side roll generation     | Integration | P0       | Pytest     |
-| Client cannot manipulate rolls  | E2E         | P0       | Playwright |
-| Rate limiting (room creation)   | Integration | P1       | Pytest     |
-| Rate limiting (roll spam)       | Integration | P1       | Pytest     |
-| XSS prevention (player names)   | E2E         | P1       | Playwright |
-| SQL injection (room codes)      | Integration | P1       | Pytest     |
-| Session security (HttpOnly)     | E2E         | P1       | Playwright |
-| WSS enforcement (TLS)           | E2E         | P2       | Playwright |
-| Input sanitization (modifiers)  | Unit        | P1       | Pytest     |
-| CAPTCHA on room creation        | E2E         | P2       | Playwright |
+| Scenario                       | Test Level  | Priority | Tool       |
+| ------------------------------ | ----------- | -------- | ---------- |
+| Server-side roll generation    | Integration | P0       | Pytest     |
+| Client cannot manipulate rolls | E2E         | P0       | Playwright |
+| Rate limiting (room creation)  | Integration | P1       | Pytest     |
+| Rate limiting (roll spam)      | Integration | P1       | Pytest     |
+| XSS prevention (player names)  | E2E         | P1       | Playwright |
+| SQL injection (room codes)     | Integration | P1       | Pytest     |
+| Session security (HttpOnly)    | E2E         | P1       | Playwright |
+| WSS enforcement (TLS)          | E2E         | P2       | Playwright |
+| Input sanitization (modifiers) | Unit        | P1       | Pytest     |
+| CAPTCHA on room creation       | E2E         | P2       | Playwright |
 
 **Pass Criteria:**
+
 - ✅ PASS: All P0/P1 security tests green
 - ⚠️ CONCERNS: P2 failures with documented waivers
 - ❌ FAIL: Any P0 security test fails (blocks release)
@@ -382,18 +413,19 @@ Based on architecture (real-time WebSocket app with React frontend, FastAPI back
 
 **Test Scenarios:**
 
-| Scenario                      | Tool       | Threshold     | Priority | Environment |
-| ----------------------------- | ---------- | ------------- | -------- | ----------- |
-| Roll sync latency (p95)       | k6         | < 500ms       | P0       | Staging     |
-| Concurrent rooms (50+)        | k6         | No errors     | P0       | Staging     |
-| Concurrent players (400+)     | k6         | No errors     | P0       | Staging     |
-| Room expiration (5 hours)     | k6         | Memory stable | P1       | Staging     |
-| Virtual scrolling (500+ rolls)| Playwright | 60fps         | P1       | Local       |
-| Initial load (3G)             | Playwright | < 2s          | P1       | Local       |
-| Reconnection time             | Playwright | < 3s          | P1       | Local       |
-| Valkey memory usage           | k6         | < 500MB       | P2       | Staging     |
+| Scenario                       | Tool       | Threshold     | Priority | Environment |
+| ------------------------------ | ---------- | ------------- | -------- | ----------- |
+| Roll sync latency (p95)        | k6         | < 500ms       | P0       | Staging     |
+| Concurrent rooms (50+)         | k6         | No errors     | P0       | Staging     |
+| Concurrent players (400+)      | k6         | No errors     | P0       | Staging     |
+| Room expiration (5 hours)      | k6         | Memory stable | P1       | Staging     |
+| Virtual scrolling (500+ rolls) | Playwright | 60fps         | P1       | Local       |
+| Initial load (3G)              | Playwright | < 2s          | P1       | Local       |
+| Reconnection time              | Playwright | < 3s          | P1       | Local       |
+| Valkey memory usage            | k6         | < 500MB       | P2       | Staging     |
 
 **Pass Criteria:**
+
 - ✅ PASS: All P0/P1 thresholds met with profiling evidence
 - ⚠️ CONCERNS: P1 threshold within 10% of limit (e.g., p95 = 480ms)
 - ❌ FAIL: Any P0 threshold breached
@@ -404,16 +436,16 @@ Based on architecture (real-time WebSocket app with React frontend, FastAPI back
 // tests/nfr/performance.k6.js
 export const options = {
   stages: [
-    { duration: '2m', target: 50 },  // Ramp to 50 concurrent rooms
-    { duration: '5m', target: 50 },  // Sustain load
+    { duration: '2m', target: 50 }, // Ramp to 50 concurrent rooms
+    { duration: '5m', target: 50 }, // Sustain load
   ],
   thresholds: {
-    'http_req_duration': ['p(95)<500'],  // Roll sync < 500ms (p95)
-    'errors': ['rate<0.01'],             // Error rate < 1%
+    http_req_duration: ['p(95)<500'], // Roll sync < 500ms (p95)
+    errors: ['rate<0.01'], // Error rate < 1%
   },
 };
 
-export default function() {
+export default function () {
   // Create room, join, roll, verify latency
 }
 ```
@@ -437,6 +469,7 @@ export default function() {
 | SQLite corruption recovery         | Integration | P2       | Pytest     |
 
 **Pass Criteria:**
+
 - ✅ PASS: All P0 reliability tests green
 - ⚠️ CONCERNS: P1 failures with documented recovery paths
 - ❌ FAIL: Any P0 reliability test fails
@@ -449,16 +482,17 @@ export default function() {
 
 **Targets:**
 
-| Metric                  | Target | Tool               | Priority |
-| ----------------------- | ------ | ------------------ | -------- |
-| Backend unit coverage   | ≥80%   | pytest-cov         | P0       |
-| Frontend unit coverage  | ≥60%   | vitest --coverage  | P1       |
+| Metric                     | Target | Tool               | Priority |
+| -------------------------- | ------ | ------------------ | -------- |
+| Backend unit coverage      | ≥80%   | pytest-cov         | P0       |
+| Frontend unit coverage     | ≥60%   | vitest --coverage  | P1       |
 | E2E critical path coverage | 100%   | Playwright reports | P0       |
-| Code duplication        | <5%    | jscpd, radon       | P2       |
-| Structured logging      | 100%   | structlog audit    | P1       |
-| Error tracking enabled  | 100%   | Sentry integration | P1       |
+| Code duplication           | <5%    | jscpd, radon       | P2       |
+| Structured logging         | 100%   | structlog audit    | P1       |
+| Error tracking enabled     | 100%   | Sentry integration | P1       |
 
 **Pass Criteria:**
+
 - ✅ PASS: Backend ≥80%, frontend ≥60%, E2E critical paths 100%
 - ⚠️ CONCERNS: Coverage within 5% of target
 - ❌ FAIL: Backend <70% or E2E gaps in critical paths
@@ -469,29 +503,33 @@ export default function() {
 
 ### 5.1 Infrastructure Needs
 
-| Environment | Purpose               | Components                              | Cost     |
-| ----------- | --------------------- | --------------------------------------- | -------- |
-| **Local**   | Development + Unit    | Docker Compose, Valkey, SQLite in-memory| Free     |
-| **CI**      | Automated testing     | GitHub Actions, Valkey container, SQLite| Free     |
-| **Staging** | Load + Integration    | VPS (DigitalOcean), Valkey, PostgreSQL  | $20/mo   |
-| **Prod**    | Beta testing          | Google CloudRun, managed Valkey         | Variable |
+| Environment | Purpose            | Components                               | Cost     |
+| ----------- | ------------------ | ---------------------------------------- | -------- |
+| **Local**   | Development + Unit | Docker Compose, Valkey, SQLite in-memory | Free     |
+| **CI**      | Automated testing  | GitHub Actions, Valkey container, SQLite | Free     |
+| **Staging** | Load + Integration | VPS (DigitalOcean), Valkey, PostgreSQL   | $20/mo   |
+| **Prod**    | Beta testing       | Google CloudRun, managed Valkey          | Variable |
 
 ### 5.2 Tool Requirements
 
 **Backend:**
+
 - Python 3.13+, pytest, pytest-cov, pytest-asyncio
 - python-socketio, FastAPI test client
 - Bandit (SAST), safety (dependency scanning)
 
 **Frontend:**
+
 - Node 24 LTS, Vitest, Testing Library
 - Playwright (E2E), eslint, prettier
 - Tailwind CSS (no runtime JS)
 
 **Load Testing:**
+
 - k6 (OSS), Locust (optional backup)
 
 **Observability:**
+
 - structlog (JSON logs), Sentry (error tracking)
 - UptimeRobot (free uptime monitoring)
 
@@ -510,6 +548,7 @@ export default function() {
 WebSocket tests can be flaky due to timing issues, race conditions, and network variability.
 
 **Mitigation:**
+
 1. **Network-First Pattern:** Intercept responses BEFORE triggering actions
    - `const promise = page.waitForResponse('**/api/roll'); await page.click('button'); await promise;`
 2. **Deterministic Waits:** Use Playwright's auto-waiting (no `sleep()`)
@@ -533,6 +572,7 @@ WebSocket tests can be flaky due to timing issues, race conditions, and network 
 iOS Safari has known issues with viewport units, scrolling, and touch events.
 
 **Mitigation:**
+
 1. **Explicit Safari Testing:** Use BrowserStack or real device testing (Week 8)
 2. **Fallback Patterns:** Use `vh` sparingly, prefer `min-height: 100%`
 3. **Touch Target Sizing:** Minimum 44x44px (WCAG compliant)
@@ -555,6 +595,7 @@ iOS Safari has known issues with viewport units, scrolling, and touch events.
 Single-server architecture cannot scale beyond ~50 concurrent rooms without refactoring.
 
 **Mitigation:**
+
 1. **Deferred to Phase 2:** Horizontal scaling not needed for MVP (Steve's D&D group = 1 room)
 2. **Load Testing Evidence:** Week 8 load tests validate 50-room capacity
 3. **Future-Proof Design:** Stateless backend enables future load balancing
@@ -574,6 +615,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 **Purpose:** Initialize Playwright + pytest test infrastructure
 
 **Actions:**
+
 1. Install Playwright with TypeScript config
 2. Configure pytest with async support (`pytest-asyncio`)
 3. Set up fixture architecture (factories, cleanup)
@@ -581,6 +623,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 5. Add CI workflow template (runs on push to `develop`)
 
 **Deliverables:**
+
 - `playwright.config.ts` with baseURL, timeout, trace settings
 - `pytest.ini` with async support and coverage thresholds
 - `vitest.config.ts` for frontend component tests
@@ -595,6 +638,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 **Purpose:** Automate test execution on every push
 
 **Actions:**
+
 1. GitHub Actions matrix (Python 3.13, Node 24)
 2. Valkey service container in CI
 3. Playwright sharding (4 workers)
@@ -602,6 +646,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 5. Burn-in loops for flaky test detection (optional)
 
 **Deliverables:**
+
 - CI pipeline runs on push to `develop`
 - E2E tests run in parallel (4 shards)
 - Coverage reports uploaded to GitHub
@@ -616,6 +661,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 **Purpose:** Prove E2E testing infrastructure works
 
 **Test Scenario:**
+
 1. Start backend + frontend via Docker Compose
 2. Open browser with Playwright
 3. Verify homepage loads
@@ -628,6 +674,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 10. Verify Player 2 sees roll in <500ms
 
 **Acceptance Criteria:**
+
 - Test passes consistently (3/3 runs)
 - Execution time < 30 seconds
 - No flaky failures
@@ -640,6 +687,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 ### 8.1 Solutioning Gate Check (Current Phase)
 
 **Pass Criteria:**
+
 - ✅ **Testability:** All 3 dimensions (controllability, observability, reliability) ≥8/10
 - ✅ **ASRs Identified:** All architecturally significant requirements risk-scored
 - ✅ **Test Strategy:** Test levels strategy defined (unit/integration/E2E split)
@@ -653,6 +701,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 ### 8.2 Sprint 0 Gate Check (Week 1)
 
 **Pass Criteria:**
+
 - ✅ Playwright + pytest + Vitest frameworks initialized
 - ✅ CI pipeline runs tests on every push
 - ✅ Walking skeleton E2E test passes (create → join → roll)
@@ -664,6 +713,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 ### 8.3 Production Readiness Gate (Week 10)
 
 **Pass Criteria:**
+
 - ✅ All P0 tests pass (security, performance, reliability)
 - ✅ All P1 tests ≥95% pass rate
 - ✅ No high-priority risks (score ≥6) unmitigated

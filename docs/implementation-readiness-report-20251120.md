@@ -19,6 +19,7 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 - **Testability Validated**: System-level test design confirms architecture is highly testable (9/10 rating)
 
 **Conditions for Proceeding:**
+
 1. Address 2 minor sequencing issues in Epic breakdown (Story 2.6 duplicated as 6.1)
 2. Clarify mobile testing timeline vs iOS Safari validation in Week 8
 3. Consider adding explicit NFR validation stories to Epic 1 or 2
@@ -36,12 +37,14 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 **Target:** 8-10 week timeline with beta test in Week 8
 
 **Technology Stack:**
+
 - Backend: Python 3.13 + FastAPI + python-socketio
 - Frontend: React 18 + TypeScript + Vite + Tailwind CSS
 - State: Valkey (Redis fork) for rooms, SQLite for permalinks
 - Deployment: Docker + GitHub Actions + Google CloudRun
 
 **Success Criteria:**
+
 - Complete 3-hour D&D session with Steve's gaming group
 - <500ms roll synchronization latency (p95)
 - <3 minor issues during session
@@ -53,17 +56,18 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 
 ### Documents Reviewed
 
-| Document | Status | File Path | Lines | Quality |
-|----------|--------|-----------|-------|---------|
-| **PRD** | ✅ Present | `docs/PRD.md` | 711 | Excellent - comprehensive, detailed NFRs |
-| **Architecture** | ✅ Present | `docs/architecture.md` | ~900 | Excellent - 10 ADRs, clear patterns |
-| **Epics** | ✅ Present | `docs/epics.md` | 927 | Excellent - 6 epics, detailed stories |
-| **Test Design** | ✅ Present | `docs/test-design-system.md` | ~400 | Excellent - system-level testability review |
-| **Product Brief** | ✅ Present | `docs/product-brief-dnd-dice-roller-2025-11-15.md` | (referenced) | Complete - discovery phase |
-| **UX Design** | ○ Not Found | N/A | N/A | Conditional - not required (simple UI) |
-| **Tech Spec** | ○ Not Found | N/A | N/A | Not needed - BMad Method uses Architecture |
+| Document          | Status      | File Path                                          | Lines        | Quality                                     |
+| ----------------- | ----------- | -------------------------------------------------- | ------------ | ------------------------------------------- |
+| **PRD**           | ✅ Present  | `docs/PRD.md`                                      | 711          | Excellent - comprehensive, detailed NFRs    |
+| **Architecture**  | ✅ Present  | `docs/architecture.md`                             | ~900         | Excellent - 10 ADRs, clear patterns         |
+| **Epics**         | ✅ Present  | `docs/epics.md`                                    | 927          | Excellent - 6 epics, detailed stories       |
+| **Test Design**   | ✅ Present  | `docs/test-design-system.md`                       | ~400         | Excellent - system-level testability review |
+| **Product Brief** | ✅ Present  | `docs/product-brief-dnd-dice-roller-2025-11-15.md` | (referenced) | Complete - discovery phase                  |
+| **UX Design**     | ○ Not Found | N/A                                                | N/A          | Conditional - not required (simple UI)      |
+| **Tech Spec**     | ○ Not Found | N/A                                                | N/A          | Not needed - BMad Method uses Architecture  |
 
 **Track-Specific Expectations Met:**
+
 - BMad Method (Brownfield): ✅ PRD + Architecture + Epics + Test Design present
 - No tech-spec needed (that's Quick Flow pattern)
 - UX design optional for this project type (simple UI, no complex flows)
@@ -71,6 +75,7 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 ### Document Analysis Summary
 
 **PRD Analysis:**
+
 - **Scope:** Clear MVP vs Growth Features vs Vision boundaries
 - **Requirements:** 10 functional requirement groups (FR1-FR10) with 68 detailed sub-requirements
 - **NFRs:** 5 categories (Performance, Security, Scalability, Reliability, Accessibility) with measurable thresholds
@@ -80,6 +85,7 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 - **Data Models:** Detailed TypeScript interfaces for Room, Player, Roll, etc.
 
 **Architecture Analysis:**
+
 - **Pattern:** Client-Server Real-Time with WebSocket (Socket.io)
 - **ADRs:** 10 documented decisions (template selection, WebSocket pattern, state storage, permalinks, security, frontend state, styling, deployment, observability, testing)
 - **Technology Stack:** Fully specified with versions and rationale
@@ -89,6 +95,7 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 - **Implementation Roadmap:** Week-by-week plan (Weeks 1-10)
 
 **Epics Analysis:**
+
 - **Epic Count:** 6 epics covering complete user journey
 - **Story Count:** ~25 stories (estimated from Epic 1-2 examples)
 - **Coverage:** All FR1-FR10 mapped to epics
@@ -97,6 +104,7 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 - **Technical Notes:** Detailed implementation guidance per story
 
 **Test Design Analysis:**
+
 - **Mode:** System-level testability review (Phase 3)
 - **Testability Rating:** 9/10 (Controllability: 9/10, Observability: 9/10, Reliability: 9/10)
 - **ASRs:** 5 architecturally significant requirements identified with risk scores
@@ -115,30 +123,31 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 
 **Requirements → Architectural Support:**
 
-| PRD Requirement | Architecture Decision | Status |
-|-----------------|----------------------|--------|
-| FR1: Dice Rolling (all types) | Server-side generation with `secrets.SystemRandom()` | ✅ Covered |
-| FR2: Room Management | Valkey hash per room, TTL-based expiration | ✅ Covered |
-| FR3: Player Management | UUID-based identity, session tracking | ✅ Covered |
-| FR4: Roll History | Valkey persistence, virtual scrolling | ✅ Covered |
-| FR5/FR6: DM Features/Open Mode | Room mode enum, DM privileges in state | ✅ Covered |
-| FR7: Permalinks | SQLite with 30-day TTL, REST API endpoint | ✅ Covered |
-| FR8: Roll Presets | Frontend localStorage (explicitly scoped) | ✅ Covered |
-| FR9: User Interface | React + Tailwind + Zustand state management | ✅ Covered |
-| FR10: Connection Resilience | Socket.io auto-reconnect, exponential backoff | ✅ Covered |
+| PRD Requirement                | Architecture Decision                                | Status     |
+| ------------------------------ | ---------------------------------------------------- | ---------- |
+| FR1: Dice Rolling (all types)  | Server-side generation with `secrets.SystemRandom()` | ✅ Covered |
+| FR2: Room Management           | Valkey hash per room, TTL-based expiration           | ✅ Covered |
+| FR3: Player Management         | UUID-based identity, session tracking                | ✅ Covered |
+| FR4: Roll History              | Valkey persistence, virtual scrolling                | ✅ Covered |
+| FR5/FR6: DM Features/Open Mode | Room mode enum, DM privileges in state               | ✅ Covered |
+| FR7: Permalinks                | SQLite with 30-day TTL, REST API endpoint            | ✅ Covered |
+| FR8: Roll Presets              | Frontend localStorage (explicitly scoped)            | ✅ Covered |
+| FR9: User Interface            | React + Tailwind + Zustand state management          | ✅ Covered |
+| FR10: Connection Resilience    | Socket.io auto-reconnect, exponential backoff        | ✅ Covered |
 
 **NFR → Architectural Support:**
 
-| NFR Category | Architecture Decision | Status |
-|--------------|----------------------|--------|
-| NFR-P1: <500ms latency | Socket.io native rooms, Redis pipelining | ✅ Covered |
-| NFR-P2: 50 concurrent rooms | Single VPS with load testing validation (Week 8) | ✅ Covered |
-| NFR-S1-S8: Security | WSS, rate limiting, input sanitization, HttpOnly cookies | ✅ Covered |
-| NFR-R1-R5: Reliability | Redis AOF, grace periods, fallback modes | ✅ Covered |
-| NFR-A1-A5: Accessibility | WCAG 2.1 AA, keyboard nav, ARIA live regions | ✅ Covered |
-| NFR-D1-D8: DevOps | Docker, GitHub Actions, structured logging, monitoring | ✅ Covered |
+| NFR Category                | Architecture Decision                                    | Status     |
+| --------------------------- | -------------------------------------------------------- | ---------- |
+| NFR-P1: <500ms latency      | Socket.io native rooms, Redis pipelining                 | ✅ Covered |
+| NFR-P2: 50 concurrent rooms | Single VPS with load testing validation (Week 8)         | ✅ Covered |
+| NFR-S1-S8: Security         | WSS, rate limiting, input sanitization, HttpOnly cookies | ✅ Covered |
+| NFR-R1-R5: Reliability      | Redis AOF, grace periods, fallback modes                 | ✅ Covered |
+| NFR-A1-A5: Accessibility    | WCAG 2.1 AA, keyboard nav, ARIA live regions             | ✅ Covered |
+| NFR-D1-D8: DevOps           | Docker, GitHub Actions, structured logging, monitoring   | ✅ Covered |
 
 **Architectural Additions Beyond PRD:**
+
 - ADR-001: Template selection (foundational decision, appropriate)
 - ADR-009: Sentry error tracking (enhances observability, appropriate)
 - ADR-010: TDD strategy (quality practice, appropriate)
@@ -151,20 +160,21 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 
 **Requirements Coverage Matrix:**
 
-| PRD Section | Epic Coverage | Status |
-|-------------|---------------|--------|
-| FR1: Dice Rolling Engine | Epic 2 (Stories 2.3-2.7) | ✅ Complete |
-| FR2: Room Management | Epic 2 (Stories 2.1, 2.8), Epic 3 | ✅ Complete |
-| FR3: Player Management | Epic 2 (Story 2.2, 2.9), Epic 3 (Story 6.1) | ✅ Complete |
-| FR4: Roll History | Epic 2 (Story 2.10), implicit in 2.3 | ✅ Complete |
-| FR5: DM Features | Epic 4 (Advanced DM Controls) | ✅ Complete |
-| FR6: Open Room Mode | Epic 2 (default mode), promotion in Epic 4 | ✅ Complete |
-| FR7: Permalinks | Epic 5 (Verifiable Roll Permalinks) | ✅ Complete |
-| FR8: Roll Presets | Epic 6 (Player-Side Roll Presets) | ✅ Complete |
-| FR9: User Interface | Epic 2 (Stories 2.11 mobile responsive) | ✅ Complete |
-| FR10: Connection Resilience | Epic 1 (Story 1.2 WebSocket) | ✅ Complete |
+| PRD Section                 | Epic Coverage                               | Status      |
+| --------------------------- | ------------------------------------------- | ----------- |
+| FR1: Dice Rolling Engine    | Epic 2 (Stories 2.3-2.7)                    | ✅ Complete |
+| FR2: Room Management        | Epic 2 (Stories 2.1, 2.8), Epic 3           | ✅ Complete |
+| FR3: Player Management      | Epic 2 (Story 2.2, 2.9), Epic 3 (Story 6.1) | ✅ Complete |
+| FR4: Roll History           | Epic 2 (Story 2.10), implicit in 2.3        | ✅ Complete |
+| FR5: DM Features            | Epic 4 (Advanced DM Controls)               | ✅ Complete |
+| FR6: Open Room Mode         | Epic 2 (default mode), promotion in Epic 4  | ✅ Complete |
+| FR7: Permalinks             | Epic 5 (Verifiable Roll Permalinks)         | ✅ Complete |
+| FR8: Roll Presets           | Epic 6 (Player-Side Roll Presets)           | ✅ Complete |
+| FR9: User Interface         | Epic 2 (Stories 2.11 mobile responsive)     | ✅ Complete |
+| FR10: Connection Resilience | Epic 1 (Story 1.2 WebSocket)                | ✅ Complete |
 
 **Epic Value Proposition Validation:**
+
 - Epic 1: Foundation (CI/CD, WebSocket) → Enables all future work ✅
 - Epic 2: Core dice rolling → Primary user value ✅
 - Epic 3: Session management → Smooth multiplayer ✅
@@ -173,12 +183,14 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 - Epic 6: Presets → Quality of life ✅
 
 **Coverage Gaps Identified:**
+
 - ⚠️ **Minor:** NFR validation stories not explicitly called out
   - Performance testing (k6 load tests) → Mentioned in Week 8 but not as explicit story
   - Security testing (Playwright E2E + SAST) → Mentioned but not in epic breakdown
   - **Recommendation:** Add NFR validation stories to Epic 1 or create "Epic 7: Quality & Testing"
 
 **Traceability:**
+
 - FR → Epic mapping: 100% coverage
 - Epic → PRD justification: 100% aligned
 - No orphan stories detected (all trace to PRD)
@@ -189,19 +201,20 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 
 **Architectural Patterns in Stories:**
 
-| Architecture Decision | Story Implementation | Status |
-|-----------------------|----------------------|--------|
-| ADR-002: Socket.io for WebSocket | Epic 1, Story 1.2 (WebSocket connection) | ✅ Correct |
-| ADR-003: Valkey state storage | Epic 2, Story 2.1 (room creation) | ✅ Correct |
-| ADR-004: SQLite permalinks | Epic 5 (permalink storage) | ✅ Correct |
-| ADR-005: Server-side roll generation | Epic 2, Story 2.3 (basic dice roll) | ✅ Correct |
-| ADR-006: Zustand frontend state | Implicit in Epic 2 stories | ✅ Correct |
-| ADR-007: Tailwind CSS | Epic 2, Story 2.11 (mobile responsive) | ✅ Correct |
-| ADR-008: GitHub Actions CI/CD | Epic 1, Story 1.1 (project scaffolding) | ✅ Correct |
-| ADR-009: Sentry observability | Mentioned in architecture, not explicit story | ⚠️ Minor gap |
-| ADR-010: TDD strategy | Epic 1, Story 1.2 (E2E test) | ✅ Correct |
+| Architecture Decision                | Story Implementation                          | Status       |
+| ------------------------------------ | --------------------------------------------- | ------------ |
+| ADR-002: Socket.io for WebSocket     | Epic 1, Story 1.2 (WebSocket connection)      | ✅ Correct   |
+| ADR-003: Valkey state storage        | Epic 2, Story 2.1 (room creation)             | ✅ Correct   |
+| ADR-004: SQLite permalinks           | Epic 5 (permalink storage)                    | ✅ Correct   |
+| ADR-005: Server-side roll generation | Epic 2, Story 2.3 (basic dice roll)           | ✅ Correct   |
+| ADR-006: Zustand frontend state      | Implicit in Epic 2 stories                    | ✅ Correct   |
+| ADR-007: Tailwind CSS                | Epic 2, Story 2.11 (mobile responsive)        | ✅ Correct   |
+| ADR-008: GitHub Actions CI/CD        | Epic 1, Story 1.1 (project scaffolding)       | ✅ Correct   |
+| ADR-009: Sentry observability        | Mentioned in architecture, not explicit story | ⚠️ Minor gap |
+| ADR-010: TDD strategy                | Epic 1, Story 1.2 (E2E test)                  | ✅ Correct   |
 
 **Infrastructure Stories Validation:**
+
 - ✅ Docker setup: Epic 1, Story 1.1
 - ✅ CI/CD pipeline: Epic 1, Story 1.1
 - ✅ Valkey service: Epic 1, Story 1.1 (implicit in docker-compose)
@@ -209,6 +222,7 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 - ⚠️ **Minor:** Sentry integration not explicit story (could be Sprint 0 task)
 
 **Constraint Validation:**
+
 - No stories violate architectural constraints
 - Technology choices consistent across epics
 - TDD approach mentioned in Epic 1 (walking skeleton E2E)
@@ -220,11 +234,13 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 ### ✅ Test Design ↔ All Artifacts: EXCELLENT
 
 **Testability Assessment Validated Against Architecture:**
+
 - Controllability (9/10): Confirmed by Valkey state control + mockable RNG ✅
 - Observability (9/10): Confirmed by structlog + Sentry + Playwright traces ✅
 - Reliability (9/10): Confirmed by isolated tests + deterministic waits ✅
 
 **ASRs Traceable to PRD/Architecture:**
+
 - ASR-1 (Real-time sync <500ms): Maps to NFR-P1 ✅
 - ASR-2 (Cryptographic RNG): Maps to FR1.6 + ADR-005 ✅
 - ASR-3 (Room expiration): Maps to FR2.5-2.8 ✅
@@ -232,12 +248,14 @@ The D&D Dice Roller project has completed comprehensive planning and solutioning
 - ASR-5 (Permalink retention): Maps to FR7.6 ✅
 
 **Test Strategy Supports Epic Implementation:**
+
 - 50% Unit / 30% Integration / 20% E2E: Appropriate for real-time WebSocket app ✅
 - E2E critical paths (create/join/roll): Matches Epic 2 core flow ✅
 - Security tests: Supports NFR-S1-S8 validation ✅
 - Performance tests (k6): Supports NFR-P1-P6 validation ✅
 
 **Sprint 0 Recommendations Align with Epic 1:**
+
 - Framework init (`*framework`): Prerequisite for Story 1.2 E2E test ✅
 - CI setup (`*ci`): Matches Story 1.1 CI/CD pipeline ✅
 - Walking skeleton: Exactly matches Story 1.2 acceptance criteria ✅
@@ -259,16 +277,19 @@ No critical gaps identified. All core requirements covered, architecture complet
 **Issue:** Story 2.6 "View Player List and Connection Status" appears in Epic 2 section, but then Story 6.1 in Epic 3 has identical title and acceptance criteria.
 
 **Evidence:**
+
 - Epic 2, Story 2.6: "View Player List and Connection Status" (Prerequisites: Story 2.2)
 - Epic 3 header: "Session Management & Presence"
 - Epic 3, Story 6.1: "View Player List and Connection Status" (Prerequisites: Story 2.2, identical content)
 
 **Impact:**
+
 - Confusion during Sprint Planning (which epic owns this story?)
 - Potential duplicate implementation
 - Epic numbering appears corrupted (6.1 should be 3.1)
 
 **Recommendation:**
+
 - **Resolution:** Renumber Epic 3 stories to 3.x instead of 6.x
 - Decide if Story 2.6 belongs in Epic 2 or Epic 3 (suggest Epic 3 "Session Management & Presence" is better fit)
 - Remove duplicate from Epic 2 if keeping in Epic 3
@@ -285,16 +306,19 @@ No critical gaps identified. All core requirements covered, architecture complet
 **Issue:** Test Design document defines comprehensive NFR testing approach (security, performance, reliability, maintainability), but epics don't have explicit stories for NFR validation.
 
 **Evidence:**
+
 - Test Design Section 4: NFR Testing Approach (security tests, k6 load tests, reliability tests)
 - Architecture: "Week 8: Testing & Polish" mentions load testing and iOS Safari
 - Epics: No dedicated stories for running k6 load tests, security audits, or NFR gate checks
 
 **Impact:**
+
 - NFR validation might be ad-hoc rather than planned
 - Risk of skipping performance or security testing if not tracked as stories
 - Sprint Planning might miss NFR validation effort
 
 **Recommendation:**
+
 - **Option 1:** Add NFR validation stories to Epic 1 or Epic 2
   - Story: "Performance Testing - k6 Load Tests (50 rooms, 400 users)"
   - Story: "Security Testing - OWASP Validation (XSS, SQL Injection, Rate Limiting)"
@@ -312,16 +336,19 @@ No critical gaps identified. All core requirements covered, architecture complet
 **Issue:** Epic 2, Story 2.11 "Mobile Responsive User Interface" has acceptance criteria including "Explicit testing on iOS Safari is required", but Architecture roadmap says "Week 8-9: iOS Safari testing."
 
 **Evidence:**
+
 - Epic 2, Story 2.11 Prerequisites: Story 2.1, Story 2.3
 - Epic 2, Story 2.11 Technical Notes: "Explicit testing on iOS Safari is required"
 - Architecture Roadmap: "Week 8-9: Testing & Polish - iOS Safari testing"
 
 **Impact:**
+
 - Unclear when iOS Safari testing should occur
 - If Story 2.11 is implemented early (Weeks 2-4), iOS Safari validation deferred to Week 8 creates validation gap
 - Risk of discovering iOS Safari issues late (costly rework)
 
 **Recommendation:**
+
 - **Clarify timing:** Update Story 2.11 to explicitly state "iOS Safari testing deferred to Week 8 (final validation)" OR move Story 2.11 to Week 8
 - **Incremental validation:** Do basic iOS Safari smoke tests when implementing Story 2.11, comprehensive testing in Week 8
 - **Acceptance criteria split:**
@@ -370,6 +397,7 @@ No critical gaps identified. All core requirements covered, architecture complet
 **UX Artifacts:** Not present (conditional, not required for this project)
 
 **Validation:**
+
 - ✅ PRD Section "User Experience Principles" defines clear UX philosophy ("Get out of the way")
 - ✅ PRD Section "Key Interactions" specifies timing targets (5 seconds to create room, 1-2 seconds to roll)
 - ✅ Mockups referenced but not provided (acceptable for simple UI)
@@ -377,11 +405,13 @@ No critical gaps identified. All core requirements covered, architecture complet
 - ✅ Accessibility requirements defined (WCAG 2.1 AA, NFR-A1-A5)
 
 **Accessibility Coverage:**
+
 - ✅ Epic 2, Story 2.11 includes accessibility requirements (44x44px touch targets, 16px font minimum)
 - ✅ NFR-A2: Keyboard navigation (not explicit story, assumed in implementation)
 - ✅ NFR-A3: Screen reader support with ARIA live regions (mentioned in PRD, not explicit story)
 
 **Recommendation:**
+
 - ✅ UX coverage adequate for project scope (simple UI, no complex workflows)
 - ⚠️ Consider adding accessibility validation checklist to Story 2.11 acceptance criteria
 
@@ -398,6 +428,7 @@ No critical gaps identified. All core requirements covered, architecture complet
 ### 🟠 High Priority Concerns
 
 **H-1: Story Numbering Inconsistency (Epic 3 vs Epic 2)**
+
 - **Severity:** High (blocks Sprint Planning clarity)
 - **Description:** Story 2.6 duplicated as Story 6.1 with identical content. Epic numbering appears corrupted.
 - **Impact:** Sprint Planning confusion, potential duplicate work
@@ -410,6 +441,7 @@ No critical gaps identified. All core requirements covered, architecture complet
 ### 🟡 Medium Priority Observations
 
 **M-1: NFR Validation Stories Not Explicit**
+
 - **Severity:** Medium (quality risk)
 - **Description:** No dedicated stories for k6 load tests, security audits, iOS Safari testing
 - **Impact:** NFR validation might be ad-hoc, risk of skipping critical testing
@@ -418,6 +450,7 @@ No critical gaps identified. All core requirements covered, architecture complet
 - **Timeline:** Sprint Planning (Week 1)
 
 **M-2: Mobile Testing Timeline Ambiguity**
+
 - **Severity:** Medium (implementation risk)
 - **Description:** Story 2.11 requires iOS Safari testing, but roadmap defers to Week 8
 - **Impact:** Validation gap, late discovery of iOS issues
@@ -430,12 +463,15 @@ No critical gaps identified. All core requirements covered, architecture complet
 ### 🟢 Low Priority Notes
 
 **L-1: Template Selection Not Explicit**
+
 - Minor documentation enhancement opportunity
 
 **L-2: Sentry Integration Not Explicit Story**
+
 - Low risk, likely Sprint 0 task
 
 **L-3: Virtual Scrolling Library Not Specified**
+
 - Developer can choose during implementation
 
 ---
@@ -445,12 +481,14 @@ No critical gaps identified. All core requirements covered, architecture complet
 ### ✅ Well-Executed Areas
 
 **1. Comprehensive Requirements Documentation:**
+
 - PRD is exceptionally detailed (711 lines) with measurable success criteria
 - Clear scope boundaries (MVP vs Growth vs Vision)
 - 68 detailed functional requirements across 10 categories
 - NFRs have specific, testable thresholds (e.g., <500ms p95 latency)
 
 **2. Strong Architectural Documentation:**
+
 - 10 ADRs documenting every major decision with rationale
 - Technology stack fully specified with versions
 - Mermaid diagrams for system visualization
@@ -458,6 +496,7 @@ No critical gaps identified. All core requirements covered, architecture complet
 - Week-by-week implementation roadmap
 
 **3. Test-Driven Approach from Day 1:**
+
 - Test Design completed in Phase 3 (rare, excellent practice)
 - Testability assessment validates architecture (9/10 rating)
 - TDD specified for walking skeleton (Story 1.2)
@@ -465,18 +504,21 @@ No critical gaps identified. All core requirements covered, architecture complet
 - Sprint 0 recommendations actionable
 
 **4. Epic Sequencing and Value Delivery:**
+
 - Logical progression: Foundation → Core → Advanced → Differentiator
 - Each epic has clear value proposition
 - Dependencies well-defined (Prerequisites field in stories)
 - Incremental delivery enables early validation
 
 **5. Risk-Based Prioritization:**
+
 - ASRs identified with risk scores (probability × impact)
 - High-priority risks (score ≥6) flagged for immediate mitigation
 - Security risks addressed at architecture level (server-side rolls, rate limiting)
 - Performance risks validated via load testing plan
 
 **6. Real-World Success Criteria:**
+
 - "Steve's D&D group completes 3-hour session" is concrete validation
 - Preference over previous tool measures actual user value
 - <3 minor issues is realistic quality bar
@@ -533,6 +575,7 @@ No critical gaps identified. All core requirements covered, architecture complet
 **No major sequencing changes required.** Epic order is logical and dependency-respecting.
 
 **Minor Optimization:**
+
 - Consider moving Story 2.11 (Mobile Responsive UI) to Week 8 to align with iOS Safari testing, OR
 - Split Story 2.11 into two parts:
   - Story 2.11a (Weeks 2-4): Desktop + basic mobile responsiveness
@@ -549,6 +592,7 @@ No critical gaps identified. All core requirements covered, architecture complet
 The D&D Dice Roller project has completed exceptionally thorough planning and solutioning work. The alignment between PRD, Architecture, Epics, and Test Design is strong, with only minor documentation inconsistencies that can be resolved before Sprint Planning.
 
 **Strengths:**
+
 - ✅ All PRD requirements covered by architecture and epics (100% traceability)
 - ✅ Architectural decisions documented and sound (10 ADRs)
 - ✅ Test strategy validated architecture testability (9/10 rating)
@@ -557,11 +601,13 @@ The D&D Dice Roller project has completed exceptionally thorough planning and so
 - ✅ Real-world success criteria (Steve's D&D group beta test)
 
 **Conditions:**
+
 1. ⚠️ Fix story numbering inconsistency (Epic 3 stories numbered 6.x)
 2. ⚠️ Clarify NFR validation approach (explicit stories or Sprint 0 tasks)
 3. ⚠️ Clarify mobile testing timeline (Story 2.11 vs Week 8)
 
 **Why READY:**
+
 - Critical gaps: 0
 - High priority concerns: 1 (documentation fix, non-technical)
 - Medium priority observations: 2 (planning clarifications, low risk)
@@ -619,11 +665,13 @@ The D&D Dice Roller project has completed exceptionally thorough planning and so
 ### Success Validation
 
 **Gate Check Passed When:**
+
 - ✅ All 3 conditions resolved
 - ✅ Sprint Planning workflow completed
 - ✅ Epic 1, Story 1.2 (Walking skeleton E2E test) passes 3/3 times
 
 **Production Readiness (Week 10):**
+
 - ✅ All P0 tests pass
 - ✅ Steve's D&D group completes 3-hour session
 - ✅ <500ms roll latency validated (k6 load tests)
@@ -636,18 +684,21 @@ The D&D Dice Roller project has completed exceptionally thorough planning and so
 ### A. Validation Criteria Applied
 
 **Planning Completeness:**
+
 - ✅ PRD exists with FRs and NFRs
 - ✅ Architecture exists with technology decisions
 - ✅ Epics exist with user stories
 - ✅ Test Design exists (system-level testability review)
 
 **Alignment Checks:**
+
 - ✅ PRD → Architecture: All requirements architecturally supported
 - ✅ PRD → Epics: All requirements covered by stories
 - ✅ Architecture → Epics: Architectural patterns implemented in stories
 - ✅ Test Design → All: Testability validated, NFR approach defined
 
 **Quality Gates:**
+
 - ✅ No critical gaps
 - ✅ High priority concerns resolvable before implementation
 - ✅ Epic sequencing logical
@@ -657,20 +708,20 @@ The D&D Dice Roller project has completed exceptionally thorough planning and so
 
 ### B. Traceability Matrix (High-Level)
 
-| PRD Requirement | Architecture Decision | Epic | Story | Test Design ASR |
-|-----------------|----------------------|------|-------|----------------|
-| FR1: Dice Rolling | ADR-005 (Server-side RNG) | Epic 2 | 2.3-2.7 | ASR-2 (Cryptographic RNG) |
-| FR2: Room Management | ADR-003 (Valkey state) | Epic 2 | 2.1, 2.8 | ASR-3 (Expiration) |
-| FR3: Player Management | Valkey state + UUID | Epic 2, 3 | 2.2, 2.9, 3.1 | N/A |
-| FR4: Roll History | Valkey persistence | Epic 2 | 2.10 | N/A |
-| FR5: DM Features | Room mode enum | Epic 4 | 4.x | ASR-4 (Grace period) |
-| FR6: Open Room Mode | Room mode default | Epic 2 | 2.1 | N/A |
-| FR7: Permalinks | ADR-004 (SQLite) | Epic 5 | 5.x | ASR-5 (30-day retention) |
-| FR8: Roll Presets | Frontend localStorage | Epic 6 | 6.x | N/A |
-| FR9: User Interface | ADR-007 (Tailwind CSS) | Epic 2 | 2.11 | N/A |
-| FR10: Connection Resilience | ADR-002 (Socket.io) | Epic 1 | 1.2 | N/A |
-| NFR-P1: <500ms latency | Socket.io + Redis | Epic 2 | Implicit | ASR-1 (Real-time sync) |
-| NFR-S1-S8: Security | Rate limiting, WSS | Epic 2 | Implicit | ASR-2 (Server-side RNG) |
+| PRD Requirement             | Architecture Decision     | Epic      | Story         | Test Design ASR           |
+| --------------------------- | ------------------------- | --------- | ------------- | ------------------------- |
+| FR1: Dice Rolling           | ADR-005 (Server-side RNG) | Epic 2    | 2.3-2.7       | ASR-2 (Cryptographic RNG) |
+| FR2: Room Management        | ADR-003 (Valkey state)    | Epic 2    | 2.1, 2.8      | ASR-3 (Expiration)        |
+| FR3: Player Management      | Valkey state + UUID       | Epic 2, 3 | 2.2, 2.9, 3.1 | N/A                       |
+| FR4: Roll History           | Valkey persistence        | Epic 2    | 2.10          | N/A                       |
+| FR5: DM Features            | Room mode enum            | Epic 4    | 4.x           | ASR-4 (Grace period)      |
+| FR6: Open Room Mode         | Room mode default         | Epic 2    | 2.1           | N/A                       |
+| FR7: Permalinks             | ADR-004 (SQLite)          | Epic 5    | 5.x           | ASR-5 (30-day retention)  |
+| FR8: Roll Presets           | Frontend localStorage     | Epic 6    | 6.x           | N/A                       |
+| FR9: User Interface         | ADR-007 (Tailwind CSS)    | Epic 2    | 2.11          | N/A                       |
+| FR10: Connection Resilience | ADR-002 (Socket.io)       | Epic 1    | 1.2           | N/A                       |
+| NFR-P1: <500ms latency      | Socket.io + Redis         | Epic 2    | Implicit      | ASR-1 (Real-time sync)    |
+| NFR-S1-S8: Security         | Rate limiting, WSS        | Epic 2    | Implicit      | ASR-2 (Server-side RNG)   |
 
 ---
 
@@ -679,26 +730,31 @@ The D&D Dice Roller project has completed exceptionally thorough planning and so
 **High-Priority Risks (Test Design ASRs):**
 
 **ASR-1 (Real-time sync <500ms, Risk Score: 6):**
+
 - **Mitigation:** k6 load testing in Week 8, network throttling E2E tests
 - **Owner:** Backend Lead + QA Lead
 - **Timeline:** Week 7 (integration) + Week 8 (load testing)
 
 **ASR-2 (Cryptographic RNG, Risk Score: 3):**
+
 - **Mitigation:** Use Python `secrets.SystemRandom()`, verify with chi-squared tests
 - **Owner:** Backend Lead + Security Lead
 - **Timeline:** Week 2 (Story 2.3 implementation)
 
 **ASR-3 (Room expiration, Risk Score: 4):**
+
 - **Mitigation:** Redis TTL + background cleanup job, mock time for tests
 - **Owner:** Backend Lead + DevOps Lead
 - **Timeline:** Week 3 (Story 2.8 implementation)
 
 **ASR-4 (DM grace period, Risk Score: 4):**
+
 - **Mitigation:** Socket.io reconnection + 60s timer, E2E validation
 - **Owner:** Backend Lead + QA Lead
 - **Timeline:** Week 7 (Epic 4 implementation)
 
 **ASR-5 (Permalink retention, Risk Score: 2):**
+
 - **Mitigation:** SQLite cleanup cron job, mock timestamps for tests
 - **Owner:** Backend Lead
 - **Timeline:** Week 7 (Epic 5 implementation)
