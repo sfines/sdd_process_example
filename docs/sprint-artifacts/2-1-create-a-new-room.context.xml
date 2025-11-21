@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2.1</storyId>
+    <title>Create a New Room</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-17T02:24:09.391Z</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-1-create-a-new-room.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>create a new, empty game room</iWant>
+    <soThat>I can invite others to join and play</soThat>
+    <tasks>
+      <task n="1">Backend Room Management Service - RoomManager class with create_room() method</task>
+      <task n="2">Room Code Generation Utility - WORD-#### format with collision detection</task>
+      <task n="3">Backend Socket.io Event Handler - create_room event handler</task>
+      <task n="4">Backend Input Validation & Sanitization - Prevent XSS via html.escape</task>
+      <task n="5">Frontend Home Screen Component - Create Room form with input fields</task>
+      <task n="6">Frontend Socket.io Handler - create_room event emission and room_created listening</task>
+      <task n="7">Frontend Navigation & Room View - Client-side routing setup</task>
+      <task n="8">Frontend Room Code Display & Copy - RoomCodeDisplay component</task>
+      <task n="9">Frontend Toast Notifications - Success/error toast system</task>
+      <task n="10">E2E Test (Playwright) - Full create room flow test</task>
+      <task n="11">Integration Tests - Redis state persistence, TTL verification</task>
+      <task n="12">Manual Testing & Documentation - Verification and README updates</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Home Screen displays "Your Name" input field (max 20 chars) and "Create Room" button</criterion>
+    <criterion id="2">Clicking "Create Room" creates a room with unique WORD-#### code (e.g., "ALPHA-1234")</criterion>
+    <criterion id="3">User is automatically joined to the room they create</criterion>
+    <criterion id="4">Room View displays room code prominently in header with "Copy" button</criterion>
+    <criterion id="5">Room created in "Open" mode by default</criterion>
+    <criterion id="6">Initial room state stored in Redis with TTL 18000 seconds (5 hours)</criterion>
+    <criterion id="7">Success toast notification appears: "Room created! Share code ALPHA-1234"</criterion>
+    <criterion id="8">Collision detection prevents duplicate room codes</criterion>
+    <criterion id="9">Player name sanitized (html.escape) to prevent XSS</criterion>
+    <criterion id="10">"Create Room" button is visually distinct and easily tappable (44px+ tap target)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Services and Modules, Data Models, APIs and Interfaces, Workflows and Sequencing</section>
+        <snippet>Room created with unique WORD-#### code. Backend generates using random word + 4-digit number with collision detection. Redis hash stores room state with TTL 18000s (5 hours). Player automatically joined as creator_player_id with admin privileges.</snippet>
+      </doc>
+      <doc>
+        <path>docs/sprint-artifacts/1-2-hello-world-websocket-connection.md</path>
+        <title>Story 1.2: WebSocket Connection (Ready-for-dev)</title>
+        <section>Socket.io Integration, Event Handlers, Zustand Store</section>
+        <snippet>Socket.io event handler patterns established in Story 1.2. Zustand store initialized with socket state. Follow same event emission/listening patterns: emit event → listen for response → update store.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>System Architecture</title>
+        <section>Technology Stack, System Architecture, ADRs</section>
+        <snippet>ADR-002: Socket.io with room concept. ADR-003: Redis hash per room with TTL. ADR-006: Zustand for state. ADR-007: Tailwind CSS for UI. Stack: Python 3.11 + FastAPI backend, React 18 + TypeScript frontend, Redis 5.0+ for state.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <codeArtifact>
+        <path>backend/app/services/room_manager.py</path>
+        <kind>service_module</kind>
+        <symbol>RoomManager class with create_room() method</symbol>
+        <reason>Core business logic for room creation with collision detection, TTL management, initial state storage (AC 2, 6, 8)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/app/utils/room_code_generator.py</path>
+        <kind>utility_module</kind>
+        <symbol>generate_room_code(), is_code_available() functions</symbol>
+        <reason>WORD-#### code generation with retry logic for collision detection (AC 2, 8)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/app/utils/validation.py</path>
+        <kind>utility_module</kind>
+        <symbol>sanitize_player_name(), validate_player_name() functions</symbol>
+        <reason>XSS prevention and input validation using html.escape (AC 9)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/app/event_handlers.py</path>
+        <kind>event_handler</kind>
+        <symbol>@sio.event create_room handler</symbol>
+        <reason>Socket.io event handler for room creation, broadcasts room_created event to client (AC 2, 3)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/app/models.py</path>
+        <kind>data_model</kind>
+        <symbol>RoomState, Player, CreateRoomResponse Pydantic models</symbol>
+        <reason>Type-safe request/response models for room creation (AC 3, 6)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/pages/Home.tsx</path>
+        <kind>react_page</kind>
+        <symbol>Home page component with Create Room form</symbol>
+        <reason>User interface for room creation with player name input and Create button (AC 1, 10)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/pages/RoomView.tsx</path>
+        <kind>react_page</kind>
+        <symbol>RoomView page component</symbol>
+        <reason>Displays room code in header with copy button, player list, roll history (AC 4, 7)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/components/RoomCodeDisplay.tsx</path>
+        <kind>react_component</kind>
+        <symbol>RoomCodeDisplay component with copy functionality</symbol>
+        <reason>Display room code prominently and copy to clipboard (AC 4)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/components/Toast.tsx</path>
+        <kind>react_component</kind>
+        <symbol>Toast notification component</symbol>
+        <reason>Display success toast on room creation (AC 7)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/hooks/useSocket.ts</path>
+        <kind>custom_hook</kind>
+        <symbol>useSocket hook with create_room() function</symbol>
+        <reason>Socket.io event emission and response handling for room creation (AC 3)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/src/store/socketStore.ts</path>
+        <kind>state_store</kind>
+        <symbol>Zustand store with room-related state fields</symbol>
+        <reason>Persist room code, mode, creator info, players array in global state (AC 5, 6)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>frontend/e2e/create-room.spec.ts</path>
+        <kind>e2e_test</kind>
+        <symbol>Playwright test for create room flow</symbol>
+        <reason>Validate full user journey from Home → Room creation → Room View (AC 2, 3, 4, 7)</reason>
+      </codeArtifact>
+      <codeArtifact>
+        <path>backend/tests/test_room_creation.py</path>
+        <kind>integration_test</kind>
+        <symbol>Integration tests for room creation with Redis</symbol>
+        <reason>Verify Redis state persistence, TTL, sanitization, uniqueness (AC 6, 8, 9)</reason>
+      </codeArtifact>
+    </code>
+
+    <dependencies>
+      <ecosystem name="python">
+        <package name="redis" version="5.0+" purpose="Room state storage in Redis hash" />
+        <package name="python-socketio" version="5.10+" purpose="WebSocket event handlers (from Story 1.2)" />
+        <package name="pydantic" version="2.5+" purpose="RoomState, CreateRoomResponse models" />
+        <package name="structlog" version="23.2+" purpose="Structured JSON logging (from Story 1.2)" />
+        <package name="fastapi" version="0.104+" purpose="Web framework (from Story 1.1)" />
+        <package name="pytest" version="7.4+" purpose="Integration testing" />
+      </ecosystem>
+      <ecosystem name="nodejs">
+        <package name="socket.io-client" version="4.6+" purpose="Socket.io client (from Story 1.2)" />
+        <package name="zustand" version="4.4+" purpose="Global state management (from Story 1.2)" />
+        <package name="react-router" version="6.0+" purpose="Client-side routing for /room/:code" />
+        <package name="react-hot-toast" version="2.4+" purpose="Toast notification system (optional)" />
+        <package name="react" version="18.2+" purpose="UI framework (from Story 1.1)" />
+        <package name="typescript" version="5.3+" purpose="Type safety" />
+        <package name="tailwindcss" version="3.4+" purpose="Styling (from Story 1.1)" />
+        <package name="vitest" version="1.0+" purpose="Unit testing (from Story 1.1)" />
+      </ecosystem>
+      <ecosystem name="infrastructure">
+        <package name="docker-compose" version="2.23+" purpose="Redis service (from Story 1.1)" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Implement Socket.io room concept per ADR-002; room management extends WebSocket foundation from Story 1.2</constraint>
+    <constraint type="backend">Use Redis hash pattern (ROOM:{code}) with TTL 18000s; generate unique codes with collision detection; sanitize all player input</constraint>
+    <constraint type="frontend">Use Zustand store for room state (no Redux); extend existing socketStore from Story 1.2; use React Router for navigation</constraint>
+    <constraint type="performance">Room creation must succeed within 200ms (p95); room code generation retry max 10 attempts</constraint>
+    <constraint type="security">Sanitize player names via html.escape(); validate room code format; never expose Redis internals to client</constraint>
+    <constraint type="testing">Target 80% backend coverage (all room creation paths); 60% frontend coverage (Home and RoomView components); E2E test full flow</constraint>
+    <constraint type="ui">Room code display 44px+ tap target; Create button prominent and distinct; form inputs max-length enforced</constraint>
+    <constraint type="logging">All room creation events logged with structlog JSON format including room_code, player_name, creator_id</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Socket.io create_room Event</name>
+      <kind>websocket_event</kind>
+      <signature>Client emits: { room_code_hint?: string, player_name: string }; Server responds: { room_created: { room_code, room_state } }</signature>
+      <path>backend/app/event_handlers.py, frontend/src/hooks/useSocket.ts</path>
+      <reason>Core event for room creation; server generates code, stores state, broadcasts back to client (AC 2, 3)</reason>
+    </interface>
+    <interface>
+      <name>RoomManager Service</name>
+      <kind>class_interface</kind>
+      <signature>RoomManager.create_room(player_name: str) -> RoomState; Raises: RoomCodeCollisionError</signature>
+      <path>backend/app/services/room_manager.py</path>
+      <reason>Backend service encapsulating room creation logic; used by Socket.io handler and tests (AC 2, 6, 8)</reason>
+    </interface>
+    <interface>
+      <name>Redis Room Hash Schema</name>
+      <kind>data_structure</kind>
+      <signature>ROOM:{room_code} = { mode, created_at, creator_player_id, players (JSON), roll_history (JSON), settings }; TTL: 18000s</signature>
+      <path>backend/app/services/room_manager.py</path>
+      <reason>Persistent storage for room state; TTL triggers auto-expiration (AC 5, 6)</reason>
+    </interface>
+    <interface>
+      <name>Zustand Room Store</name>
+      <kind>state_interface</kind>
+      <signature>{ roomCode: string | null, roomMode: "open", creatorPlayerId: string, players: Player[], rollHistory: [], setRoom(code, state), clearRoom() }</signature>
+      <path>frontend/src/store/socketStore.ts</path>
+      <reason>Frontend state container for room data; synced from Socket.io events (AC 3, 5, 6)</reason>
+    </interface>
+    <interface>
+      <name>Room Code Format</name>
+      <kind>naming_convention</kind>
+      <signature>WORD-#### where WORD is random from list of 100 words, #### is 0000-9999; Example: ALPHA-1234</signature>
+      <path>backend/app/utils/room_code_generator.py</path>
+      <reason>Human-readable, collision-safe room identifier; easy to share and type (AC 2, 8)</reason>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Backend: pytest with FastAPI TestClient; mock Redis client for room creation tests; verify state persistence. Frontend: vitest + React Testing Library; test Home form rendering and Socket.io event handling; mock socket.io-client. E2E: Playwright; full flow from Home → create room → Room View with assertions on UI elements. Integration: Docker-based tests with real Redis service to verify TTL and collision detection.
+    </standards>
+    <locations>
+      <location>backend/tests/test_room_creation.py (integration tests with Redis)</location>
+      <location>backend/tests/test_room_code_generator.py (unit tests for code generation)</location>
+      <location>backend/tests/test_validation.py (unit tests for sanitization)</location>
+      <location>frontend/src/pages/__tests__/Home.test.tsx (Home component tests)</location>
+      <location>frontend/src/components/__tests__/RoomCodeDisplay.test.tsx (Copy button tests)</location>
+      <location>frontend/e2e/create-room.spec.ts (E2E test with Playwright)</location>
+      <location>.github/workflows/test.yml (CI execution)</location>
+    </locations>
+    <ideas>
+      <idea acId="1">Unit test: Home component renders with player name input and Create Room button</idea>
+      <idea acId="2">Integration test: generate_room_code() returns WORD-#### format code</idea>
+      <idea acId="2">Integration test: create_room() stores room in Redis with all required fields</idea>
+      <idea acId="3">Unit test: useSocket hook emits create_room event on form submission</idea>
+      <idea acId="3">Integration test: User auto-added to room.players array on creation</idea>
+      <idea acId="4">E2E test: Room code displayed in header after creation</idea>
+      <idea acId="4">Unit test: RoomCodeDisplay Copy button uses clipboard API</idea>
+      <idea acId="5">Integration test: room.mode set to "open" by default</idea>
+      <idea acId="6">Integration test: Redis TTL set to exactly 18000 seconds on room creation</idea>
+      <idea acId="6">Integration test: room.created_at timestamp is accurate</idea>
+      <idea acId="7">E2E test: Success toast appears with message "Room created! Share code {code}"</idea>
+      <idea acId="8">Integration test: Generating 1000 codes produces no duplicates</idea>
+      <idea acId="8">Integration test: Collision retry logic works (force collision, verify retry succeeds)</idea>
+      <idea acId="9">Unit test: sanitize_player_name() escapes HTML entities (&lt;, &gt;, etc.)</idea>
+      <idea acId="9">Integration test: XSS payload in player name is sanitized in Redis</idea>
+      <idea acId="10">E2E test: Create button is at least 44px tall and clickable</idea>
+      <idea acId="10">Manual test: Verify button visually distinct on Home page</idea>
+    </ideas>
+  </tests>
+</story-context>

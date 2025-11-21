@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story_context>
+  <metadata>
+    <story_id>2-5</story_id>
+    <story_title>Roll with Advantage or Disadvantage</story_title>
+    <epic_id>2</epic_id>
+    <epic_title>Core Dice Rolling - D&D Mechanics</epic_title>
+    <status>drafted</status>
+    <created_date>2025-11-17T02:41:25.298Z</created_date>
+    <context_generated_at>2025-11-17T02:41:25.298Z</context_generated_at>
+  </metadata>
+
+  <story_summary>
+    Implements D&D 5e advantage and disadvantage mechanics. When rolling with advantage, roll twice and use the higher result. When rolling with disadvantage, roll twice and use the lower result. This is a core D&D rule affecting attack rolls, ability checks, and saving throws.
+  </story_summary>
+
+  <architectural_context>
+    <layer name="backend">
+      <component id="dice-engine-advantage">
+        <description>Extends DiceService to handle advantage/disadvantage</description>
+        <responsibility>
+          - Parse notation: "2d20" or shorthand "adv" / "dis"
+          - Roll twice (2d20)
+          - Apply advantage/disadvantage logic
+          - Return individual rolls and effective total (higher for advantage, lower for disadvantage)
+        </responsibility>
+        <notation_support>
+          Input examples:
+          - "1d20 adv" or "1d20advantage"
+          - "1d20 dis" or "1d20disadvantage"
+          - Future: "2d20" with UI prompt for keep-highest / keep-lowest
+        </notation_support>
+        <algorithm_advantage>
+          1. Roll d20 twice: [15, 8]
+          2. Take highest: 15
+          3. Return: { rolls: [15, 8], effective: 15, type: "advantage" }
+        </algorithm_advantage>
+        <algorithm_disadvantage>
+          1. Roll d20 twice: [15, 8]
+          2. Take lowest: 8
+          3. Return: { rolls: [15, 8], effective: 8, type: "disadvantage" }
+        </algorithm_disadvantage>
+      </component>
+
+      <component id="roll-history-advantage">
+        <description>Store advantage/disadvantage metadata with roll</description>
+        <responsibility>
+          - Add "rollType" field: "normal", "advantage", "disadvantage"
+          - Store individual rolls even if only effective roll displayed
+          - Support filtering by roll type
+        </responsibility>
+        <database_change>
+          Add column to rolls table:
+          - roll_type VARCHAR(20) - "normal", "advantage", "disadvantage"
+        </database_change>
+      </component>
+    </layer>
+
+    <layer name="frontend">
+      <component id="advantage-toggle">
+        <description>UI to select normal/advantage/disadvantage before rolling</description>
+        <responsibility>
+          - Radio buttons or toggle: "Normal" | "Advantage" | "Disadvantage"
+          - Default: "Normal"
+          - Include clear explanations (optional tooltips)
+          - Update DiceInput behavior based on selection
+        </responsibility>
+        <file_path>frontend/src/components/AdvantageToggle.tsx (NEW)</file_path>
+        <ui_layout>
+          [O Normal] [O Advantage] [O Disadvantage]
+          Or as icons/buttons if space-constrained
+        </ui_layout>
+        <state>useRollStore().advantageMode</state>
+      </component>
+
+      <component id="roll-result-advantage">
+        <description>Display advantage/disadvantage results prominently</description>
+        <responsibility>
+          - Show both individual rolls: [15, 8]
+          - Highlight the effective roll (higher for advantage, lower for disadvantage)
+          - Label: "Advantage: 15 (of 15, 8)" or similar
+          - Color-code or bold the effective result
+        </responsibility>
+        <file_path>frontend/src/components/RollResult.tsx (update)</file_path>
+        <display_format>
+          Player: 1d20 (Advantage)
+          Rolls: 15, 8  →  Effective: 15
+          Or:
+          Player: 1d20 (Disadvantage)
+          Rolls: 15, 8  →  Effective: 8
+        </display_format>
+      </component>
+
+      <component id="roll-history-advantage-filter">
+        <description>Optional: Filter roll history by roll type</description>
+        <responsibility>
+          - Show all rolls by default
+          - Add filter button: Show "All" | "Normal" | "Advantage" | "Disadvantage"
+          - Update roll history display
+        </responsibility>
+        <optional>Can defer to future story if time-constrained</optional>
+      </component>
+    </layer>
+
+    <layer name="data_model">
+      <entity name="Roll" update="true">
+        <new_field name="rollType">
+          <type>enum: "normal" | "advantage" | "disadvantage"</type>
+          <description>What type of roll this was</description>
+        </new_field>
+        <updated_field name="individualRolls">
+          <old_format>[15] for normal roll</old_format>
+          <new_format>[15, 8] for advantage/disadvantage (always array of dice)</new_format>
+        </updated_field>
+      </entity>
+    </layer>
+  </architectural_context>
+
+  <dependencies>
+    <technical>
+      <dependency type="extends">
+        <story>2-4 (Roll All Standard Dice Types)</story>
+        <extension>Advantage/disadvantage only applies to d20 (D&D rule), not other dice</extension>
+      </dependency>
+      <dependency type="reuse">
+        <component>DiceService (already handles rolling)</component>
+        <extension>Add advantage/disadvantage logic for d20</extension>
+      </dependency>
+    </technical>
+
+    <story_dependencies>
+      <depends_on>
+        <story>2-3, 2-4 (Basic rolling and all dice types)</story>
+        <reason>Needs foundation for rolling mechanics</reason>
+      </depends_on>
+    </story_dependencies>
+
+    <story_enables>
+      <enables>
+        <story>2-7 (Multiple Dice in Single Roll)</story>
+        <reason>Advantage/disadvantage is a special case of "roll multiple d20s"</reason>
+      </enables>
+    </story_enables>
+  </dependencies>
+
+  <acceptance_criteria_breakdown>
+    <criterion id="1">
+      <text>User can select Advantage or Disadvantage before rolling</text>
+      <dev_task>Create AdvantageToggle component with 3 options</dev_task>
+      <test_approach>Component test: verify radio buttons/toggles render and state updates</test_approach>
+    </criterion>
+    <criterion id="2">
+      <text>Advantage roll shows two d20 results, takes higher</text>
+      <dev_task>Update DiceService.roll() to handle advantage for d20</dev_task>
+      <test_approach>Unit test: roll d20 with advantage 1000x, verify average > 10.5</test_approach>
+    </criterion>
+    <criterion id="3">
+      <text>Disadvantage roll shows two d20 results, takes lower</text>
+      <dev_task>Update DiceService.roll() to handle disadvantage for d20</dev_task>
+      <test_approach>Unit test: roll d20 with disadvantage 1000x, verify average < 10.5</test_approach>
+    </criterion>
+    <criterion id="4">
+      <text>Advantage/disadvantage only applies to d20 (not d4, d6, etc.)</text>
+      <dev_task>Add validation: if not d20, ignore advantage flag and return error or normal roll</dev_task>
+      <test_approach>Unit test: attempt advantage on d6, verify error or fallback to normal</test_approach>
+    </criterion>
+    <criterion id="5">
+      <text>Roll result clearly shows both individual rolls and effective roll</text>
+      <dev_task>Update RollResult component to display advantage/disadvantage format</dev_task>
+      <test_approach>Component test: pass advantage/disadvantage roll, verify format matches spec</test_approach>
+    </criterion>
+    <criterion id="6">
+      <text>Effective roll (higher/lower) is highlighted or emphasized</text>
+      <dev_task>Style effective roll with bold, color, or box</dev_task>
+      <test_approach>Visual regression test or screenshot comparison</test_approach>
+    </criterion>
+    <criterion id="7">
+      <text>Roll is broadcast correctly to room (showing advantage/disadvantage)</text>
+      <dev_task>Extend Socket.io event to include rollType field</dev_task>
+      <test_approach>E2E test: 2 browsers, roll with advantage, verify receiver sees both rolls</test_approach>
+    </criterion>
+    <criterion id="8">
+      <text>Rolls persist with advantage/disadvantage metadata</text>
+      <dev_task>Update roll persistence to include rollType</dev_task>
+      <test_approach>E2E test: roll with advantage, refresh, verify format persists</test_approach>
+    </criterion>
+  </acceptance_criteria_breakdown>
+
+  <tech_decisions>
+    <decision id="ADV-001">
+      <title>Advantage/disadvantage only for d20 (D&D rule, not a UI decision)</title>
+      <implementation>Validate in DiceService: throw error if attempting advantage on non-d20</implementation>
+      <rationale>Matches D&D 5e rules exactly. No ambiguity.</rationale>
+    </decision>
+    <decision id="UI-001">
+      <title>Radio buttons or toggle for advantage mode selection</title>
+      <implementation>AdvantageToggle component with 3 clear states</implementation>
+      <rationale>Clear, explicit, prevents accidental advantage rolls</rationale>
+      <mobile_note>On mobile, may use 3 buttons or dropdown (Story 2-11)</mobile_note>
+    </decision>
+    <decision id="DISPLAY-001">
+      <title>Always show both individual rolls for advantage/disadvantage</title>
+      <implementation>Display as "Rolls: 15, 8 → Effective: 15"</implementation>
+      <rationale>Transparency and trust. Players need to see both rolls.</rationale>
+    </decision>
+  </tech_decisions>
+
+  <known_constraints>
+    <constraint id="RULE-001">
+      <description>Advantage/disadvantage must follow D&D 5e rules exactly</description>
+      <implication>No variations or house rules in this story. Keep it faithful.</implication>
+    </constraint>
+    <constraint id="COMPAT-001">
+      <description>Must not break existing normal rolls from Stories 2-3 and 2-4</description>
+      <implication>Make advantage/disadvantage optional. Default behavior unchanged.</implication>
+    </constraint>
+  </known_constraints>
+
+  <environment_setup>
+    <backend_changes>
+      - Update: backend/src/services/DiceService.ts
+        - Add parameter: advantageType ("normal" | "advantage" | "disadvantage")
+        - For d20 with advantage: roll twice, take max
+        - For d20 with disadvantage: roll twice, take min
+        - For non-d20 with advantage: throw error or return normal roll
+      - Update: backend/src/models/Roll.ts
+        - Add rollType field to Roll entity
+      - Database migration:
+        - Add roll_type column to rolls table
+    </backend_changes>
+
+    <frontend_changes>
+      - Add: frontend/src/components/AdvantageToggle.tsx (NEW)
+      - Update: frontend/src/components/RollResult.tsx
+        - Add logic to display advantage/disadvantage format
+        - Highlight effective roll
+      - Update: frontend/src/hooks/useRollStore.ts
+        - Add advantageMode state
+        - Add setAdvantageMode action
+      - Update: frontend/src/components/DiceInput.tsx
+        - Pass advantageMode to API request
+      - Add: frontend/src/components/__tests__/AdvantageToggle.test.tsx (NEW)
+      - Update: frontend/src/components/__tests__/RollResult.test.tsx
+        - Add tests for advantage/disadvantage display
+    </frontend_changes>
+
+    <database_migration>
+      ALTER TABLE rolls ADD COLUMN roll_type VARCHAR(20) DEFAULT 'normal';
+      UPDATE rolls SET roll_type = 'normal' WHERE roll_type IS NULL;
+      ALTER TABLE rolls ALTER COLUMN roll_type SET NOT NULL;
+      CREATE INDEX idx_rolls_by_type ON rolls(roll_type);
+    </database_migration>
+  </environment_setup>
+
+  <team_notes>
+    <note type="d20_system">
+      Advantage/disadvantage is a fundamental D&D 5e mechanic, not a house rule. Implement it exactly as written in the Player's Handbook: roll twice, take the higher result (advantage) or lower result (disadvantage).
+    </note>
+    <note type="statistical">
+      Expected average with advantage: 13.825 (not 10.5)
+      Expected average with disadvantage: 6.175 (not 10.5)
+      Use these to verify correctness in testing.
+    </note>
+    <note type="display">
+      Be very clear in the UI which roll is the effective one. Players will reference the effective roll in gameplay, so make it unmistakable.
+    </note>
+    <note type="state_management">
+      Store advantageMode in Zustand store so it persists across multiple rolls. User shouldn't have to re-select advantage for every roll.
+    </note>
+    <note type="mobile">
+      On mobile, advantage/disadvantage toggle might need to be in a drawer or dropdown to save space. Coordinate with Story 2-11.
+    </note>
+  </team_notes>
+
+  <testing_strategy>
+    <unit_tests>
+      <test_file>backend/tests/DiceService.test.ts (update)</test_file>
+      <test_case>test_d20_advantage_returns_higher_of_two_rolls</test_case>
+      <test_case>test_d20_disadvantage_returns_lower_of_two_rolls</test_case>
+      <test_case>test_advantage_on_non_d20_throws_error</test_case>
+      <test_case>test_normal_d20_unaffected_by_advantage_feature</test_case>
+      <test_case>test_advantage_average_is_approximately_13_8</test_case>
+      <test_case>test_disadvantage_average_is_approximately_6_2</test_case>
+
+      <test_file>frontend/src/components/__tests__/AdvantageToggle.test.tsx (NEW)</test_file>
+      <test_case>test_advantage_toggle_renders_3_buttons</test_case>
+      <test_case>test_clicking_advantage_button_updates_state</test_case>
+      <test_case>test_default_selection_is_normal</test_case>
+    </unit_tests>
+
+    <integration_tests>
+      <test_file>frontend/src/__tests__/advantage-disadvantage.integration.test.tsx (NEW)</test_file>
+      <test_case>test_roll_with_advantage_shows_two_d20s</test_case>
+      <test_case>test_roll_with_disadvantage_shows_two_d20s</test_case>
+      <test_case>test_effective_roll_highlighted_for_advantage</test_case>
+      <test_case>test_zustand_persists_advantage_selection</test_case>
+    </integration_tests>
+
+    <e2e_tests>
+      <test_file>frontend/e2e/advantage-disadvantage.spec.ts (NEW)</test_file>
+      <test_case>test_select_advantage_roll_d20_other_player_sees_both_rolls</test_case>
+      <test_case>test_select_disadvantage_roll_d20_other_player_sees_both_rolls</test_case>
+      <test_case>test_advantage_on_d6_shows_error_or_ignores</test_case>
+      <test_case>test_multiple_advantage_rolls_in_sequence</test_case>
+      <test_case>test_advantage_roll_persists_across_refresh</test_case>
+    </e2e_tests>
+
+    <statistical_tests>
+      <test_approach>Run 10,000 rolls with advantage/disadvantage, verify distribution</test_approach>
+      <expected_advantage_avg>13.825 ± 0.1</expected_advantage_avg>
+      <expected_disadvantage_avg>6.175 ± 0.1</expected_disadvantage_avg>
+    </statistical_tests>
+  </testing_strategy>
+
+  <success_metrics>
+    <metric name="Statistical Correctness">
+      <target>Advantage average 13.8-13.9, disadvantage 6.1-6.2 (over 10k rolls)</target>
+      <measurement>Automated statistical test script</measurement>
+    </metric>
+    <metric name="UI Clarity">
+      <target>100% of users correctly identify effective roll without instruction</target>
+      <measurement>User testing or A/B test</measurement>
+    </metric>
+    <metric name="Code Coverage">
+      <target>&gt;90% for AdvantageToggle and advantage logic in DiceService</target>
+      <measurement>Jest coverage report</measurement>
+    </metric>
+  </success_metrics>
+
+  <open_questions>
+    <question id="Q1">
+      <text>Should we support stacking advantage/disadvantage (advantage + disadvantage = normal, per D&D rules)?</text>
+      <answer>For now, only support one at a time (advantage OR disadvantage OR neither). Future enhancement if needed.</answer>
+    </question>
+    <question id="Q2">
+      <text>Should advantage/disadvantage work with modifiers (e.g., "1d20+5 adv")?</text>
+      <answer>Yes, if Story 2-7 adds modifier support. Modifier applies to effective roll result.</answer>
+    </question>
+    <question id="Q3">
+      <text>What if advantage mode is selected but user rolls a non-d20 die?</text>
+      <answer>Show error message: "Advantage only applies to d20 rolls." Clear the advantage flag and let user resubmit.</answer>
+    </question>
+  </open_questions>
+
+</story_context>
