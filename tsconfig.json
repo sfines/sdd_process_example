@@ -14,7 +14,7 @@
     "incremental": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "allowImportingTsExtensions": true,
+    "allowImportingTsExtensions": true
   },
   "include": ["frontend/src"],
   "exclude": ["node_modules", "frontend/node_modules", ".venv"]

@@ -23,6 +23,6 @@ def typecheck(session: nox.Session) -> None:
 @nox.session(python=["3.13"])
 def test(session: nox.Session) -> None:
     session.install("-e", ".")
-    session.install("pytest", "pytest-cov", "httpx")
+    session.install("pytest", "pytest-cov", "pytest-asyncio", "httpx")
     session.run("pytest", "backend/tests/", "-v", "--cov=backend/src")
 
