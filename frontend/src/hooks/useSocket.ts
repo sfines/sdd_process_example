@@ -76,6 +76,54 @@ export const useSocket = () => {
       );
     };
 
+    // Handle room_joined from server
+    const onRoomJoined = (data: {
+      room_code: string;
+      mode: string;
+      creator_player_id: string;
+      players: { player_id: string; name: string; connected: boolean }[];
+      roll_history: unknown[];
+    }) => {
+      setRoomState(data);
+      if (navigate) {
+        navigate(`/room/${data.room_code}`);
+      }
+      // Show success toast
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: {
+            type: 'success',
+            message: `Successfully joined room ${data.room_code}`,
+          },
+        }),
+      );
+    };
+
+    // Handle player_joined broadcast from server
+    const onPlayerJoined = (data: { player_id: string; name: string }) => {
+      // Get current store state
+      const state = useSocketStore.getState();
+      if (state.roomState) {
+        const updatedRoomState = {
+          ...state.roomState,
+          players: [
+            ...state.roomState.players,
+            { player_id: data.player_id, name: data.name, connected: true },
+          ],
+        };
+        setRoomState(updatedRoomState);
+      }
+      // Show info toast
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: {
+            type: 'info',
+            message: `${data.name} joined the room`,
+          },
+        }),
+      );
+    };
+
     // Handle error from server
     const onError = (data: { message: string }) => {
       setConnectionError(data.message);
@@ -95,14 +143,26 @@ export const useSocket = () => {
       socket.emit('create_room', { player_name: customEvent.detail.playerName });
     };
 
+    // Handle join room request from store
+    const onJoinRoom = (event: Event) => {
+      const customEvent = event as CustomEvent<{ roomCode: string; playerName: string }>;
+      socket.emit('join_room', {
+        room_code: customEvent.detail.roomCode,
+        player_name: customEvent.detail.playerName,
+      });
+    };
+
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('connect_error', onConnectError);
     socket.on('world_message', onWorldMessage);
     socket.on('room_created', onRoomCreated);
+    socket.on('room_joined', onRoomJoined);
+    socket.on('player_joined', onPlayerJoined);
     socket.on('error', onError);
     window.addEventListener('socket:createRoom', onCreateRoom);
+    window.addEventListener('socket:joinRoom', onJoinRoom);
 
     // Cleanup on unmount
     return () => {
@@ -111,8 +171,11 @@ export const useSocket = () => {
       socket.off('connect_error', onConnectError);
       socket.off('world_message', onWorldMessage);
       socket.off('room_created', onRoomCreated);
+      socket.off('room_joined', onRoomJoined);
+      socket.off('player_joined', onPlayerJoined);
       socket.off('error', onError);
       window.removeEventListener('socket:createRoom', onCreateRoom);
+      window.removeEventListener('socket:joinRoom', onJoinRoom);
       reset();
     };
   }, [
