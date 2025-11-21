@@ -29,7 +29,7 @@ MAX_COLLISION_RETRIES = 10
 class RoomManager:
     """Manages game room operations."""
 
-    def __init__(self, redis_client: Redis) -> None:  # type: ignore[type-arg]
+    def __init__(self, redis_client: Redis) -> None:  # type: ignore
         """Initialize room manager with Redis client.
 
         Args:

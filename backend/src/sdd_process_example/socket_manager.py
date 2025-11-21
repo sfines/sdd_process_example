@@ -21,7 +21,7 @@ sio = socketio.AsyncServer(
 )
 
 
-def get_redis_client() -> Redis:  # type: ignore[type-arg]
+def get_redis_client() -> Redis:  # type: ignore
     """Get Redis client instance.
 
     Returns:

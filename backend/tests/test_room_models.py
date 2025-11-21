@@ -24,12 +24,12 @@ class TestPlayer:
     def test_player_id_is_required(self) -> None:
         """Test that player_id is required."""
         with pytest.raises(ValidationError):
-            Player(name="Alice", connected=True)  # type: ignore[call-arg]
+            Player(name="Alice", connected=True)  # type: ignore
 
     def test_name_is_required(self) -> None:
         """Test that name is required."""
         with pytest.raises(ValidationError):
-            Player(player_id="abc123", connected=True)  # type: ignore[call-arg]
+            Player(player_id="abc123", connected=True)  # type: ignore
 
     def test_connected_defaults_to_true(self) -> None:
         """Test that connected defaults to True if not provided."""
@@ -61,7 +61,7 @@ class TestRoomState:
     def test_room_code_is_required(self) -> None:
         """Test that room_code is required."""
         with pytest.raises(ValidationError):
-            RoomState(  # type: ignore[call-arg]
+            RoomState(  # type: ignore
                 mode="Open",
                 created_at="2024-01-15T10:30:00Z",
                 creator_player_id="abc123",
