@@ -19,14 +19,14 @@ Story 1.1 implementation is **complete, tested, and production-ready**. All 11 t
 
 ### ✅ All Tests Passing
 
-| Test Category | Status | Details |
-|---------------|--------|---------|
-| Backend Unit Tests | ✅ PASSED | 2/2 tests in 0.11s |
-| Frontend Unit Tests | ✅ PASSED | 1/1 test in 191ms |
-| Python Linting | ✅ PASSED | 0 errors (ruff) |
-| Python Type Checking | ✅ PASSED | 0 errors (mypy --strict) |
-| JavaScript Linting | ✅ PASSED | 0 errors (eslint) |
-| TypeScript Type Checking | ✅ PASSED | 0 errors (tsc --noEmit) |
+| Test Category            | Status    | Details                  |
+| ------------------------ | --------- | ------------------------ |
+| Backend Unit Tests       | ✅ PASSED | 2/2 tests in 0.11s       |
+| Frontend Unit Tests      | ✅ PASSED | 1/1 test in 191ms        |
+| Python Linting           | ✅ PASSED | 0 errors (ruff)          |
+| Python Type Checking     | ✅ PASSED | 0 errors (mypy --strict) |
+| JavaScript Linting       | ✅ PASSED | 0 errors (eslint)        |
+| TypeScript Type Checking | ✅ PASSED | 0 errors (tsc --noEmit)  |
 
 **Total Quality Score:** 100% - All gates passed
 
@@ -81,6 +81,7 @@ project/
 ### ✅ main.py - FastAPI Application
 
 **Code Quality:**
+
 - ✅ Clean, minimal implementation
 - ✅ Proper type hints (dict[str, str])
 - ✅ Async function (FastAPI best practice)
@@ -94,10 +95,12 @@ project/
 ### ✅ test_health.py - Unit Tests
 
 **Test Coverage:**
+
 - ✅ Happy path: endpoint returns 200 with correct JSON
 - ✅ Edge case: undefined path returns 404
 
 **Test Quality:**
+
 - ✅ Type hints on test functions
 - ✅ Clear test names
 - ✅ Proper FastAPI TestClient usage
@@ -112,11 +115,13 @@ project/
 **Multi-Stage Build:**
 
 **Stage 1 (builder):**
+
 - ✅ Uses python:3.11-slim (correct)
 - ✅ Installs uv (aligns with project standards)
 - ✅ Runs `uv sync --frozen` (reproducible deps)
 
 **Stage 2 (runtime):**
+
 - ✅ Copies .venv from builder (efficient)
 - ✅ Sets correct PATH
 - ✅ Proper CMD format (JSON array)
@@ -128,11 +133,13 @@ project/
 ### ✅ pyproject.toml Configuration
 
 **Structure:**
+
 - ✅ Proper build system (hatchling)
 - ✅ Python 3.11+ requirement (matches story)
 - ✅ Runtime vs dev dependencies separated
 
 **Runtime Dependencies:**
+
 - ✅ fastapi>=0.104.0
 - ✅ uvicorn[standard]>=0.24.0
 - ✅ python-socketio>=5.10.0 (for Story 1.2)
@@ -140,6 +147,7 @@ project/
 - ✅ redis>=5.0.0
 
 **Dev Dependencies:**
+
 - ✅ pytest>=7.4.0
 - ✅ mypy>=1.7.0
 - ✅ ruff>=0.1.0
@@ -147,6 +155,7 @@ project/
 - ✅ httpx>=0.24.0 (required for TestClient)
 
 **Tool Configuration:**
+
 - ✅ ruff: strict lint selection (E,F,B,C,UP,ANN)
 - ✅ mypy: strict mode enabled
 - ✅ pytest: proper test discovery
@@ -161,6 +170,7 @@ project/
 ### ✅ App.tsx - React Component
 
 **Code Quality:**
+
 - ✅ Proper return type (JSX.Element)
 - ✅ Functional component
 - ✅ Clean, minimal implementation
@@ -174,6 +184,7 @@ project/
 ### ✅ main.tsx - React Entry Point
 
 **Code Quality:**
+
 - ✅ React 18 createRoot API (modern)
 - ✅ StrictMode enabled (development safety)
 - ✅ Correct DOM element targeting
@@ -186,6 +197,7 @@ project/
 ### ✅ App.test.tsx - Unit Test
 
 **Test Quality:**
+
 - ✅ Vitest framework
 - ✅ Component renders without errors
 - ✅ Returns defined value
@@ -198,12 +210,14 @@ project/
 **Multi-Stage Build:**
 
 **Stage 1 (builder):**
+
 - ✅ node:20-alpine (correct)
 - ✅ Installs pnpm globally
 - ✅ `pnpm install --frozen-lockfile` (reproducible)
 - ✅ Runs `pnpm run build`
 
 **Stage 2 (runtime):**
+
 - ✅ nginx:alpine (lightweight)
 - ✅ Copies dist to /usr/share/nginx/html
 - ✅ Proper CMD: `nginx -g daemon off;`
@@ -214,6 +228,7 @@ project/
 ### ✅ Frontend Configuration Files
 
 **tsconfig.json (frontend):**
+
 - ✅ Strict mode enabled
 - ✅ Target ES2022
 - ✅ JSX react-jsx (React 18)
@@ -221,11 +236,13 @@ project/
 - ✅ All safety checks enabled
 
 **vite.config.ts:**
+
 - ✅ React plugin configured
 - ✅ Dev server: port 3000, host 0.0.0.0
 - ✅ Build output: dist
 
 **vitest.config.ts:**
+
 - ✅ React plugin configured
 - ✅ globals: true
 - ✅ environment: jsdom
@@ -235,16 +252,19 @@ project/
 ### ✅ package.json
 
 **Structure:**
+
 - ✅ type: "module" (ES modules)
 - ✅ Scripts: dev, build, lint, format, typecheck, test
 - ✅ Dependencies properly separated
 - ✅ Engine requirements: node>=24, pnpm>=8
 
 **Dependencies:**
+
 - ✅ react@18.2+
 - ✅ react-dom@18.2+
 
 **DevDependencies:**
+
 - ✅ @types/node@24.0+ (matches devcontainer)
 - ✅ @types/react@18.2+
 - ✅ @types/react-dom@18.2+
@@ -263,6 +283,7 @@ project/
 ### ✅ eslint.config.js (ESLint 9 Format)
 
 **Configuration:**
+
 - ✅ Migrated from .eslintrc.cjs to eslint.config.js (ESLint 9)
 - ✅ Ignores: node_modules, dist, .venv, build
 - ✅ JavaScript files: recommended rules
@@ -277,6 +298,7 @@ project/
 ### ✅ prettier.config.js (ES Module Format)
 
 **Configuration:**
+
 - ✅ Converted to ES module (export default)
 - ✅ Semi: true
 - ✅ Trailing comma: all
@@ -289,6 +311,7 @@ project/
 ### ✅ Root tsconfig.json
 
 **Configuration:**
+
 - ✅ Points to frontend/src
 - ✅ Includes: frontend/src
 - ✅ Excludes: node_modules, frontend/node_modules, .venv
@@ -305,6 +328,7 @@ project/
 **Services:**
 
 **Backend:**
+
 - ✅ Builds from backend/Dockerfile
 - ✅ Port: 8000:8000
 - ✅ Environment: REDIS_URL
@@ -313,16 +337,19 @@ project/
 - ✅ Volumes: ./backend:/app (dev hot reload)
 
 **Frontend:**
+
 - ✅ Builds from frontend/Dockerfile
 - ✅ Port: 80:80
 - ✅ Network: sdd-network
 
 **Redis:**
+
 - ✅ Image: redis:7-alpine
 - ✅ Port: 6379:6379
 - ✅ Network: sdd-network
 
 **Networking:**
+
 - ✅ Custom network: sdd-network
 - ✅ Services discoverable by hostname
 
@@ -336,11 +363,13 @@ project/
 
 **Triggers:** Push/PR to develop  
 **Python Linting:**
+
 - ✅ Sets up Python 3.11
 - ✅ Installs ruff
 - ✅ Runs: `ruff check backend/ --select=E,W,F`
 
 **JavaScript Linting:**
+
 - ✅ Sets up Node 20
 - ✅ Caches npm
 - ✅ Runs: `npm run lint` (eslint)
@@ -351,10 +380,12 @@ project/
 
 **Triggers:** Push/PR to develop  
 **Python Type Checking:**
+
 - ✅ Installs mypy + dependencies
 - ✅ Runs: `mypy backend/ --strict`
 
 **TypeScript Type Checking:**
+
 - ✅ Runs: `npm run typecheck` (tsc --noEmit)
 
 **Assessment:** ✅ Comprehensive type checking workflow.
@@ -363,10 +394,12 @@ project/
 
 **Triggers:** Push/PR to develop  
 **Backend Tests:**
+
 - ✅ Installs pytest + dependencies
 - ✅ Runs: `pytest backend/tests/`
 
 **Frontend Tests:**
+
 - ✅ Runs: `npm run test -- run` (vitest)
 
 **Assessment:** ✅ Complete testing workflow.
@@ -375,14 +408,17 @@ project/
 
 **Triggers:** Push to main only  
 **Setup:**
+
 - ✅ Docker Buildx
 - ✅ GHCR authentication
 
 **Backend Build:**
+
 - ✅ Tags: ghcr.io/{repo}/backend:{sha} + :latest
 - ✅ Uses docker/build-push-action@v5
 
 **Frontend Build:**
+
 - ✅ Tags: ghcr.io/{repo}/frontend:{sha} + :latest
 
 **Assessment:** ✅ Professional Docker build & push workflow.
@@ -391,19 +427,19 @@ project/
 
 ## Code Quality Metrics
 
-| Metric | Status | Evidence |
-|--------|--------|----------|
-| Unit Test Pass Rate | ✅ 100% | 3/3 tests passed |
-| Code Coverage | ✅ Present | Backend health endpoint + frontend render |
-| Linting Issues | ✅ 0 | ruff + eslint clean |
-| Type Checking Issues | ✅ 0 | mypy + tsc clean |
-| Type Coverage | ✅ 100% | All functions/components typed |
-| Code Style | ✅ Compliant | Prettier formatted |
-| Documentation | ✅ Comprehensive | README + CONTRIBUTING |
-| Configuration | ✅ Professional | pyproject.toml + package.json |
-| CI/CD Pipelines | ✅ 4 workflows | Lint, type-check, test, build |
-| Docker Quality | ✅ Optimized | Multi-stage builds |
-| DevContainer | ✅ Configured | uv + pnpm + all tools |
+| Metric               | Status           | Evidence                                  |
+| -------------------- | ---------------- | ----------------------------------------- |
+| Unit Test Pass Rate  | ✅ 100%          | 3/3 tests passed                          |
+| Code Coverage        | ✅ Present       | Backend health endpoint + frontend render |
+| Linting Issues       | ✅ 0             | ruff + eslint clean                       |
+| Type Checking Issues | ✅ 0             | mypy + tsc clean                          |
+| Type Coverage        | ✅ 100%          | All functions/components typed            |
+| Code Style           | ✅ Compliant     | Prettier formatted                        |
+| Documentation        | ✅ Comprehensive | README + CONTRIBUTING                     |
+| Configuration        | ✅ Professional  | pyproject.toml + package.json             |
+| CI/CD Pipelines      | ✅ 4 workflows   | Lint, type-check, test, build             |
+| Docker Quality       | ✅ Optimized     | Multi-stage builds                        |
+| DevContainer         | ✅ Configured    | uv + pnpm + all tools                     |
 
 ---
 
