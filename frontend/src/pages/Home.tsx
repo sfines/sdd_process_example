@@ -3,7 +3,9 @@ import useSocketStore from '../store/socketStore';
 
 export default function Home() {
   const [playerName, setPlayerName] = useState('');
-  const { createRoom, connectionError } = useSocketStore();
+  const [joinRoomCode, setJoinRoomCode] = useState('');
+  const [joinPlayerName, setJoinPlayerName] = useState('');
+  const { createRoom, joinRoom, connectionError } = useSocketStore();
 
   const handleCreateRoom = () => {
     if (playerName.trim().length === 0) {
@@ -12,7 +14,16 @@ export default function Home() {
     createRoom(playerName);
   };
 
-  const isButtonDisabled = playerName.trim().length === 0;
+  const handleJoinRoom = () => {
+    if (joinRoomCode.trim().length === 0 || joinPlayerName.trim().length === 0) {
+      return;
+    }
+    joinRoom(joinRoomCode, joinPlayerName);
+  };
+
+  const isCreateButtonDisabled = playerName.trim().length === 0;
+  const isJoinButtonDisabled = 
+    joinRoomCode.trim().length === 0 || joinPlayerName.trim().length === 0;
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -51,7 +62,7 @@ export default function Home() {
 
           <button
             onClick={handleCreateRoom}
-            disabled={isButtonDisabled}
+            disabled={isCreateButtonDisabled}
             className="w-full h-12 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             style={{ minHeight: '48px' }}
           >
@@ -65,10 +76,57 @@ export default function Home() {
           )}
         </div>
 
-        {/* Join Room Section (Placeholder for Story 2.2) */}
-        <div className="bg-white rounded-lg shadow-md p-6 space-y-4 opacity-50">
+        {/* Join Room Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
           <h2 className="text-xl font-semibold text-gray-800">Join Room</h2>
-          <p className="text-gray-600 text-sm">Coming soon in Story 2.2</p>
+          
+          <div>
+            <label 
+              htmlFor="roomCode" 
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Room Code
+            </label>
+            <input
+              id="roomCode"
+              type="text"
+              maxLength={20}
+              value={joinRoomCode}
+              onChange={(e) => setJoinRoomCode(e.target.value.toUpperCase())}
+              placeholder="e.g., ALPHA-1234"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label 
+              htmlFor="joinPlayerName" 
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Your Name
+            </label>
+            <input
+              id="joinPlayerName"
+              type="text"
+              maxLength={20}
+              value={joinPlayerName}
+              onChange={(e) => setJoinPlayerName(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Maximum 20 characters
+            </p>
+          </div>
+
+          <button
+            onClick={handleJoinRoom}
+            disabled={isJoinButtonDisabled}
+            className="w-full h-12 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            style={{ minHeight: '48px' }}
+          >
+            Join
+          </button>
         </div>
       </div>
     </div>
