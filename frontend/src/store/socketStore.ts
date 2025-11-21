@@ -32,6 +32,7 @@ interface SocketState {
     roll_history: unknown[];
   }) => void;
   createRoom: (playerName: string) => void;
+  joinRoom: (roomCode: string, playerName: string) => void;
   reset: () => void;
 }
 
@@ -77,7 +78,21 @@ export const useSocketStore = create<SocketState>((set) => ({
     }
   },
 
+  joinRoom: (roomCode: string, playerName: string) => {
+    // This will be called by the component
+    // The actual socket emission happens in useSocket hook
+    set({ connectionError: null });
+    // Hook will listen for this action
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('socket:joinRoom', {
+          detail: { roomCode, playerName },
+        }),
+      );
+    }
+  },
+
   reset: () => set(initialState),
-}));
+});
 
 export default useSocketStore;

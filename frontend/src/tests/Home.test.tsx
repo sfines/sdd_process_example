@@ -23,8 +23,8 @@ describe('Home Page', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/create.*room/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/enter your name/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/create.*room/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByPlaceholderText(/enter your name/i)).toHaveLength(2);
     expect(screen.getByRole('button', { name: /create room/i })).toBeInTheDocument();
   });
 
@@ -35,8 +35,10 @@ describe('Home Page', () => {
       </BrowserRouter>
     );
 
-    const input = screen.getByPlaceholderText(/enter your name/i) as HTMLInputElement;
-    expect(input).toHaveAttribute('maxLength', '20');
+    const inputs = screen.getAllByPlaceholderText(/enter your name/i) as HTMLInputElement[];
+    inputs.forEach(input => {
+      expect(input).toHaveAttribute('maxLength', '20');
+    });
   });
 
   it('create room button has minimum 44px height for tap target', () => {
@@ -47,10 +49,9 @@ describe('Home Page', () => {
     );
 
     const button = screen.getByRole('button', { name: /create room/i });
-    const styles = window.getComputedStyle(button);
-    const height = parseInt(styles.height);
+    const minHeight = button.style.minHeight;
 
-    expect(height).toBeGreaterThanOrEqual(44);
+    expect(minHeight).toBe('48px');
   });
 
   it('validates empty player name', async () => {
@@ -77,10 +78,11 @@ describe('Home Page', () => {
       </BrowserRouter>
     );
 
-    const input = screen.getByPlaceholderText(/enter your name/i);
+    const nameInputs = screen.getAllByPlaceholderText(/enter your name/i);
+    const createNameInput = nameInputs[0]; // First input is for create
     const button = screen.getByRole('button', { name: /create room/i });
 
-    fireEvent.change(input, { target: { value: 'Alice' } });
+    fireEvent.change(createNameInput, { target: { value: 'Alice' } });
 
     expect(button).not.toBeDisabled();
   });
@@ -94,5 +96,58 @@ describe('Home Page', () => {
 
     // Should have some indication of join room (deferred to Story 2.2)
     expect(screen.getByText(/join.*room/i)).toBeInTheDocument();
+  });
+
+  // Story 2.2 tests - Join Room functionality
+  it('renders join room form with room code and name inputs', () => {
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    expect(screen.getByPlaceholderText(/e\.g\., ALPHA-1234/i)).toBeInTheDocument();
+    expect(screen.getAllByPlaceholderText(/enter your name/i)).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /^join$/i })).toBeInTheDocument();
+  });
+
+  it('room code input has max length for WORD-#### format', () => {
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    const input = screen.getByPlaceholderText(/e\.g\., ALPHA-1234/i) as HTMLInputElement;
+    expect(input).toHaveAttribute('maxLength', '20');
+  });
+
+  it('join button is disabled when room code or name is empty', () => {
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    const joinButton = screen.getByRole('button', { name: /^join$/i });
+    expect(joinButton).toBeDisabled();
+  });
+
+  it('join button is enabled when both inputs are filled', () => {
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    const roomCodeInput = screen.getByPlaceholderText(/e\.g\., ALPHA-1234/i);
+    const nameInputs = screen.getAllByPlaceholderText(/enter your name/i);
+    const joinNameInput = nameInputs[1];
+    const joinButton = screen.getByRole('button', { name: /^join$/i });
+
+    fireEvent.change(roomCodeInput, { target: { value: 'ALPHA-1234' } });
+    fireEvent.change(joinNameInput, { target: { value: 'Bob' } });
+
+    expect(joinButton).not.toBeDisabled();
   });
 });
