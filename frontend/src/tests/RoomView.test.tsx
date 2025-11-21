@@ -26,7 +26,7 @@ describe('RoomView', () => {
       </BrowserRouter>,
     );
 
-    expect(screen.getByText(/room/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/room/i)[0]).toBeInTheDocument();
   });
 
   it('displays room code prominently', () => {

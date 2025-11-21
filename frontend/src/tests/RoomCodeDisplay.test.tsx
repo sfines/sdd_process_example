@@ -76,25 +76,21 @@ describe('RoomCodeDisplay', () => {
   });
 
   it('reverts button text after 2 seconds', async () => {
-    vi.useFakeTimers();
-
     render(<RoomCodeDisplay roomCode="GOLF-3333" />);
 
     const button = screen.getByRole('button', { name: /copy/i });
     fireEvent.click(button);
 
-    await waitFor(() => {
-      expect(screen.getByText(/copied/i)).toBeInTheDocument();
-    });
+    // Wait for the "Copied!" text to appear
+    await waitFor(() => expect(screen.queryByText(/copied/i)).toBeInTheDocument());
 
-    // Fast-forward 2 seconds
-    vi.advanceTimersByTime(2000);
-
-    await waitFor(() => {
-      expect(screen.getByText(/copy/i)).toBeInTheDocument();
-      expect(screen.queryByText(/copied/i)).not.toBeInTheDocument();
-    });
-
-    vi.useRealTimers();
+    // Wait 2 seconds for revert
+    await waitFor(
+      () => {
+        expect(screen.getByText(/copy/i)).toBeInTheDocument();
+        expect(screen.queryByText(/copied/i)).not.toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 });
