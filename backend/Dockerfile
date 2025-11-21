@@ -1,26 +1,24 @@
-# Build stage
-FROM python:3.13-slim as builder
-
-WORKDIR /tmp
-
-COPY pyproject.toml uv.lock* ./
-
-RUN pip install --no-cache-dir uv && \
-    uv sync --frozen
-
-# Runtime stage
+# Use the official Python image
 FROM python:3.13-slim
 
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Change the working directory to the `app` directory
 WORKDIR /app
 
-# Copy virtual environment from builder
-COPY --from=builder /tmp/.venv /app/.venv
+# Copy the project files
+COPY pyproject.toml uv.lock ./
+COPY backend/src ./backend/src
 
-# Copy application code
-COPY backend/src/sdd_process_example/ ./sdd_process_example/
+# Install the project and its dependencies
+RUN uv sync --frozen
 
-ENV PATH=/app/.venv/bin:$PATH
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "sdd_process_example.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the FastAPI application
+CMD ["uvicorn", "sdd_process_example.main:socket_app", "--host", "0.0.0.0", "--port", "8000"]
+
