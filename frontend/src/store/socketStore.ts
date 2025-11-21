@@ -21,6 +21,13 @@ interface SocketState {
   creatorPlayerId: string | null;
   players: Player[];
   rollHistory: unknown[];
+  roomState?: {
+    room_code: string;
+    mode: string;
+    creator_player_id: string;
+    players: Player[];
+    roll_history: unknown[];
+  };
   setConnected: (connected: boolean) => void;
   setConnectionMessage: (message: string | null) => void;
   setConnectionError: (error: string | null) => void;
@@ -64,6 +71,7 @@ export const useSocketStore = create<SocketState>((set) => ({
       creatorPlayerId: roomState.creator_player_id,
       players: roomState.players,
       rollHistory: roomState.roll_history,
+      roomState: roomState,
     }),
 
   createRoom: (playerName: string) => {
@@ -93,6 +101,4 @@ export const useSocketStore = create<SocketState>((set) => ({
   },
 
   reset: () => set(initialState),
-});
-
-export default useSocketStore;
+}));
