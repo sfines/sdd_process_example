@@ -40,3 +40,9 @@ BDD uses a "Given-When-Then" format for writing specifications. This structure h
 4.  **Write Application Code (Green)**: Write the minimum amount of application code necessary to make the feature tests pass.
 5.  **Refactor**: With the tests passing, refactor both the application code and the test code to improve design and maintainability.
 6.  **Repeat**: Continue the cycle for the next feature or scenario.
+## Testing Integrity
+
+To maintain the reliability and trustworthiness of our test suites, the following principles must be strictly followed:
+
+*   **Framework Functionality**: A test cannot be considered "passing" if the underlying testing framework is not fully functional. Any issues with the test runner, assertion libraries, or other framework components must be resolved before test results can be deemed valid.
+*   **Skipping Tests**: Skipping tests is strictly prohibited without explicit approval from a human reviewer. If a test needs to be temporarily disabled, it must be documented with a clear reason and a ticket to track its re-enablement.
