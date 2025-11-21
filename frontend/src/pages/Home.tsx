@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import useSocketStore from '../store/socketStore';
+import { useSocketStore } from '../store/socketStore';
 
 export default function Home() {
   const [playerName, setPlayerName] = useState('');
