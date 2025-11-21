@@ -25,6 +25,21 @@ ROOM_TTL_SECONDS = 18000
 # Max retries for room code collision
 MAX_COLLISION_RETRIES = 10
 
+# Max players per room
+MAX_ROOM_CAPACITY = 8
+
+
+class RoomNotFoundError(Exception):
+    """Raised when attempting to access a room that doesn't exist."""
+
+    pass
+
+
+class RoomCapacityExceededError(Exception):
+    """Raised when attempting to join a room at full capacity."""
+
+    pass
+
 
 class RoomManager:
     """Manages game room operations."""
@@ -245,7 +260,7 @@ class RoomManager:
             raise ValueError(f"Room {room_code} not found")
 
         current_count = len(room.players)
-        max_capacity = 8  # From tech spec
+        max_capacity = MAX_ROOM_CAPACITY
 
         logger.debug(
             "room_capacity_check",
@@ -255,3 +270,81 @@ class RoomManager:
         )
 
         return current_count, max_capacity
+
+    def join_room(self, room_code: str, player_name: str) -> RoomState:
+        """Add player to existing room.
+
+        Args:
+            room_code: Code of room to join
+            player_name: Name of player joining
+
+        Returns:
+            Updated RoomState with new player added
+
+        Raises:
+            ValueError: If player_name is invalid
+            RoomNotFoundError: If room does not exist
+            RoomCapacityExceededError: If room is at capacity (8 players)
+
+        Example:
+            >>> manager = RoomManager(redis_client)
+            >>> room = manager.join_room("ALPHA-1234", "Bob")
+            >>> len(room.players)
+            2
+        """
+        # Validate player name
+        is_valid, error_message = validate_player_name(player_name)
+        if not is_valid:
+            logger.warning(
+                "join_room_validation_failed",
+                room_code=room_code,
+                player_name=player_name,
+                error=error_message,
+            )
+            raise ValueError(error_message)
+
+        # Sanitize player name
+        sanitized_name = sanitize_player_name(player_name)
+
+        # Check if room exists
+        room = self.get_room(room_code)
+        if room is None:
+            logger.warning("join_room_not_found", room_code=room_code)
+            raise RoomNotFoundError(f"Room {room_code} not found")
+
+        # Check capacity
+        if len(room.players) >= MAX_ROOM_CAPACITY:
+            logger.warning(
+                "join_room_capacity_exceeded",
+                room_code=room_code,
+                current_players=len(room.players),
+            )
+            raise RoomCapacityExceededError(
+                f"Room {room_code} is at full capacity ({MAX_ROOM_CAPACITY} players)"
+            )
+
+        # Generate unique player ID
+        player_id = str(uuid.uuid4())
+
+        # Create new player
+        new_player = Player(
+            player_id=player_id,
+            name=sanitized_name,
+            connected=True,
+        )
+
+        # Add player to room
+        room.players.append(new_player)
+
+        # Store updated room state
+        self._store_room(room)
+
+        logger.info(
+            "player_joined_room",
+            room_code=room_code,
+            player_name=sanitized_name,
+            player_id=player_id,
+            total_players=len(room.players),
+        )
+
+        return room
