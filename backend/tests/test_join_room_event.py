@@ -63,7 +63,9 @@ async def test_join_room_event_success(room_manager: RoomManager) -> None:
     # Second call: player_joined broadcast
     call_args = mock_emit.call_args_list[1]
     assert call_args[0][0] == "player_joined"
-    assert "player" in call_args[0][1]
+    assert "player_id" in call_args[0][1]
+    assert "name" in call_args[0][1]
+    assert call_args[0][1]["name"] == "Bob"
 
     # Verify socket entered room
     mock_enter_room.assert_called_once()
