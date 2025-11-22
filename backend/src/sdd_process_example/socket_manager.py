@@ -349,11 +349,13 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
 
     Args:
         sid: Socket.IO session ID
-        data: Event data containing formula
+        data: Event data containing formula, player_name, and room_code
 
     Expected data format:
         {
-            "formula": str  # Dice formula (e.g., "1d20+5")
+            "formula": str,  # Dice formula (e.g., "1d20+5")
+            "player_name": str,  # Name of player rolling
+            "room_code": str  # Room code
         }
 
     Emits:
@@ -365,3 +367,69 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
         event_type="roll_dice",
         session_id=sid,
     )
+
+    try:
+        # Extract and validate parameters
+        formula = data.get("formula")
+        player_name = data.get("player_name")
+        room_code = data.get("room_code")
+
+        if not formula:
+            logger.warning(
+                "[ROLL_DICE] Missing formula",
+                event_type="roll_dice",
+                session_id=sid,
+            )
+            await sio.emit(
+                "error",
+                {"message": "formula is required"},
+                to=sid,
+            )
+            return
+
+        if not player_name:
+            logger.warning(
+                "[ROLL_DICE] Missing player_name",
+                event_type="roll_dice",
+                session_id=sid,
+            )
+            await sio.emit(
+                "error",
+                {"message": "player_name is required"},
+                to=sid,
+            )
+            return
+
+        if not room_code:
+            logger.warning(
+                "[ROLL_DICE] Missing room_code",
+                event_type="roll_dice",
+                session_id=sid,
+            )
+            await sio.emit(
+                "error",
+                {"message": "room_code is required"},
+                to=sid,
+            )
+            return
+
+        logger.info(
+            "[ROLL_DICE] Roll validated successfully",
+            event_type="roll_dice",
+            session_id=sid,
+            formula=formula,
+            room_code=room_code,
+        )
+
+    except Exception as e:
+        logger.error(
+            "[ROLL_DICE] Failed to process roll",
+            event_type="roll_dice",
+            session_id=sid,
+            error=str(e),
+        )
+        await sio.emit(
+            "error",
+            {"message": "Failed to process roll"},
+            to=sid,
+        )
