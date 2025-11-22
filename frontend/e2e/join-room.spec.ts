@@ -95,16 +95,26 @@ test.describe('Story 2.2: Join an Existing Room', () => {
     await page.goto('/');
     await expect(page.getByText('Connected')).toBeVisible({ timeout: 10000 });
 
+    // Wait a moment to ensure socket event handlers are registered
+    await page.waitForTimeout(1000);
+
     // Try to join non-existent room
     await page.getByLabel('Room Code').fill('INVALID-9999');
     await page.getByLabel('Your Name').nth(1).fill('Charlie');
 
     await page.getByRole('button', { name: /join/i }).click();
 
+    // Wait a moment for the request to complete
+    await page.waitForTimeout(3000);
+
+    // Take screenshot for debugging
+    await page.screenshot({ path: 'test-results/invalid-room-code.png' });
+
     // Should show error toast (room not found)
-    await expect(
-      page.getByText(/not found|invalid|does not exist/i),
-    ).toBeVisible({ timeout: 5000 });
+    // The error event should trigger a toast with the message
+    const errorToast = page.locator('role=alert');
+    await expect(errorToast).toBeVisible({ timeout: 10000 });
+    await expect(errorToast).toContainText(/not found/i);
 
     // Should NOT navigate to room view
     await expect(page).toHaveURL('/', { timeout: 2000 });
