@@ -8,14 +8,22 @@ from redis import Redis
 
 from .logging_config import get_logger
 from .models import HelloMessage, WorldMessage
-from .services.room_manager import RoomManager
+from .services.room_manager import (
+    RoomManager,
+    RoomNotFoundError,
+    RoomCapacityExceededError,
+)
 
 logger = get_logger(__name__)
 
 # Create Socket.IO server with CORS enabled for local development
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins=["http://localhost", "http://localhost:3000"],
+    cors_allowed_origins=[
+        "http://localhost",
+        "http://localhost:3000",
+        "http://localhost:8090",
+    ],
     logger=False,
     engineio_logger=False,
 )
@@ -32,14 +40,10 @@ def get_redis_client() -> Redis:  # type: ignore
         >>> redis.ping()
         True
     """
-    redis_host = os.getenv("REDIS_HOST", "localhost")
-    redis_port = int(os.getenv("REDIS_PORT", "6379"))
-    redis_db = int(os.getenv("REDIS_DB", "0"))
+    redis_host = os.getenv("REDIS_URL", "redis://localhost:6379")
 
-    return Redis(
-        host=redis_host,
-        port=redis_port,
-        db=redis_db,
+    return Redis.from_url(
+        redis_host,
         decode_responses=True,
     )
 
@@ -138,6 +142,9 @@ async def create_room(sid: str, data: dict[str, Any]) -> None:
         # Create room
         room = room_manager.create_room(player_name)
 
+        # Add socket to Socket.IO room
+        await sio.enter_room(sid, room.room_code)
+
         logger.info(
             "[ROOM_CREATE] Room created successfully",
             event_type="create_room",
@@ -147,7 +154,16 @@ async def create_room(sid: str, data: dict[str, Any]) -> None:
         )
 
         # Emit success
-        await sio.emit("room_created", room.model_dump(), to=sid)
+        room_data = room.model_dump()
+        await sio.emit("room_created", room_data, to=sid)
+
+        logger.info(
+            "[ROOM_CREATE] Emitted room_created event",
+            event_type="create_room",
+            session_id=sid,
+            room_code=room.room_code,
+            data_keys=list(room_data.keys()),
+        )
 
     except ValueError as e:
         # Validation error
@@ -185,6 +201,8 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
         sid: Socket.IO session ID
         data: Event data containing room_code and player_name
 
+    room_code: str | None = None  # Initialize room_code
+
     Expected data format:
         {
             "room_code": str  # Room code to join (e.g., "ALPHA-1234")
@@ -196,6 +214,8 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
         player_joined: Broadcast to other players in room with new player info
         error: On failure with error message
     """
+    room_code: str | None = None  # Initialize room_code
+
     try:
         # Extract parameters
         room_code = data.get("room_code")
@@ -233,12 +253,6 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
         redis_client = get_redis_client()
         room_manager = RoomManager(redis_client)
 
-        # Import exceptions
-        from sdd_process_example.services.room_manager import (
-            RoomNotFoundError,
-            RoomCapacityExceededError,
-        )
-
         # Join room
         room = room_manager.join_room(room_code, player_name)
 
@@ -258,13 +272,15 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
             total_players=len(room.players),
         )
 
-        # Emit room_joined to joining player
-        await sio.emit("room_joined", room.model_dump(), to=sid)
+        # Emit room_joined to joining player with their player_id
+        room_data = room.model_dump()
+        room_data["current_player_id"] = new_player.player_id
+        await sio.emit("room_joined", room_data, to=sid)
 
         # Broadcast player_joined to all other players in room
         await sio.emit(
             "player_joined",
-            {"player": new_player.model_dump()},
+            {"player_id": new_player.player_id, "name": new_player.name},
             room=room_code,
             skip_sid=sid,  # Don't send to joining player
         )
