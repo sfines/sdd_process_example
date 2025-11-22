@@ -1,8 +1,9 @@
-import useSocketStore from '../store/socketStore';
+import { useSocketStore } from '../store/socketStore';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
+import PlayerList from '../components/PlayerList';
 
 export default function RoomView() {
-  const { roomCode, players, rollHistory } = useSocketStore();
+  const { roomCode, players, rollHistory, currentPlayerId } = useSocketStore();
 
   if (!roomCode) {
     return (
@@ -24,28 +25,7 @@ export default function RoomView() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Players Section */}
           <div className="md:col-span-1 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Players ({players.length})
-            </h2>
-            <div className="space-y-2">
-              {players.length === 0 ? (
-                <p className="text-gray-500 text-sm">No players yet</p>
-              ) : (
-                players.map((player) => (
-                  <div
-                    key={player.player_id}
-                    className="flex items-center gap-2 p-2 bg-gray-50 rounded"
-                  >
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        player.connected ? 'bg-green-500' : 'bg-gray-300'
-                      }`}
-                    />
-                    <span className="text-gray-900">{player.name}</span>
-                  </div>
-                ))
-              )}
-            </div>
+            <PlayerList players={players} currentPlayerId={currentPlayerId || ''} />
           </div>
 
           {/* Roll History Section */}
