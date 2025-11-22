@@ -40,8 +40,8 @@ test.describe('Story 2.2: Join an Existing Room', () => {
       await page1.waitForURL(/\/room\/.+/, { timeout: 5000 });
       await expect(page1.getByText('Game Room')).toBeVisible();
 
-      // Extract room code from URL or display
-      const roomCodeElement = page1.locator('text=/[A-Z]+-[0-9]{4}/').first();
+      // Extract room code from the room code display element
+      const roomCodeElement = page1.getByTestId('room-code');
       await expect(roomCodeElement).toBeVisible({ timeout: 3000 });
       const roomCode = (await roomCodeElement.textContent()) || '';
       expect(roomCode).toMatch(/[A-Z]+-[0-9]{4}/);
@@ -67,22 +67,22 @@ test.describe('Story 2.2: Join an Existing Room', () => {
       });
       await expect(page2.getByText('Game Room')).toBeVisible();
 
-      // AC2: Successfully joined - verify room code displayed
-      await expect(page2.locator(`text=${roomCode}`)).toBeVisible();
+      // AC2: Successfully joined - verify room code displayed in the display element
+      await expect(page2.getByTestId('room-code')).toHaveText(roomCode);
 
       // AC5: Both players should see player list
       await expect(page2.getByText('Players')).toBeVisible();
-      await expect(page2.getByText('Alice')).toBeVisible({ timeout: 3000 });
-      await expect(page2.getByText('Bob')).toBeVisible();
+      await expect(page2.getByTestId('player-Alice')).toBeVisible({ timeout: 3000 });
+      await expect(page2.getByTestId('player-Bob')).toBeVisible();
 
       // AC6: Player 1 should receive player_joined event and see Player 2
-      await expect(page1.getByText('Bob')).toBeVisible({ timeout: 5000 });
+      await expect(page1.getByTestId('player-Bob')).toBeVisible({ timeout: 5000 });
 
       // Verify both players shown on both pages
-      await expect(page1.getByText('Alice')).toBeVisible();
-      await expect(page2.getByText('Alice')).toBeVisible();
-      await expect(page1.getByText('Bob')).toBeVisible();
-      await expect(page2.getByText('Bob')).toBeVisible();
+      await expect(page1.getByTestId('player-Alice')).toBeVisible();
+      await expect(page2.getByTestId('player-Alice')).toBeVisible();
+      await expect(page1.getByTestId('player-Bob')).toBeVisible();
+      await expect(page2.getByTestId('player-Bob')).toBeVisible();
     } finally {
       await context1.close();
       await context2.close();
@@ -112,7 +112,7 @@ test.describe('Story 2.2: Join an Existing Room', () => {
 
     // Should show error toast (room not found)
     // The error event should trigger a toast with the message
-    const errorToast = page.locator('role=alert');
+    const errorToast = page.locator('role=alert').first();
     await expect(errorToast).toBeVisible({ timeout: 10000 });
     await expect(errorToast).toContainText(/not found/i);
 
@@ -138,7 +138,7 @@ test.describe('Story 2.2: Join an Existing Room', () => {
       await page1.getByRole('button', { name: /create room/i }).click();
       await page1.waitForURL(/\/room\/.+/, { timeout: 5000 });
 
-      const roomCodeElement = page1.locator('text=/[A-Z]+-[0-9]{4}/').first();
+      const roomCodeElement = page1.getByTestId('room-code');
       const roomCode = (await roomCodeElement.textContent()) || '';
 
       // Join room
@@ -155,8 +155,9 @@ test.describe('Story 2.2: Join an Existing Room', () => {
 
       // Both players should have green connection indicator (connected: true)
       // Look for green circle indicators (bg-green-500 in PlayerList component)
-      const greenIndicators1 = page1.locator('.bg-green-500');
-      const greenIndicators2 = page2.locator('.bg-green-500');
+      // Scope to player list items to avoid matching other green elements
+      const greenIndicators1 = page1.locator('[role="list"] .bg-green-500');
+      const greenIndicators2 = page2.locator('[role="list"] .bg-green-500');
 
       // Should have at least 2 green indicators (both players connected)
       await expect(greenIndicators1).toHaveCount(2, { timeout: 5000 });
@@ -187,7 +188,7 @@ test.describe('Story 2.2: Join an Existing Room', () => {
       await page1.getByRole('button', { name: /create room/i }).click();
       await page1.waitForURL(/\/room\/.+/, { timeout: 5000 });
 
-      const roomCodeElement = page1.locator('text=/[A-Z]+-[0-9]{4}/').first();
+      const roomCodeElement = page1.getByTestId('room-code');
       const roomCode = (await roomCodeElement.textContent()) || '';
 
       // Join room
@@ -237,9 +238,7 @@ test.describe('Story 2.2: Join an Existing Room', () => {
       await pages[0].getByRole('button', { name: /create room/i }).click();
       await pages[0].waitForURL(/\/room\/.+/, { timeout: 5000 });
 
-      const roomCodeElement = pages[0]
-        .locator('text=/[A-Z]+-[0-9]{4}/')
-        .first();
+      const roomCodeElement = pages[0].getByTestId('room-code');
       const roomCode = (await roomCodeElement.textContent()) || '';
 
       // Players 2-4: Join simultaneously
@@ -250,7 +249,10 @@ test.describe('Story 2.2: Join an Existing Room', () => {
             timeout: 10000,
           });
           await page.getByLabel('Room Code').fill(roomCode);
-          await page.getByLabel('Your Name').nth(1).fill(`Player${index + 2}`);
+          await page
+            .getByLabel('Your Name')
+            .nth(1)
+            .fill(`Player${index + 2}`);
           await page.getByRole('button', { name: /join/i }).click();
           await page.waitForURL(new RegExp(`/room/${roomCode}`), {
             timeout: 5000,
@@ -263,10 +265,10 @@ test.describe('Story 2.2: Join an Existing Room', () => {
         await expect(page.getByText(/Players/)).toBeVisible({
           timeout: 5000,
         });
-        await expect(page.getByText('Player1')).toBeVisible();
-        await expect(page.getByText('Player2')).toBeVisible();
-        await expect(page.getByText('Player3')).toBeVisible();
-        await expect(page.getByText('Player4')).toBeVisible();
+        await expect(page.getByTestId('player-Player1')).toBeVisible();
+        await expect(page.getByTestId('player-Player2')).toBeVisible();
+        await expect(page.getByTestId('player-Player3')).toBeVisible();
+        await expect(page.getByTestId('player-Player4')).toBeVisible();
       }
     } finally {
       for (const context of contexts) {
