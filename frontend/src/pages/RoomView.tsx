@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { useSocketStore } from '../store/socketStore';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
 import PlayerList from '../components/PlayerList';
+import DiceInput from '../components/DiceInput';
+import RollHistory from '../components/RollHistory';
 
 export default function RoomView() {
-  const { roomCode, players, rollHistory, currentPlayerId } = useSocketStore();
+  const { roomCode, players, rollHistory, currentPlayerId, rollDice } =
+    useSocketStore();
+  const [isRolling, setIsRolling] = useState(false);
 
   if (!roomCode) {
     return (
@@ -12,6 +17,20 @@ export default function RoomView() {
       </div>
     );
   }
+
+  // Get current player's name
+  const currentPlayer = players.find((p) => p.player_id === currentPlayerId);
+  const playerName = currentPlayer?.name || 'Unknown';
+
+  const handleRoll = (formula: string) => {
+    setIsRolling(true);
+    rollDice(formula, playerName, roomCode);
+
+    // Reset rolling state after a short delay
+    setTimeout(() => {
+      setIsRolling(false);
+    }, 500);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -32,33 +51,13 @@ export default function RoomView() {
           </div>
 
           {/* Roll History Section */}
-          <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Roll History
-            </h2>
-            <div className="space-y-2">
-              {rollHistory.length === 0 ? (
-                <p className="text-gray-500 text-sm">
-                  No rolls yet. Roll some dice to get started!
-                </p>
-              ) : (
-                <div className="text-gray-500 text-sm">
-                  Roll history will appear here (Story 2.3+)
-                </div>
-              )}
-            </div>
+          <div className="md:col-span-2">
+            <RollHistory rolls={rollHistory} />
           </div>
         </div>
 
-        {/* Dice Rolling Section - Placeholder for Story 2.3 */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Dice Roller
-          </h2>
-          <p className="text-gray-500 text-sm">
-            Coming in Story 2.3 - Roll dice functionality
-          </p>
-        </div>
+        {/* Dice Rolling Section */}
+        <DiceInput onRoll={handleRoll} isRolling={isRolling} />
       </div>
     </div>
   );

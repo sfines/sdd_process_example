@@ -13,6 +13,18 @@ interface Player {
   connected: boolean;
 }
 
+interface DiceResult {
+  roll_id: string;
+  player_id: string;
+  player_name: string;
+  formula: string;
+  individual_results: number[];
+  modifier: number;
+  total: number;
+  timestamp: string;
+  dc_pass?: boolean | null;
+}
+
 interface SocketState {
   isConnected: boolean;
   connectionMessage: string | null;
@@ -22,13 +34,13 @@ interface SocketState {
   creatorPlayerId: string | null;
   currentPlayerId: string | null;
   players: Player[];
-  rollHistory: unknown[];
+  rollHistory: DiceResult[];
   roomState?: {
     room_code: string;
     mode: string;
     creator_player_id: string;
     players: Player[];
-    roll_history: unknown[];
+    roll_history: DiceResult[];
   };
   setConnected: (connected: boolean) => void;
   setConnectionMessage: (message: string | null) => void;
@@ -38,11 +50,13 @@ interface SocketState {
     mode: string;
     creator_player_id: string;
     players: Player[];
-    roll_history: unknown[];
+    roll_history: DiceResult[];
   }) => void;
   setCurrentPlayerId: (playerId: string) => void;
   createRoom: (playerName: string) => void;
   joinRoom: (roomCode: string, playerName: string) => void;
+  rollDice: (formula: string, playerName: string, roomCode: string) => void;
+  addRollToHistory: (roll: DiceResult) => void;
   reset: () => void;
 }
 
@@ -93,6 +107,21 @@ export const useSocketStore = create<SocketState>((set) => ({
       room_code: roomCode,
       player_name: playerName,
     });
+  },
+
+  rollDice: (formula: string, playerName: string, roomCode: string) => {
+    // Emit roll_dice event to backend
+    socket.emit('roll_dice', {
+      formula,
+      player_name: playerName,
+      room_code: roomCode,
+    });
+  },
+
+  addRollToHistory: (roll: DiceResult) => {
+    set((state) => ({
+      rollHistory: [...state.rollHistory, roll],
+    }));
   },
 
   reset: () => set(initialState),
