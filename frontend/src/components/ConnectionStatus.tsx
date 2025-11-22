@@ -5,10 +5,10 @@
  */
 
 import React from 'react';
-import { useSocket } from '../hooks/useSocket.js';
+import { useSocketStore } from '../store/socketStore';
 
 export const ConnectionStatus: React.FC = () => {
-  const { isConnected, connectionMessage, connectionError } = useSocket();
+  const { isConnected, connectionMessage, connectionError } = useSocketStore();
 
   return (
     <div className="connection-status">

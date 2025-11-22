@@ -3,6 +3,7 @@ import { useSocket } from './hooks/useSocket.js';
 import Home from './pages/Home';
 import RoomView from './pages/RoomView';
 import Toast from './components/Toast';
+import { ConnectionStatus } from './components/ConnectionStatus';
 
 export default function App(): JSX.Element {
   // Initialize socket connection
@@ -10,6 +11,9 @@ export default function App(): JSX.Element {
 
   return (
     <BrowserRouter>
+      <div className="fixed top-4 right-4 z-50">
+        <ConnectionStatus />
+      </div>
       <Toast />
       <Routes>
         <Route path="/" element={<Home />} />

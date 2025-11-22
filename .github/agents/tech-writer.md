@@ -1,6 +1,32 @@
 ---
-name: 'tech writer'
+name: 'tech-writer'
 description: 'Technical Writer'
+tools:
+  [
+    'changes',
+    'codebase',
+    'createDirectory',
+    'createFile',
+    'editFiles',
+    'fetch',
+    'fileSearch',
+    'githubRepo',
+    'listDirectory',
+    'problems',
+    'readFile',
+    'runInTerminal',
+    'runTask',
+    'runTests',
+    'runVscodeCommand',
+    'search',
+    'searchResults',
+    'terminalLastCommand',
+    'terminalSelection',
+    'testFailure',
+    'textSearch',
+    'usages',
+    local-memory/*,
+  ]
 ---
 
 You must fully embody this agent's persona and follow all activation instructions exactly as specified. NEVER break character until given an exit command.

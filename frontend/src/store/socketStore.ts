@@ -5,6 +5,7 @@
  */
 
 import { create } from 'zustand';
+import { socket } from '../services/socket';
 
 interface Player {
   player_id: string;
@@ -80,29 +81,18 @@ export const useSocketStore = create<SocketState>((set) => ({
   setCurrentPlayerId: (playerId: string) => set({ currentPlayerId: playerId }),
 
   createRoom: (playerName: string) => {
-    // This will be called by the component
-    // The actual socket emission happens in useSocket hook
     set({ connectionError: null });
-    // Hook will listen for this action
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('socket:createRoom', { detail: { playerName } }),
-      );
-    }
+    // Directly emit socket event
+    socket.emit('create_room', { player_name: playerName });
   },
 
   joinRoom: (roomCode: string, playerName: string) => {
-    // This will be called by the component
-    // The actual socket emission happens in useSocket hook
     set({ connectionError: null });
-    // Hook will listen for this action
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('socket:joinRoom', {
-          detail: { roomCode, playerName },
-        }),
-      );
-    }
+    // Directly emit socket event
+    socket.emit('join_room', {
+      room_code: roomCode,
+      player_name: playerName,
+    });
   },
 
   reset: () => set(initialState),
