@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 import structlog
 from redis import Redis
 
-from sdd_process_example.models import Player, RoomState
+from sdd_process_example.models import DiceResult, Player, RoomState
 from sdd_process_example.utils.room_code_generator import (
     generate_room_code,
     is_code_available,
@@ -348,3 +348,69 @@ class RoomManager:
         )
 
         return room
+
+    def add_roll_to_history(self, room_code: str, roll: DiceResult) -> None:
+        """Add a roll to the room's roll history in Redis.
+
+        Args:
+            room_code: Room code to add roll to
+            roll: DiceResult to append to history
+        """
+        redis_key = f"room:{room_code}"
+
+        # Get current room state
+        room_data = self.redis.hgetall(redis_key)
+
+        if not room_data:
+            logger.warning("add_roll_to_history_room_not_found", room_code=room_code)
+            return
+
+        # Parse existing roll history
+        roll_history = json.loads(room_data.get("roll_history", "[]"))
+
+        # Append new roll (serialize to dict)
+        roll_history.append(roll.model_dump(mode="json"))
+
+        # Update Redis hash
+        self.redis.hset(redis_key, "roll_history", json.dumps(roll_history))
+
+        # Refresh TTL
+        self.redis.expire(redis_key, ROOM_TTL_SECONDS)
+
+        logger.debug(
+            "roll_added_to_history",
+            room_code=room_code,
+            roll_id=roll.roll_id,
+            history_length=len(roll_history),
+        )
+
+    def get_roll_history(
+        self, room_code: str, offset: int = 0, limit: int = 100
+    ) -> list[DiceResult]:
+        """Retrieve roll history for a room with pagination.
+
+        Args:
+            room_code: Room code to query
+            offset: Starting index for pagination (default: 0)
+            limit: Maximum number of rolls to return (default: 100)
+
+        Returns:
+            List of DiceResult objects (empty if room doesn't exist)
+        """
+        redis_key = f"room:{room_code}"
+
+        # Get room data
+        room_data = self.redis.hgetall(redis_key)
+
+        if not room_data:
+            return []
+
+        # Parse roll history
+        roll_history_json = room_data.get("roll_history", "[]")
+        roll_history_data = json.loads(roll_history_json)
+
+        # Apply pagination
+        paginated_data = roll_history_data[offset : offset + limit]
+
+        # Convert to DiceResult objects
+        return [DiceResult(**roll_data) for roll_data in paginated_data]
