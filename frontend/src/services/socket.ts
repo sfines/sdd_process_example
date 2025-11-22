@@ -11,11 +11,16 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000';
 
 export const socket: Socket = io(SOCKET_URL, {
   path: '/socket.io',
+  transports: ['websocket'], // Force WebSocket transport
   autoConnect: true,
   reconnection: true,
   reconnectionDelay: 1000,
   reconnectionAttempts: 5,
 });
+
+// Expose socket on window for Playwright debugging
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).socket = socket;
 
 // Log connection events for debugging
 socket.on('connect', () => {
