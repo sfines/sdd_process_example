@@ -41,7 +41,7 @@ describe('useSocket - Join Room', () => {
 
   it('store joinRoom method emits join_room socket event', async () => {
     const { result } = renderHook(() => useSocket(), { wrapper });
-    
+
     await act(async () => {
       result.current.joinRoom('ALPHA-1234', 'TestPlayer');
     });
@@ -54,7 +54,7 @@ describe('useSocket - Join Room', () => {
 
   it('store joinRoom method clears connection error', async () => {
     const { result } = renderHook(() => useSocket(), { wrapper });
-    
+
     // Set an error first
     act(() => {
       result.current.setConnectionError('Previous error');

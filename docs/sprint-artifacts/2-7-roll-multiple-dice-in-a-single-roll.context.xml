@@ -120,7 +120,7 @@
           Rolls: [4, 3, 5] = 12
           Modifier: +2
           Total: 14
-          
+
           Or for large rolls (10+ dice):
           Player: 10d6+5
           Rolls: 10 dice (4, 2, 5, 3, 6, 1, 4, 5, 3, 2) = 35
@@ -347,14 +347,14 @@
     </frontend_changes>
 
     <database_migration>
-      ALTER TABLE rolls 
+      ALTER TABLE rolls
       ADD COLUMN modifier_total INTEGER DEFAULT 0,
       ADD COLUMN roll_subtotal INTEGER;
-      
-      UPDATE rolls 
-      SET roll_subtotal = total, modifier_total = 0 
+
+      UPDATE rolls
+      SET roll_subtotal = total, modifier_total = 0
       WHERE roll_subtotal IS NULL;
-      
+
       ALTER TABLE rolls ALTER COLUMN roll_subtotal SET NOT NULL;
     </database_migration>
   </environment_setup>

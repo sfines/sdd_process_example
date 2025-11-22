@@ -12,9 +12,9 @@ TDD is a software development process that relies on the repetition of a very sh
 
 ### Core Principles
 
-*   **Write the test first**: Before writing any implementation code, first write a test that will fail.
-*   **Write just enough code to pass the test**: Do not write more code than is necessary to make the test pass. This keeps the implementation simple and focused.
-*   **Refactor to improve design**: Once the test is passing, refactor the code to improve its structure and readability without changing its behavior.
+- **Write the test first**: Before writing any implementation code, first write a test that will fail.
+- **Write just enough code to pass the test**: Do not write more code than is necessary to make the test pass. This keeps the implementation simple and focused.
+- **Refactor to improve design**: Once the test is passing, refactor the code to improve its structure and readability without changing its behavior.
 
 ## Behavior-Driven Development (BDD)
 
@@ -28,9 +28,9 @@ BDD builds upon TDD by writing tests in a natural, human-readable language. Thes
 
 BDD uses a "Given-When-Then" format for writing specifications. This structure helps to clearly define the context, action, and expected outcome of a feature.
 
-*   **Given**: A specific context or precondition.
-*   **When**: An action or event occurs.
-*   **Then**: The expected outcome or result.
+- **Given**: A specific context or precondition.
+- **When**: An action or event occurs.
+- **Then**: The expected outcome or result.
 
 ### Instructions for Implementation
 
@@ -40,9 +40,10 @@ BDD uses a "Given-When-Then" format for writing specifications. This structure h
 4.  **Write Application Code (Green)**: Write the minimum amount of application code necessary to make the feature tests pass.
 5.  **Refactor**: With the tests passing, refactor both the application code and the test code to improve design and maintainability.
 6.  **Repeat**: Continue the cycle for the next feature or scenario.
+
 ## Testing Integrity
 
 To maintain the reliability and trustworthiness of our test suites, the following principles must be strictly followed:
 
-*   **Framework Functionality**: A test cannot be considered "passing" if the underlying testing framework is not fully functional. Any issues with the test runner, assertion libraries, or other framework components must be resolved before test results can be deemed valid.
-*   **Skipping Tests**: Skipping tests is strictly prohibited without explicit approval from a human reviewer. If a test needs to be temporarily disabled, it must be documented with a clear reason and a ticket to track its re-enablement.
+- **Framework Functionality**: A test cannot be considered "passing" if the underlying testing framework is not fully functional. Any issues with the test runner, assertion libraries, or other framework components must be resolved before test results can be deemed valid.
+- **Skipping Tests**: Skipping tests is strictly prohibited without explicit approval from a human reviewer. If a test needs to be temporarily disabled, it must be documented with a clear reason and a ticket to track its re-enablement.
