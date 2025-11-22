@@ -460,6 +460,19 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
             roll_id=roll_result.roll_id,
         )
 
+        # Persist roll to room history
+        redis_client = get_redis_client()
+        room_manager = RoomManager(redis_client)
+        room_manager.add_roll_to_history(room_code, roll_result)
+
+        logger.debug(
+            "[ROLL_DICE] Roll persisted to history",
+            event_type="roll_dice",
+            session_id=sid,
+            room_code=room_code,
+            roll_id=roll_result.roll_id,
+        )
+
     except Exception as e:
         logger.error(
             "[ROLL_DICE] Failed to process roll",
