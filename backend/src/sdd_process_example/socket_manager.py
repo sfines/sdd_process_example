@@ -341,3 +341,27 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
             {"message": "Failed to join room"},
             to=sid,
         )
+
+
+@sio.event  # type: ignore[misc]
+async def roll_dice(sid: str, data: dict[str, Any]) -> None:
+    """Handle roll_dice event from client.
+
+    Args:
+        sid: Socket.IO session ID
+        data: Event data containing formula
+
+    Expected data format:
+        {
+            "formula": str  # Dice formula (e.g., "1d20+5")
+        }
+
+    Emits:
+        roll_result: Broadcast to room with DiceResult
+        error: On failure with error message
+    """
+    logger.info(
+        "[ROLL_DICE] Roll dice event received",
+        event_type="roll_dice",
+        session_id=sid,
+    )
