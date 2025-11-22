@@ -21,7 +21,9 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: sdd-frontend
     ports:
-      - '80:80'
+      - '8090:80'
+    depends_on:
+      - backend
     networks:
       - sdd-network
 
@@ -29,7 +31,7 @@ services:
     image: redis:7-alpine
     container_name: sdd-redis
     ports:
-      - '6379:6379'
+      - '6380:6380'
     networks:
       - sdd-network
 

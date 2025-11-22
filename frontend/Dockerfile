@@ -6,6 +6,10 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 COPY frontend ./frontend
 
+# Pass VITE_SOCKET_URL as a build argument
+ARG VITE_SOCKET_URL
+ENV VITE_SOCKET_URL=$VITE_SOCKET_URL
+
 RUN npm install -g pnpm && \
     pnpm install --frozen-lockfile
 
