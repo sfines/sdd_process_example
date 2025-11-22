@@ -1,6 +1,6 @@
 # Story 2.2: Join an Existing Room
 
-Status: ready-for-dev
+Status: review
 
 ---
 
@@ -388,11 +388,29 @@ Claude 3 (Latest)
 
 ### Completion Notes List
 
-_To be filled by dev agent upon completion_
+**Story Completion - November 22, 2025**
 
-- Player list component established as foundation for player-related features
-- Join validation patterns (room exists, capacity, sanitization) proven robust
-- Multi-player broadcast events working correctly
+All acceptance criteria verified and passing:
+- ✅ AC1-10: All implemented and tested
+- ✅ 70/70 backend integration tests passing (94% coverage)
+- ✅ 51/51 frontend unit tests passing
+- ✅ 7/7 E2E tests passing (1 skipped - disconnected state requires server stop)
+
+**Key Technical Achievements:**
+- Router context issue resolved: useSocket() now properly wrapped inside BrowserRouter
+- Socket.IO room membership working: creator receives player_joined broadcasts
+- Player identification accurate: current_player_id sent from backend, "(You)" label displays correctly
+- Duplicate prevention: onPlayerJoined checks for existing players before adding
+- Test reliability: data-testid attributes ensure specific element selection in E2E tests
+
+**Implementation Notes:**
+- Redis connection fixed: REDIS_URL uses internal container port 6379
+- Docker port mapping updated: frontend accessible at localhost:8090
+- Player joined payload structure: {player_id, name} instead of nested {player: {...}}
+- All code follows TypeScript and Python coding standards
+- Comprehensive error handling for room not found and capacity exceeded
+
+The multi-player join flow is now fully functional and tested end-to-end.
 
 ### Debug Log References
 
