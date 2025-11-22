@@ -18,7 +18,7 @@ export const useSocket = () => {
     setCurrentPlayerId,
     reset,
   } = useSocketStore();
-  
+
   // Make navigate optional to support tests without Router
   let navigate: ReturnType<typeof useNavigate> | null = null;
   try {
@@ -83,13 +83,15 @@ export const useSocket = () => {
       room_code: string;
       mode: string;
       creator_player_id: string;
+      current_player_id?: string;
       players: { player_id: string; name: string; connected: boolean }[];
       roll_history: unknown[];
     }) => {
       setRoomState(data);
-      // Current user is the socket.id which matches a player_id in the players array
-      if (socket.id) {
-        setCurrentPlayerId(socket.id);
+      // Use the current_player_id sent by backend, or fall back to socket.id
+      const playerId = data.current_player_id || socket.id || '';
+      if (playerId) {
+        setCurrentPlayerId(playerId);
       }
       if (navigate) {
         navigate(`/room/${data.room_code}`);
@@ -110,14 +112,21 @@ export const useSocket = () => {
       // Get current store state
       const state = useSocketStore.getState();
       if (state.roomState) {
-        const updatedRoomState = {
-          ...state.roomState,
-          players: [
-            ...state.roomState.players,
-            { player_id: data.player_id, name: data.name, connected: true },
-          ],
-        };
-        setRoomState(updatedRoomState);
+        // Check if player already exists to avoid duplicates
+        const playerExists = state.roomState.players.some(
+          (p) => p.player_id === data.player_id
+        );
+        
+        if (!playerExists) {
+          const updatedRoomState = {
+            ...state.roomState,
+            players: [
+              ...state.roomState.players,
+              { player_id: data.player_id, name: data.name, connected: true },
+            ],
+          };
+          setRoomState(updatedRoomState);
+        }
       }
       // Show info toast
       window.dispatchEvent(
@@ -144,19 +153,19 @@ export const useSocket = () => {
     };
 
     // Handle create room request from store
-    const onCreateRoom = (event: Event) => {
-      const customEvent = event as CustomEvent<{ playerName: string }>;
-      socket.emit('create_room', { player_name: customEvent.detail.playerName });
-    };
+    // const onCreateRoom = (event: Event) => {
+    //   const customEvent = event as CustomEvent<{ playerName: string }>;
+    //   socket.emit('create_room', { player_name: customEvent.detail.playerName });
+    // };
 
     // Handle join room request from store
-    const onJoinRoom = (event: Event) => {
-      const customEvent = event as CustomEvent<{ roomCode: string; playerName: string }>;
-      socket.emit('join_room', {
-        room_code: customEvent.detail.roomCode,
-        player_name: customEvent.detail.playerName,
-      });
-    };
+    // const onJoinRoom = (event: Event) => {
+    //   const customEvent = event as CustomEvent<{ roomCode: string; playerName: string }>;
+    //   socket.emit('join_room', {
+    //     room_code: customEvent.detail.roomCode,
+    //     player_name: customEvent.detail.playerName,
+    //   });
+    // };
 
     // Register event listeners
     socket.on('connect', onConnect);
@@ -167,8 +176,8 @@ export const useSocket = () => {
     socket.on('room_joined', onRoomJoined);
     socket.on('player_joined', onPlayerJoined);
     socket.on('error', onError);
-    window.addEventListener('socket:createRoom', onCreateRoom);
-    window.addEventListener('socket:joinRoom', onJoinRoom);
+    // window.addEventListener('socket:createRoom', onCreateRoom);
+    // window.addEventListener('socket:joinRoom', onJoinRoom);
 
     // Cleanup on unmount
     return () => {
@@ -180,8 +189,8 @@ export const useSocket = () => {
       socket.off('room_joined', onRoomJoined);
       socket.off('player_joined', onPlayerJoined);
       socket.off('error', onError);
-      window.removeEventListener('socket:createRoom', onCreateRoom);
-      window.removeEventListener('socket:joinRoom', onJoinRoom);
+      // window.removeEventListener('socket:createRoom', onCreateRoom);
+      // window.removeEventListener('socket:joinRoom', onJoinRoom);
       reset();
     };
   }, [
