@@ -10,16 +10,16 @@ import PlayerList from '../components/PlayerList';
 
 describe('PlayerList', () => {
   it('renders the player list heading', () => {
-    const { container } = render(<PlayerList players={[]} currentPlayerId="" />);
-    
+    const { container } = render(
+      <PlayerList players={[]} currentPlayerId="" />,
+    );
+
     const heading = container.querySelector('h2');
     expect(heading).toHaveTextContent(/players/i);
   });
 
   it('displays a single connected player', () => {
-    const players = [
-      { player_id: 'player-1', name: 'Alice', connected: true },
-    ];
+    const players = [{ player_id: 'player-1', name: 'Alice', connected: true }];
 
     render(<PlayerList players={players} currentPlayerId="" />);
 
@@ -41,9 +41,7 @@ describe('PlayerList', () => {
   });
 
   it('shows connection status indicator for connected player', () => {
-    const players = [
-      { player_id: 'player-1', name: 'Alice', connected: true },
-    ];
+    const players = [{ player_id: 'player-1', name: 'Alice', connected: true }];
 
     render(<PlayerList players={players} currentPlayerId="" />);
 
@@ -92,7 +90,9 @@ describe('PlayerList', () => {
   });
 
   it('handles empty player list gracefully', () => {
-    const { container } = render(<PlayerList players={[]} currentPlayerId="" />);
+    const { container } = render(
+      <PlayerList players={[]} currentPlayerId="" />,
+    );
 
     const heading = container.querySelector('h2');
     expect(heading).toHaveTextContent(/players/i);
@@ -115,18 +115,22 @@ describe('PlayerList', () => {
   });
 
   it('applies minimum touch target size for mobile', () => {
-    const players = [
-      { player_id: 'player-1', name: 'Alice', connected: true },
-    ];
+    const players = [{ player_id: 'player-1', name: 'Alice', connected: true }];
 
-    const { container } = render(<PlayerList players={players} currentPlayerId="" />);
+    const { container } = render(
+      <PlayerList players={players} currentPlayerId="" />,
+    );
 
     const listItems = container.querySelectorAll('li');
-    listItems.forEach(item => {
+    listItems.forEach((item) => {
       const styles = window.getComputedStyle(item);
       const minHeight = parseInt(styles.minHeight);
       // Should have reasonable touch target or be contained in tappable element
-      expect(minHeight >= 40 || item.style.minHeight === '44px' || item.style.minHeight === '48px').toBe(true);
+      expect(
+        minHeight >= 40 ||
+          item.style.minHeight === '44px' ||
+          item.style.minHeight === '48px',
+      ).toBe(true);
     });
   });
 });

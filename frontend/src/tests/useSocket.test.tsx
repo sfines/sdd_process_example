@@ -4,7 +4,7 @@
  * Tests for the useSocket hook, focusing on join room functionality.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
@@ -39,51 +39,35 @@ describe('useSocket - Join Room', () => {
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    // Clean up event listeners
-    const events = ['socket:joinRoom'];
-    events.forEach(event => {
-      const listeners = (window as any)._eventListeners?.[event] || [];
-      listeners.forEach((listener: EventListener) => {
-        window.removeEventListener(event, listener);
-      });
-    });
-  });
-
-  it('registers listener for socket:joinRoom custom event', () => {
-    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
-    
-    renderHook(() => useSocket(), { wrapper });
-
-    expect(addEventListenerSpy).toHaveBeenCalledWith(
-      'socket:joinRoom',
-      expect.any(Function),
-    );
-  });
-
-  it('emits join_room event when socket:joinRoom is dispatched', async () => {
-    renderHook(() => useSocket(), { wrapper });
-
-    // Find the registered listener
-    const calls = (window.addEventListener as any).mock.calls;
-    const joinRoomCall = calls.find((call: any[]) => call[0] === 'socket:joinRoom');
-    const listener = joinRoomCall?.[1];
-
-    expect(listener).toBeDefined();
-
-    // Dispatch event
-    const event = new CustomEvent('socket:joinRoom', {
-      detail: { roomCode: 'ALPHA-1234', playerName: 'TestPlayer' },
-    });
+  it('store joinRoom method emits join_room socket event', async () => {
+    const { result } = renderHook(() => useSocket(), { wrapper });
     
     await act(async () => {
-      listener(event);
+      result.current.joinRoom('ALPHA-1234', 'TestPlayer');
     });
 
     expect(socket.emit).toHaveBeenCalledWith('join_room', {
       room_code: 'ALPHA-1234',
       player_name: 'TestPlayer',
     });
+  });
+
+  it('store joinRoom method clears connection error', async () => {
+    const { result } = renderHook(() => useSocket(), { wrapper });
+    
+    // Set an error first
+    act(() => {
+      result.current.setConnectionError('Previous error');
+    });
+
+    expect(result.current.connectionError).toBe('Previous error');
+
+    // Join room should clear the error
+    await act(async () => {
+      result.current.joinRoom('ALPHA-1234', 'TestPlayer');
+    });
+
+    expect(result.current.connectionError).toBeNull();
   });
 
   it('registers listener for room_joined event from server', () => {
@@ -247,16 +231,11 @@ describe('useSocket - Join Room', () => {
     );
   });
 
-  it('cleans up join room listeners on unmount', () => {
+  it('cleans up socket listeners on unmount', () => {
     const { unmount } = renderHook(() => useSocket(), { wrapper });
-    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
 
     unmount();
 
-    expect(removeEventListenerSpy).toHaveBeenCalledWith(
-      'socket:joinRoom',
-      expect.any(Function),
-    );
     expect(socket.off).toHaveBeenCalledWith('room_joined', expect.any(Function));
     expect(socket.off).toHaveBeenCalledWith('player_joined', expect.any(Function));
   });

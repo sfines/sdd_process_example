@@ -82,7 +82,9 @@ describe('RoomCodeDisplay', () => {
     fireEvent.click(button);
 
     // Wait for the "Copied!" text to appear
-    await waitFor(() => expect(screen.queryByText(/copied/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByText(/copied/i)).toBeInTheDocument(),
+    );
 
     // Wait 2 seconds for revert
     await waitFor(
