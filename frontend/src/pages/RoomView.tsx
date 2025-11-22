@@ -25,7 +25,10 @@ export default function RoomView() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Players Section */}
           <div className="md:col-span-1 bg-white rounded-lg shadow-md p-6">
-            <PlayerList players={players} currentPlayerId={currentPlayerId || ''} />
+            <PlayerList
+              players={players}
+              currentPlayerId={currentPlayerId || ''}
+            />
           </div>
 
           {/* Roll History Section */}

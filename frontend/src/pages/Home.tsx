@@ -15,14 +15,17 @@ export default function Home() {
   };
 
   const handleJoinRoom = () => {
-    if (joinRoomCode.trim().length === 0 || joinPlayerName.trim().length === 0) {
+    if (
+      joinRoomCode.trim().length === 0 ||
+      joinPlayerName.trim().length === 0
+    ) {
       return;
     }
     joinRoom(joinRoomCode, joinPlayerName);
   };
 
   const isCreateButtonDisabled = playerName.trim().length === 0;
-  const isJoinButtonDisabled = 
+  const isJoinButtonDisabled =
     joinRoomCode.trim().length === 0 || joinPlayerName.trim().length === 0;
 
   return (
@@ -38,10 +41,10 @@ export default function Home() {
         {/* Create Room Section */}
         <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
           <h2 className="text-xl font-semibold text-gray-800">Create Room</h2>
-          
+
           <div>
-            <label 
-              htmlFor="playerName" 
+            <label
+              htmlFor="playerName"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Your Name
@@ -55,9 +58,7 @@ export default function Home() {
               placeholder="Enter your name"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Maximum 20 characters
-            </p>
+            <p className="text-xs text-gray-500 mt-1">Maximum 20 characters</p>
           </div>
 
           <button
@@ -70,19 +71,17 @@ export default function Home() {
           </button>
 
           {connectionError && (
-            <div className="text-red-600 text-sm">
-              {connectionError}
-            </div>
+            <div className="text-red-600 text-sm">{connectionError}</div>
           )}
         </div>
 
         {/* Join Room Section */}
         <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
           <h2 className="text-xl font-semibold text-gray-800">Join Room</h2>
-          
+
           <div>
-            <label 
-              htmlFor="roomCode" 
+            <label
+              htmlFor="roomCode"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Room Code
@@ -99,8 +98,8 @@ export default function Home() {
           </div>
 
           <div>
-            <label 
-              htmlFor="joinPlayerName" 
+            <label
+              htmlFor="joinPlayerName"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Your Name
@@ -114,9 +113,7 @@ export default function Home() {
               placeholder="Enter your name"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Maximum 20 characters
-            </p>
+            <p className="text-xs text-gray-500 mt-1">Maximum 20 characters</p>
           </div>
 
           <button

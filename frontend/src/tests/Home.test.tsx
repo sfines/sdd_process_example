@@ -21,23 +21,27 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(screen.getAllByText(/create.*room/i)[0]).toBeInTheDocument();
     expect(screen.getAllByPlaceholderText(/enter your name/i)).toHaveLength(2);
-    expect(screen.getByRole('button', { name: /create room/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /create room/i }),
+    ).toBeInTheDocument();
   });
 
   it('has a name input field with max length 20', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
-    const inputs = screen.getAllByPlaceholderText(/enter your name/i) as HTMLInputElement[];
-    inputs.forEach(input => {
+    const inputs = screen.getAllByPlaceholderText(
+      /enter your name/i,
+    ) as HTMLInputElement[];
+    inputs.forEach((input) => {
       expect(input).toHaveAttribute('maxLength', '20');
     });
   });
@@ -46,7 +50,7 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const button = screen.getByRole('button', { name: /create room/i });
@@ -59,7 +63,7 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const button = screen.getByRole('button', { name: /create room/i });
@@ -76,7 +80,7 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const nameInputs = screen.getAllByPlaceholderText(/enter your name/i);
@@ -92,7 +96,7 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     // Should have some indication of join room (deferred to Story 2.2)
@@ -104,10 +108,12 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
-    expect(screen.getByPlaceholderText(/e\.g\., ALPHA-1234/i)).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/e\.g\., ALPHA-1234/i),
+    ).toBeInTheDocument();
     expect(screen.getAllByPlaceholderText(/enter your name/i)).toHaveLength(2);
     expect(screen.getByRole('button', { name: /^join$/i })).toBeInTheDocument();
   });
@@ -116,10 +122,12 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
-    const input = screen.getByPlaceholderText(/e\.g\., ALPHA-1234/i) as HTMLInputElement;
+    const input = screen.getByPlaceholderText(
+      /e\.g\., ALPHA-1234/i,
+    ) as HTMLInputElement;
     expect(input).toHaveAttribute('maxLength', '20');
   });
 
@@ -127,7 +135,7 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const joinButton = screen.getByRole('button', { name: /^join$/i });
@@ -138,7 +146,7 @@ describe('Home Page', () => {
     render(
       <BrowserRouter>
         <Home />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const roomCodeInput = screen.getByPlaceholderText(/e\.g\., ALPHA-1234/i);
