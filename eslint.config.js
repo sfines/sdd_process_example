@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettier from 'eslint-plugin-prettier/recommended';
+import security from 'eslint-plugin-security';
 
 export default [
   {
@@ -27,8 +28,12 @@ export default [
         process: 'readonly',
       },
     },
+    plugins: {
+      security,
+    },
     rules: {
       ...js.configs.recommended.rules,
+      ...security.configs.recommended.rules,
     },
   },
   {
@@ -54,10 +59,12 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
+      security,
     },
     rules: {
       ...js.configs.recommended.rules,
       ...tsPlugin.configs.recommended.rules,
+      ...security.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-explicit-any': 'error',
     },
