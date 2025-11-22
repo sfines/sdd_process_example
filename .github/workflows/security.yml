@@ -1,0 +1,40 @@
+name: Security
+
+on:
+  push:
+    branches: [develop, 'feature/**', 'bugfix/**']
+  pull_request:
+    branches: [develop, 'feature/**', 'bugfix/**']
+  schedule:
+    # Run security checks daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  bandit:
+    runs-on: ubuntu-latest
+    name: Bandit Security Scan
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Sync Python dependencies
+        run: uv sync --group dev
+
+      - name: Run Bandit security scan via nox
+        run: uv run nox -s security
+
+      - name: Upload Bandit results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+          retention-days: 30

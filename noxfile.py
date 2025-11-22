@@ -26,3 +26,18 @@ def test(session: nox.Session) -> None:
     session.install("pytest", "pytest-cov", "pytest-asyncio", "httpx")
     session.run("pytest", "backend/tests/", "-v", "--cov=backend/src")
 
+
+@nox.session(python=["3.13"])
+def security(session: nox.Session) -> None:
+    """Run Bandit security checks on the codebase."""
+    session.install("bandit[toml]")
+    session.run(
+        "bandit",
+        "-r",
+        "backend/src",
+        "-c",
+        "pyproject.toml",
+        "-f",
+        "screen",
+    )
+
