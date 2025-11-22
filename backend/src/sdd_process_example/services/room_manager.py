@@ -44,7 +44,7 @@ class RoomCapacityExceededError(Exception):
 class RoomManager:
     """Manages game room operations."""
 
-    def __init__(self, redis_client: Redis) -> None:  # type: ignore
+    def __init__(self, redis_client: Redis) -> None:  # type: ignore[type-arg]
         """Initialize room manager with Redis client.
 
         Args:
@@ -157,7 +157,7 @@ class RoomManager:
         }
 
         # Store as Redis hash
-        self.redis.hset(redis_key, mapping=room_data)
+        self.redis.hset(redis_key, mapping=room_data)  # type: ignore[arg-type]
 
         # Set TTL
         self.redis.expire(redis_key, ROOM_TTL_SECONDS)
@@ -196,18 +196,18 @@ class RoomManager:
             return None
 
         # Deserialize JSON fields
-        players_data = json.loads(room_data["players"])  # type: ignore[index]
-        roll_history_data = json.loads(room_data["roll_history"])  # type: ignore[index]
+        players_data = json.loads(room_data["players"])
+        roll_history_data = json.loads(room_data["roll_history"])
 
         # Convert players back to Player objects
         players = [Player(**player) for player in players_data]
 
         # Reconstruct RoomState
         room = RoomState(
-            room_code=room_data["room_code"],  # type: ignore[index]
-            mode=room_data["mode"],  # type: ignore[index]
-            created_at=room_data["created_at"],  # type: ignore[index]
-            creator_player_id=room_data["creator_player_id"],  # type: ignore[index]
+            room_code=room_data["room_code"],
+            mode=room_data["mode"],
+            created_at=room_data["created_at"],
+            creator_player_id=room_data["creator_player_id"],
             players=players,
             roll_history=roll_history_data,  # Will be proper RollResult objects later
         )

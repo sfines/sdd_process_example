@@ -40,4 +40,3 @@ def security(session: nox.Session) -> None:
         "-f",
         "screen",
     )
-

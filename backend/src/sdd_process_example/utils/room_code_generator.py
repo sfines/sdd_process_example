@@ -4,7 +4,6 @@ import random
 
 from redis import Redis
 
-
 # NATO phonetic alphabet + common words for room codes
 WORD_LIST = [
     "ALPHA",
@@ -133,7 +132,7 @@ def generate_room_code() -> str:
     return f"{word}-{number:04d}"
 
 
-def is_code_available(room_code: str, redis_client: Redis) -> bool:
+def is_code_available(room_code: str, redis_client: Redis) -> bool:  # type: ignore[type-arg]
     """Check if a room code is available (not already taken).
 
     Args:

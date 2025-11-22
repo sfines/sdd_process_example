@@ -9,9 +9,9 @@ from redis import Redis
 from .logging_config import get_logger
 from .models import HelloMessage, WorldMessage
 from .services.room_manager import (
+    RoomCapacityExceededError,
     RoomManager,
     RoomNotFoundError,
-    RoomCapacityExceededError,
 )
 
 logger = get_logger(__name__)
@@ -29,7 +29,7 @@ sio = socketio.AsyncServer(
 )
 
 
-def get_redis_client() -> Redis:  # type: ignore
+def get_redis_client() -> Redis:  # type: ignore[type-arg]
     """Get Redis client instance.
 
     Returns:

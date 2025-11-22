@@ -114,9 +114,9 @@ export const useSocket = () => {
       if (state.roomState) {
         // Check if player already exists to avoid duplicates
         const playerExists = state.roomState.players.some(
-          (p) => p.player_id === data.player_id
+          (p) => p.player_id === data.player_id,
         );
-        
+
         if (!playerExists) {
           const updatedRoomState = {
             ...state.roomState,

@@ -161,12 +161,12 @@
 
 ### 2.1 ASR-1: Real-Time Roll Synchronization (< 500ms p95)
 
-**Category:** PERF  
-**Probability:** 2 (Possible - depends on network + server load)  
-**Impact:** 3 (Critical - breaks core UX if violated)  
+**Category:** PERF
+**Probability:** 2 (Possible - depends on network + server load)
+**Impact:** 3 (Critical - breaks core UX if violated)
 **Risk Score:** **6** (HIGH PRIORITY)
 
-**Description:**  
+**Description:**
 All dice rolls must propagate to all players in under 500ms (95th percentile). Slow sync degrades player experience and trust.
 
 **Testability Analysis:**
@@ -188,19 +188,19 @@ All dice rolls must propagate to all players in under 500ms (95th percentile). S
 - Redis pipelining for batch operations
 - WebSocket connection pooling (if needed)
 
-**Owner:** Backend Lead  
+**Owner:** Backend Lead
 **Timeline:** Week 7 (Load testing phase)
 
 ---
 
 ### 2.2 ASR-2: Cryptographic Roll Generation
 
-**Category:** SEC  
-**Probability:** 1 (Unlikely - Python's `secrets` module is cryptographically secure)  
-**Impact:** 3 (Critical - trust violation if compromised)  
+**Category:** SEC
+**Probability:** 1 (Unlikely - Python's `secrets` module is cryptographically secure)
+**Impact:** 3 (Critical - trust violation if compromised)
 **Risk Score:** **3** (MEDIUM PRIORITY)
 
-**Description:**  
+**Description:**
 All rolls must be generated server-side using `secrets.SystemRandom()` to prevent client manipulation.
 
 **Testability Analysis:**
@@ -220,19 +220,19 @@ All rolls must be generated server-side using `secrets.SystemRandom()` to preven
 - None required (Python's `secrets` is FIPS 140-2 compliant)
 - Document RNG choice in security audit section
 
-**Owner:** Security Lead  
+**Owner:** Security Lead
 **Timeline:** Week 2 (Backend core development)
 
 ---
 
 ### 2.3 ASR-3: Room Auto-Expiration (5 hours Open, 30 min DM-led)
 
-**Category:** OPS  
-**Probability:** 2 (Possible - depends on background job reliability)  
-**Impact:** 2 (Degraded - wastes resources, confuses users)  
+**Category:** OPS
+**Probability:** 2 (Possible - depends on background job reliability)
+**Impact:** 2 (Degraded - wastes resources, confuses users)
 **Risk Score:** **4** (MEDIUM PRIORITY)
 
-**Description:**  
+**Description:**
 Rooms must auto-expire to prevent Valkey memory exhaustion and zombie rooms.
 
 **Testability Analysis:**
@@ -252,19 +252,19 @@ Rooms must auto-expire to prevent Valkey memory exhaustion and zombie rooms.
 - Redis TTL + EXPIRE command (built-in)
 - Background job for cleanup verification (weekly)
 
-**Owner:** DevOps Lead  
+**Owner:** DevOps Lead
 **Timeline:** Week 3 (Backend core development)
 
 ---
 
 ### 2.4 ASR-4: DM Disconnect Grace Period (60 seconds)
 
-**Category:** OPS  
-**Probability:** 2 (Possible - network hiccups common)  
-**Impact:** 2 (Degraded - disrupts game session)  
+**Category:** OPS
+**Probability:** 2 (Possible - network hiccups common)
+**Impact:** 2 (Degraded - disrupts game session)
 **Risk Score:** **4** (MEDIUM PRIORITY)
 
-**Description:**  
+**Description:**
 DM-led rooms must tolerate DM disconnection for 60 seconds before terminating room.
 
 **Testability Analysis:**
@@ -284,19 +284,19 @@ DM-led rooms must tolerate DM disconnection for 60 seconds before terminating ro
 - Socket.io automatic reconnection (built-in)
 - Grace period timer in backend (clear on reconnect)
 
-**Owner:** Backend Lead  
+**Owner:** Backend Lead
 **Timeline:** Week 7 (Edge cases & integration)
 
 ---
 
 ### 2.5 ASR-5: Permalink 30-Day Retention
 
-**Category:** DATA  
-**Probability:** 1 (Unlikely - SQLite is reliable)  
-**Impact:** 2 (Degraded - broken links, user disappointment)  
+**Category:** DATA
+**Probability:** 1 (Unlikely - SQLite is reliable)
+**Impact:** 2 (Degraded - broken links, user disappointment)
 **Risk Score:** **2** (LOW PRIORITY)
 
-**Description:**  
+**Description:**
 Roll permalinks must persist for 30 days, then expire gracefully with user-friendly message.
 
 **Testability Analysis:**
@@ -316,7 +316,7 @@ Roll permalinks must persist for 30 days, then expire gracefully with user-frien
 - Daily cron job for cleanup (standard pattern)
 - SQLite `created_at` timestamp indexed for fast queries
 
-**Owner:** Backend Lead  
+**Owner:** Backend Lead
 **Timeline:** Week 7 (Edge cases & integration)
 
 ---
@@ -539,12 +539,12 @@ export default function () {
 
 ### 6.1 WebSocket Real-Time Testing Complexity
 
-**Risk Category:** TECH  
-**Probability:** 2 (Possible - WebSocket testing is tricky)  
-**Impact:** 2 (Degraded - flaky tests slow development)  
+**Risk Category:** TECH
+**Probability:** 2 (Possible - WebSocket testing is tricky)
+**Impact:** 2 (Degraded - flaky tests slow development)
 **Risk Score:** **4** (MEDIUM)
 
-**Concern:**  
+**Concern:**
 WebSocket tests can be flaky due to timing issues, race conditions, and network variability.
 
 **Mitigation:**
@@ -555,20 +555,20 @@ WebSocket tests can be flaky due to timing issues, race conditions, and network 
 3. **Sequence Numbers:** Backend assigns sequence IDs to prevent race conditions (already in architecture)
 4. **Mock Time:** Use `page.clock.fastForward()` for expiration testing
 
-**Owner:** QA Lead  
-**Timeline:** Week 1 (E2E foundation)  
+**Owner:** QA Lead
+**Timeline:** Week 1 (E2E foundation)
 **Status:** ✅ Addressed in architecture
 
 ---
 
 ### 6.2 iOS Safari Quirks
 
-**Risk Category:** TECH  
-**Probability:** 2 (Possible - Safari has known layout bugs)  
-**Impact:** 2 (Degraded - mobile UX impaired)  
+**Risk Category:** TECH
+**Probability:** 2 (Possible - Safari has known layout bugs)
+**Impact:** 2 (Degraded - mobile UX impaired)
 **Risk Score:** **4** (MEDIUM)
 
-**Concern:**  
+**Concern:**
 iOS Safari has known issues with viewport units, scrolling, and touch events.
 
 **Mitigation:**
@@ -578,20 +578,20 @@ iOS Safari has known issues with viewport units, scrolling, and touch events.
 3. **Touch Target Sizing:** Minimum 44x44px (WCAG compliant)
 4. **Polyfills:** Include Safari-specific CSS hacks if needed
 
-**Owner:** Frontend Lead  
-**Timeline:** Week 8-9 (Mobile testing phase)  
+**Owner:** Frontend Lead
+**Timeline:** Week 8-9 (Mobile testing phase)
 **Status:** ⚠️ To be validated in testing
 
 ---
 
 ### 6.3 No Horizontal Scaling in MVP
 
-**Risk Category:** OPS  
-**Probability:** 1 (Unlikely - 50 rooms is conservative for single VPS)  
-**Impact:** 2 (Degraded - limits growth)  
+**Risk Category:** OPS
+**Probability:** 1 (Unlikely - 50 rooms is conservative for single VPS)
+**Impact:** 2 (Degraded - limits growth)
 **Risk Score:** **2** (LOW)
 
-**Concern:**  
+**Concern:**
 Single-server architecture cannot scale beyond ~50 concurrent rooms without refactoring.
 
 **Mitigation:**
@@ -600,8 +600,8 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 2. **Load Testing Evidence:** Week 8 load tests validate 50-room capacity
 3. **Future-Proof Design:** Stateless backend enables future load balancing
 
-**Owner:** DevOps Lead  
-**Timeline:** Post-MVP (if needed)  
+**Owner:** DevOps Lead
+**Timeline:** Post-MVP (if needed)
 **Status:** ✅ Documented as known limitation
 
 ---
@@ -741,7 +741,7 @@ Single-server architecture cannot scale beyond ~50 concurrent rooms without refa
 
 ---
 
-**Generated by**: BMad TEA Agent - Test Architect Module  
-**Workflow**: `.bmad/bmm/testarch/test-design` (System-Level Mode)  
-**Version**: 4.0 (BMad v6)  
+**Generated by**: BMad TEA Agent - Test Architect Module
+**Workflow**: `.bmad/bmm/testarch/test-design` (System-Level Mode)
+**Version**: 4.0 (BMad v6)
 **Next Step**: Run `solutioning-gate-check` workflow

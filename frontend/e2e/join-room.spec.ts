@@ -72,11 +72,15 @@ test.describe('Story 2.2: Join an Existing Room', () => {
 
       // AC5: Both players should see player list
       await expect(page2.getByText('Players')).toBeVisible();
-      await expect(page2.getByTestId('player-Alice')).toBeVisible({ timeout: 3000 });
+      await expect(page2.getByTestId('player-Alice')).toBeVisible({
+        timeout: 3000,
+      });
       await expect(page2.getByTestId('player-Bob')).toBeVisible();
 
       // AC6: Player 1 should receive player_joined event and see Player 2
-      await expect(page1.getByTestId('player-Bob')).toBeVisible({ timeout: 5000 });
+      await expect(page1.getByTestId('player-Bob')).toBeVisible({
+        timeout: 5000,
+      });
 
       // Verify both players shown on both pages
       await expect(page1.getByTestId('player-Alice')).toBeVisible();

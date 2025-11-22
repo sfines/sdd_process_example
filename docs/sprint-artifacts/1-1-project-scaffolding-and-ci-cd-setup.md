@@ -370,8 +370,8 @@ _To be filled by reviewer_
 
 ## Senior Developer Review (AI)
 
-**Reviewer:** Steve  
-**Date:** 2025-11-20  
+**Reviewer:** Steve
+**Date:** 2025-11-20
 **Outcome:** ✅ **APPROVE** with minor advisory notes
 
 ### Summary

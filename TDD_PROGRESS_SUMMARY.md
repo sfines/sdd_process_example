@@ -1,11 +1,14 @@
 # Story 2.1 TDD Progress Summary
 
 ## Overview
+
 Implemented Story 2.1 (Create a New Room) using strict Test-Driven Development methodology.
 **Status**: Backend complete (53 tests), Frontend started (5 commits)
 
 ## TDD Methodology Applied
+
 Every feature followed Red-Green-Refactor cycle:
+
 1. **RED**: Write comprehensive tests first (failing)
 2. **GREEN**: Implement minimal code to pass tests
 3. **REFACTOR**: Clean up and fix linting issues
@@ -13,6 +16,7 @@ Every feature followed Red-Green-Refactor cycle:
 ## Backend Implementation - COMPLETE ✅
 
 ### Commits (11 total)
+
 ```
 51414fc test(backend): add room code generator tests
 cab6096 feat(backend): add room code generation utility
@@ -28,6 +32,7 @@ e748cd5 test(backend): add player name validation tests
 ```
 
 ### Test Coverage: 53 Tests Passing
+
 - `test_room_code_generator.py`: 7 tests
 - `test_validation.py`: 14 tests
 - `test_room_models.py`: 10 tests
@@ -38,11 +43,14 @@ e748cd5 test(backend): add player name validation tests
 ### Features Implemented
 
 #### 1. Room Code Generation (`WORD-####`)
+
 **Files Created**:
+
 - `backend/src/sdd_process_example/utils/room_code_generator.py`
 - `backend/tests/test_room_code_generator.py`
 
 **Functionality**:
+
 - 100-word NATO/common word list
 - 4-digit zero-padded numbers (0000-9999)
 - Total possibilities: 1,000,000 unique codes
@@ -50,26 +58,33 @@ e748cd5 test(backend): add player name validation tests
 - Format examples: `ALPHA-1234`, `BRAVO-5678`
 
 #### 2. Player Name Validation & Sanitization
+
 **Files Created**:
+
 - `backend/src/sdd_process_example/utils/validation.py`
 - `backend/tests/test_validation.py`
 
 **Functionality**:
+
 - Length validation: 1-20 characters
 - XSS prevention via `html.escape()`
 - Whitespace trimming
 - Clear error messages
 
 **Security**:
+
 - Input: `<script>alert('xss')</script>`
 - Output: `&lt;script&gt;alert(&#x27;xss&#x27;)&lt;/script&gt;`
 
 #### 3. Pydantic Models
+
 **Files Modified**:
+
 - `backend/src/sdd_process_example/models.py`
 - `backend/tests/test_room_models.py`
 
 **Models Added**:
+
 ```python
 class Player(BaseModel):
     player_id: str
@@ -86,11 +101,14 @@ class RoomState(BaseModel):
 ```
 
 #### 4. RoomManager Service
+
 **Files Created**:
+
 - `backend/src/sdd_process_example/services/room_manager.py`
 - `backend/tests/test_room_manager.py`
 
 **Functionality**:
+
 - `create_room(player_name: str) -> RoomState`
 - Validates and sanitizes player name
 - Generates unique room code (max 10 collision retries)
@@ -100,6 +118,7 @@ class RoomState(BaseModel):
 - Returns complete RoomState
 
 **Redis Storage Format**:
+
 ```python
 {
     "room_code": "ALPHA-1234",
@@ -112,7 +131,9 @@ class RoomState(BaseModel):
 ```
 
 #### 5. Socket.IO Event Handler
+
 **Files Modified**:
+
 - `backend/src/sdd_process_example/socket_manager.py`
 - `backend/tests/test_create_room_event.py`
 
@@ -122,6 +143,7 @@ class RoomState(BaseModel):
 **Error Output**: `error` event with message
 
 **Features**:
+
 - Input validation
 - Redis client integration
 - Comprehensive error handling
@@ -130,6 +152,7 @@ class RoomState(BaseModel):
 ## Frontend Implementation - IN PROGRESS 🔄
 
 ### Commits (5 total)
+
 ```
 77bf691 build(frontend): add react-router-dom dependency
 89e7acf test(frontend): add Home page component tests
@@ -141,9 +164,11 @@ a7dd155 feat(frontend): add Home page with create room form
 ### Features Implemented
 
 #### 1. Socket Store Extension
+
 **File**: `frontend/src/store/socketStore.ts`
 
 **Added State**:
+
 - `roomCode: string | null`
 - `roomMode: 'Open' | 'DM-Led' | null`
 - `creatorPlayerId: string | null`
@@ -151,13 +176,16 @@ a7dd155 feat(frontend): add Home page with create room form
 - `rollHistory: unknown[]`
 
 **Added Actions**:
+
 - `setRoomState(roomState)`: Update room from server
 - `createRoom(playerName)`: Trigger room creation via CustomEvent
 
 #### 2. Socket Event Handling
+
 **File**: `frontend/src/hooks/useSocket.ts`
 
 **New Listeners**:
+
 - `room_created`: Updates store, navigates to `/room/:code`, shows toast
 - `error`: Shows error toast
 - `socket:createRoom` (CustomEvent): Emits create_room to server
@@ -165,9 +193,11 @@ a7dd155 feat(frontend): add Home page with create room form
 **Pattern**: CustomEvent for store-to-hook communication (avoids circular deps)
 
 #### 3. Home Page Component
+
 **File**: `frontend/src/pages/Home.tsx`
 
 **Features**:
+
 - Player name input (max 20 chars)
 - Create Room button (48px min-height for accessibility)
 - Button disabled when name empty
@@ -175,6 +205,7 @@ a7dd155 feat(frontend): add Home page with create room form
 - Tailwind responsive styling
 
 **Tests Written** (6 tests in `Home.test.tsx`):
+
 - Form rendering
 - Input validation
 - Button accessibility
@@ -184,12 +215,14 @@ a7dd155 feat(frontend): add Home page with create room form
 ## Testing Metrics
 
 ### Backend
+
 - **Total Tests**: 53
 - **Pass Rate**: 100%
 - **Coverage**: Room creation flow fully tested
 - **Test Types**: Unit, integration, mocked Socket.IO
 
-### Frontend  
+### Frontend
+
 - **Total Tests**: 6 written (some failing due to jsdom limitations)
 - **Mocking**: Socket.io store mocked
 - **Test Types**: Component rendering, user interaction
@@ -197,6 +230,7 @@ a7dd155 feat(frontend): add Home page with create room form
 ## Architecture Decisions
 
 ### Backend
+
 1. **Redis Key Format**: `room:{code}` for easy namespacing
 2. **TTL Strategy**: 18000s (5 hours) auto-cleanup
 3. **Collision Handling**: Retry up to 10 times, then fail fast
@@ -204,6 +238,7 @@ a7dd155 feat(frontend): add Home page with create room form
 5. **Structlog**: JSON logging for production observability
 
 ### Frontend
+
 1. **State Management**: Zustand for simplicity
 2. **Navigation**: React Router for SPA routing
 3. **Event Pattern**: CustomEvents for store↔hook communication
@@ -228,6 +263,7 @@ a7dd155 feat(frontend): add Home page with create room form
 ## Next Steps to Complete Story 2.1
 
 ### Frontend Tasks Remaining
+
 1. **RoomView Component** (`frontend/src/pages/RoomView.tsx`)
    - Display room code
    - Player list placeholder
@@ -251,6 +287,7 @@ a7dd155 feat(frontend): add Home page with create room form
    - Backend + Frontend integration
 
 ### Integration Testing
+
 - Docker Compose full stack test
 - Redis connection verification
 - WebSocket bidirectional communication
@@ -258,17 +295,20 @@ a7dd155 feat(frontend): add Home page with create room form
 ## Lessons from TDD Process
 
 ### What Worked Well
+
 1. **Test-First**: Caught edge cases early (XSS, collisions, empty strings)
 2. **Focused Commits**: Easy to review, revert, or cherry-pick
 3. **Type Safety**: Pydantic + TypeScript prevented runtime errors
 4. **Mocking**: Isolated units tested independently
 
 ### Challenges
+
 1. **jsdom Limitations**: Can't test CSS height in unit tests
 2. **Router Context**: Tests need BrowserRouter wrapper
 3. **Async Events**: CustomEvent pattern adds complexity
 
 ### Improvements for Next Story
+
 1. Consider using MSW for frontend API mocking
 2. Add Playwright component tests for better UI coverage
 3. Extract toast to context instead of CustomEvents
@@ -277,12 +317,14 @@ a7dd155 feat(frontend): add Home page with create room form
 ## Code Statistics
 
 **Backend**:
+
 - New files: 7
 - Modified files: 2
 - Lines added: ~800
 - Tests written: 42 new tests
 
 **Frontend**:
+
 - New files: 2
 - Modified files: 2
 - Lines added: ~250

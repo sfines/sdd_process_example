@@ -51,6 +51,14 @@ ignore_missing_imports = true
 warn_return_any = true
 warn_unused_configs = true
 
+[[tool.mypy.overrides]]
+module = [
+    "backend.tests.*",
+    "noxfile",
+]
+disallow_untyped_decorators = false
+disallow_untyped_defs = false
+
 [tool.pytest.ini_options]
 testpaths = ["backend/tests", "backend/src"]
 python_files = ["test_*.py"]

@@ -55,35 +55,35 @@ This architecture document defines the technical design for the D&D Dice Roller,
 
 All architectural decisions are documented as individual ADRs:
 
-- **[ADR-001: Project Initialization via Full-Stack Template](./architecture/adrs/001-project-initialization-template.md)**  
+- **[ADR-001: Project Initialization via Full-Stack Template](./architecture/adrs/001-project-initialization-template.md)**
   Use `fastapi/full-stack-fastapi-template` as foundation with modifications for Socket.io, Valkey, and Tailwind CSS.
   - See `docs/architecture/starter_template.md` for a summarized list of what the template provides and the primary pinned/version ranges in the template files.
 
-- **[ADR-002: WebSocket Architecture Pattern](./architecture/adrs/002-websocket-architecture.md)**  
+- **[ADR-002: WebSocket Architecture Pattern](./architecture/adrs/002-websocket-architecture.md)**
   Socket.io with native room concept for all real-time features.
 
-- **[ADR-003: State Storage Strategy](./architecture/adrs/003-state-storage-strategy.md)**  
+- **[ADR-003: State Storage Strategy](./architecture/adrs/003-state-storage-strategy.md)**
   Valkey (Redis fork) with single-hash-per-room pattern.
 
-- **[ADR-004: Permalink Storage Schema](./architecture/adrs/004-permalink-storage-schema.md)**  
+- **[ADR-004: Permalink Storage Schema](./architecture/adrs/004-permalink-storage-schema.md)**
   SQLite with rich context schema for MVP permalinks (30-day retention).
 
-- **[ADR-005: Roll Generation Security](./architecture/adrs/005-roll-generation-security.md)**  
+- **[ADR-005: Roll Generation Security](./architecture/adrs/005-roll-generation-security.md)**
   Server-side roll generation via Socket.io events using cryptographic randomness.
 
-- **[ADR-006: Frontend State Management](./architecture/adrs/006-frontend-state-management.md)**  
+- **[ADR-006: Frontend State Management](./architecture/adrs/006-frontend-state-management.md)**
   Zustand for global state management with Socket.io integration.
 
-- **[ADR-007: Styling System](./architecture/adrs/007-styling-system.md)**  
+- **[ADR-007: Styling System](./architecture/adrs/007-styling-system.md)**
   Tailwind CSS + Headless UI (replacing Chakra UI from template).
 
-- **[ADR-008: Deployment & CI/CD Strategy](./architecture/adrs/008-deployment-cicd-strategy.md)**  
+- **[ADR-008: Deployment & CI/CD Strategy](./architecture/adrs/008-deployment-cicd-strategy.md)**
   GitHub Actions with GHCR for Docker images, zero-downtime deployments to VPS.
 
-- **[ADR-009: Observability & Monitoring](./architecture/adrs/009-observability-monitoring.md)**  
+- **[ADR-009: Observability & Monitoring](./architecture/adrs/009-observability-monitoring.md)**
   Structured JSON logging + Sentry error tracking for frontend and backend.
 
-- **[ADR-010: Testing Strategy](./architecture/adrs/010-testing-strategy.md)**  
+- **[ADR-010: Testing Strategy](./architecture/adrs/010-testing-strategy.md)**
   TDD for walking skeleton (Week 1), 80% backend coverage, E2E tests for critical paths.
 
 ---
