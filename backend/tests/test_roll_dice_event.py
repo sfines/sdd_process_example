@@ -1,26 +1,10 @@
 """Integration tests for roll_dice Socket.io event handler - TDD approach."""
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from redis import Redis
 
-from sdd_process_example.services.room_manager import RoomManager
 from sdd_process_example.socket_manager import roll_dice, sio
-
-
-@pytest.fixture
-def mock_redis() -> Redis:  # type: ignore[type-arg]
-    """Provide a mock Redis client for testing."""
-    from fakeredis import FakeStrictRedis
-
-    return FakeStrictRedis(decode_responses=True)  # type: ignore[return-value]
-
-
-@pytest.fixture
-def room_manager(mock_redis: Redis) -> RoomManager:  # type: ignore[type-arg]
-    """Provide a RoomManager with fake Redis."""
-    return RoomManager(mock_redis)  # type: ignore[arg-type]
 
 
 @pytest.mark.asyncio
@@ -87,15 +71,22 @@ async def test_roll_dice_emits_error_when_room_code_missing(
 @pytest.mark.asyncio
 async def test_roll_dice_generates_result_and_broadcasts(
     monkeypatch: pytest.MonkeyPatch,
-    mock_redis: Redis,  # type: ignore[type-arg]
-    room_manager: RoomManager,
 ) -> None:
     """Test that roll_dice generates result and broadcasts to room."""
-    # Setup: Create a room with a player
-    room = room_manager.create_room("TestPlayer")
-    room_code = room.room_code
+    # Mock get_redis_client
+    mock_redis = MagicMock()
+    mock_redis.hgetall.return_value = {
+        "room_code": "TEST-1234",
+        "mode": "Open",
+        "created_at": "2025-11-22T10:00:00Z",
+        "creator_player_id": "player1",
+        "players": (
+            '[{"player_id": "player1", ' '"name": "TestPlayer", "connected": true}]'
+        ),
+        "roll_history": "[]",
+    }
+    mock_redis.expire.return_value = True
 
-    # Mock get_redis_client to return our fake Redis
     monkeypatch.setattr(
         "sdd_process_example.socket_manager.get_redis_client",
         lambda: mock_redis,
@@ -111,7 +102,7 @@ async def test_roll_dice_generates_result_and_broadcasts(
         {
             "formula": "1d20+5",
             "player_name": "TestPlayer",
-            "room_code": room_code,
+            "room_code": "TEST-1234",
         },
     )
 
@@ -133,4 +124,4 @@ async def test_roll_dice_generates_result_and_broadcasts(
     assert "timestamp" in roll_data
 
     # Verify broadcast to room
-    assert call_args[1]["room"] == room_code
+    assert call_args[1]["room"] == "TEST-1234"

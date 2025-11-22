@@ -1,6 +1,7 @@
 """Socket.IO server manager for WebSocket connections."""
 
 import os
+import re
 from typing import Any
 
 import socketio
@@ -8,6 +9,7 @@ from redis import Redis
 
 from .logging_config import get_logger
 from .models import HelloMessage, WorldMessage
+from .services.dice_engine import DiceEngine
 from .services.room_manager import (
     RoomCapacityExceededError,
     RoomManager,
@@ -419,6 +421,43 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
             session_id=sid,
             formula=formula,
             room_code=room_code,
+        )
+
+        # Parse modifier from formula (e.g., "1d20+5" -> modifier=5)
+        modifier = 0
+        match = re.search(r"([+-]\d+)$", formula)
+        if match:
+            modifier = int(match.group(1))
+
+        # Generate dice roll using DiceEngine
+        dice_engine = DiceEngine()
+        # For now, assuming it's always 1d20 (will extend later for other dice)
+        roll_result = dice_engine.roll_d20(
+            modifier=modifier, player_id=sid, player_name=player_name
+        )
+
+        logger.info(
+            "[ROLL_DICE] Roll generated",
+            event_type="roll_dice",
+            session_id=sid,
+            roll_id=roll_result.roll_id,
+            formula=roll_result.formula,
+            total=roll_result.total,
+        )
+
+        # Broadcast roll result to all players in room
+        await sio.emit(
+            "roll_result",
+            roll_result.model_dump(mode="json"),
+            room=room_code,
+        )
+
+        logger.info(
+            "[ROLL_DICE] Roll broadcast to room",
+            event_type="roll_dice",
+            session_id=sid,
+            room_code=room_code,
+            roll_id=roll_result.roll_id,
         )
 
     except Exception as e:
