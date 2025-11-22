@@ -5,9 +5,10 @@ import RoomView from '../pages/RoomView';
 
 // Mock the socket store
 vi.mock('../store/socketStore', () => ({
-  default: vi.fn(() => ({
+  useSocketStore: vi.fn(() => ({
     roomCode: 'ALPHA-1234',
     roomMode: 'Open',
+    creatorPlayerId: '1',
     players: [
       { player_id: '1', name: 'Alice', connected: true },
       { player_id: '2', name: 'Bob', connected: true },

@@ -15,6 +15,7 @@ export const useSocket = () => {
     setConnectionMessage,
     setConnectionError,
     setRoomState,
+    setCurrentPlayerId,
     reset,
   } = useSocketStore();
   
@@ -62,6 +63,7 @@ export const useSocket = () => {
       roll_history: unknown[];
     }) => {
       setRoomState(data);
+      setCurrentPlayerId(data.creator_player_id); // Current user is the creator
       if (navigate) {
         navigate(`/room/${data.room_code}`);
       }
@@ -85,6 +87,10 @@ export const useSocket = () => {
       roll_history: unknown[];
     }) => {
       setRoomState(data);
+      // Current user is the socket.id which matches a player_id in the players array
+      if (socket.id) {
+        setCurrentPlayerId(socket.id);
+      }
       if (navigate) {
         navigate(`/room/${data.room_code}`);
       }

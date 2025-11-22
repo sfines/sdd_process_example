@@ -19,6 +19,7 @@ interface SocketState {
   roomCode: string | null;
   roomMode: 'Open' | 'DM-Led' | null;
   creatorPlayerId: string | null;
+  currentPlayerId: string | null;
   players: Player[];
   rollHistory: unknown[];
   roomState?: {
@@ -38,6 +39,7 @@ interface SocketState {
     players: Player[];
     roll_history: unknown[];
   }) => void;
+  setCurrentPlayerId: (playerId: string) => void;
   createRoom: (playerName: string) => void;
   joinRoom: (roomCode: string, playerName: string) => void;
   reset: () => void;
@@ -50,6 +52,7 @@ const initialState = {
   roomCode: null,
   roomMode: null,
   creatorPlayerId: null,
+  currentPlayerId: null,
   players: [],
   rollHistory: [],
 };
@@ -73,6 +76,8 @@ export const useSocketStore = create<SocketState>((set) => ({
       rollHistory: roomState.roll_history,
       roomState: roomState,
     }),
+
+  setCurrentPlayerId: (playerId: string) => set({ currentPlayerId: playerId }),
 
   createRoom: (playerName: string) => {
     // This will be called by the component
