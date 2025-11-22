@@ -5,12 +5,12 @@ import RoomView from './pages/RoomView';
 import Toast from './components/Toast';
 import { ConnectionStatus } from './components/ConnectionStatus';
 
-export default function App(): JSX.Element {
-  // Initialize socket connection
+function AppContent(): JSX.Element {
+  // Initialize socket connection (must be inside Router for useNavigate to work)
   useSocket();
 
   return (
-    <BrowserRouter>
+    <>
       <div className="fixed top-4 right-4 z-50">
         <ConnectionStatus />
       </div>
@@ -19,6 +19,14 @@ export default function App(): JSX.Element {
         <Route path="/" element={<Home />} />
         <Route path="/room/:roomCode" element={<RoomView />} />
       </Routes>
+    </>
+  );
+}
+
+export default function App(): JSX.Element {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
