@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Users, Wifi, WifiOff, LogOut } from 'lucide-react';
+import { Wifi, WifiOff, LogOut } from 'lucide-react';
 import { useSocketStore } from '../store/socketStore';
 import { socket } from '../services/socket';
 import { Button } from '../components/ui/button';
