@@ -66,6 +66,9 @@ addopts = "-v"
 pythonpath = ["backend/src"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "integration: marks tests as integration tests (requires external services like Redis)",
+]
 
 [tool.bandit]
 exclude_dirs = ["backend/tests", "backend/src/sdd_process_example/__pycache__"]
