@@ -92,7 +92,11 @@ export const useSocketStore = create<SocketState>((set) => ({
       roomMode: roomState.mode as 'Open' | 'DM-Led',
       creatorPlayerId: roomState.creator_player_id,
       players: roomState.players,
-      rollHistory: roomState.roll_history,
+      // CRITICAL: Preserve existing rollHistory if it's longer than incoming
+      // This prevents older roomState from overwriting rolls added via roll_result events
+      rollHistory: roomState.roll_history.length > state.rollHistory.length
+        ? roomState.roll_history
+        : state.rollHistory,
       roomState: roomState,
     })),
 

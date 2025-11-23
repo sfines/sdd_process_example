@@ -143,23 +143,24 @@ export const useSocket = () => {
     const onPlayerJoined = (data: { player_id: string; name: string }) => {
       // Get current store state
       const state = useSocketStore.getState();
-      if (state.roomState) {
-        // Check if player already exists to avoid duplicates
-        const playerExists = state.roomState.players.some(
-          (p) => p.player_id === data.player_id,
-        );
+      
+      // Check if player already exists to avoid duplicates
+      const playerExists = state.players.some(
+        (p) => p.player_id === data.player_id,
+      );
 
-        if (!playerExists) {
-          const updatedRoomState = {
-            ...state.roomState,
-            players: [
-              ...state.roomState.players,
-              { player_id: data.player_id, name: data.name, connected: true },
-            ],
-          };
-          setRoomState(updatedRoomState);
-        }
+      if (!playerExists) {
+        // CRITICAL: Only update players array - do NOT call setRoomState
+        // setRoomState would overwrite rollHistory with stale roomState.roll_history
+        // This preserves rolls added via addRollToHistory
+        useSocketStore.setState({
+          players: [
+            ...state.players,
+            { player_id: data.player_id, name: data.name, connected: true },
+          ],
+        });
       }
+      
       // Show info toast
       window.dispatchEvent(
         new CustomEvent('toast:show', {
