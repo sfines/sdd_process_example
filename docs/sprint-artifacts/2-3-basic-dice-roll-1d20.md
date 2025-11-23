@@ -1,6 +1,6 @@
 # Story 2.3: Basic Dice Roll (1d20)
 
-Status: drafted
+Status: in-progress
 
 ---
 

@@ -12,17 +12,17 @@ interface Player {
 
 interface PlayerListProps {
   players: Player[];
-  currentPlayerId: string;
+  currentPlayerId?: string | null;
 }
 
 export default function PlayerList({
   players,
   currentPlayerId,
 }: PlayerListProps): JSX.Element {
+  // Component renders just the list content, not the container
+  // Parent component (RoomView) provides the container and heading
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Players</h2>
-
+    <>
       {players.length === 0 ? (
         <p className="text-gray-500 text-sm">No players yet</p>
       ) : (
@@ -59,6 +59,6 @@ export default function PlayerList({
           })}
         </ul>
       )}
-    </div>
+    </>
   );
 }
