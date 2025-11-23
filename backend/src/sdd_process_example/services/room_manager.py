@@ -52,11 +52,14 @@ class RoomManager:
         """
         self.redis = redis_client
 
-    def create_room(self, player_name: str) -> RoomState:
+    def create_room(
+        self, player_name: str, player_id: str | None = None
+    ) -> RoomState:
         """Create a new room with unique code.
 
         Args:
             player_name: Name of the room creator
+            player_id: Optional player ID (socket session ID). If not provided, generates UUID.
 
         Returns:
             RoomState: The created room state
@@ -67,7 +70,7 @@ class RoomManager:
 
         Example:
             >>> manager = RoomManager(redis_client)
-            >>> room = manager.create_room("Alice")
+            >>> room = manager.create_room("Alice", "socket-123")
             >>> room.room_code
             'ALPHA-1234'
         """
@@ -105,7 +108,7 @@ class RoomManager:
             )
 
         # Create player
-        player_id = str(uuid.uuid4())
+        player_id = player_id or str(uuid.uuid4())
         player = Player(
             player_id=player_id,
             name=sanitized_name,
@@ -271,12 +274,15 @@ class RoomManager:
 
         return current_count, max_capacity
 
-    def join_room(self, room_code: str, player_name: str) -> RoomState:
+    def join_room(
+        self, room_code: str, player_name: str, player_id: str | None = None
+    ) -> RoomState:
         """Add player to existing room.
 
         Args:
             room_code: Code of room to join
             player_name: Name of player joining
+            player_id: Optional player ID (socket session ID). If not provided, generates UUID.
 
         Returns:
             Updated RoomState with new player added
@@ -288,7 +294,7 @@ class RoomManager:
 
         Example:
             >>> manager = RoomManager(redis_client)
-            >>> room = manager.join_room("ALPHA-1234", "Bob")
+            >>> room = manager.join_room("ALPHA-1234", "Bob", "socket-456")
             >>> len(room.players)
             2
         """
@@ -323,8 +329,8 @@ class RoomManager:
                 f"Room {room_code} is at full capacity ({MAX_ROOM_CAPACITY} players)"
             )
 
-        # Generate unique player ID
-        player_id = str(uuid.uuid4())
+        # Generate unique player ID (or use provided socket ID)
+        player_id = player_id or str(uuid.uuid4())
 
         # Create new player
         new_player = Player(

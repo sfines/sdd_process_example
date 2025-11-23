@@ -12,7 +12,7 @@ interface Player {
 
 interface PlayerListProps {
   players: Player[];
-  currentPlayerId: string;
+  currentPlayerId?: string | null;
 }
 
 export default function PlayerList({

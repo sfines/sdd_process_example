@@ -16,6 +16,7 @@ export const useSocket = () => {
     setConnectionError,
     setRoomState,
     setCurrentPlayerId,
+    setCurrentPlayerName,
     addRollToHistory,
     reset,
   } = useSocketStore();
@@ -63,9 +64,21 @@ export const useSocket = () => {
       players: { player_id: string; name: string; connected: boolean }[];
       roll_history: unknown[];
     }) => {
-      // Update store state (Zustand updates are synchronous)
-      setRoomState({ ...data, roll_history: data.roll_history as any[] });
+      console.log('[useSocket] onRoomCreated received:', data);
+      
+      // CRITICAL: Find player name from the players array
+      const currentPlayer = data.players.find(p => p.player_id === data.creator_player_id);
+      const playerName = currentPlayer?.name || '';
+      
+      // CRITICAL: Call both setters in sequence (Zustand batches updates)
       setCurrentPlayerId(data.creator_player_id);
+      if (playerName) {
+        setCurrentPlayerName(playerName);
+      }
+      setRoomState({ ...data, roll_history: data.roll_history as any[] });
+
+      console.log('[useSocket] After setState, currentPlayerId:', data.creator_player_id);
+      console.log('[useSocket] Players:', data.players);
 
       // Navigate - RoomView will read from updated store
       if (navigate) {
@@ -92,14 +105,21 @@ export const useSocket = () => {
       players: { player_id: string; name: string; connected: boolean }[];
       roll_history: unknown[];
     }) => {
-      // Update store state first
-      setRoomState({ ...data, roll_history: data.roll_history as any[] });
-
       // Use the current_player_id sent by backend, or fall back to socket.id
       const playerId = data.current_player_id || socket.id || '';
       if (playerId) {
+        // CRITICAL: Set these BEFORE setRoomState so they get preserved
         setCurrentPlayerId(playerId);
+        
+        // CRITICAL: Set player name from the players array
+        const currentPlayer = data.players.find(p => p.player_id === playerId);
+        if (currentPlayer) {
+          setCurrentPlayerName(currentPlayer.name);
+        }
       }
+      
+      // Update store state (after setting currentPlayerId)
+      setRoomState({ ...data, roll_history: data.roll_history as any[] });
 
       // Navigate after next frame
       requestAnimationFrame(() => {
@@ -265,6 +285,7 @@ export const useSocket = () => {
     setConnectionError,
     setRoomState,
     setCurrentPlayerId,
+    setCurrentPlayerName,
     addRollToHistory,
     reset,
     navigate,

@@ -33,6 +33,7 @@ interface SocketState {
   roomMode: 'Open' | 'DM-Led' | null;
   creatorPlayerId: string | null;
   currentPlayerId: string | null;
+  currentPlayerName: string | null;
   players: Player[];
   rollHistory: DiceResult[];
   roomState?: {
@@ -53,6 +54,7 @@ interface SocketState {
     roll_history: DiceResult[];
   }) => void;
   setCurrentPlayerId: (playerId: string) => void;
+  setCurrentPlayerName: (name: string) => void;
   createRoom: (playerName: string) => void;
   joinRoom: (roomCode: string, playerName: string) => void;
   rollDice: (formula: string, playerName: string, roomCode: string) => void;
@@ -68,6 +70,7 @@ const initialState = {
   roomMode: null,
   creatorPlayerId: null,
   currentPlayerId: null,
+  currentPlayerName: null,
   players: [],
   rollHistory: [],
 };
@@ -83,26 +86,35 @@ export const useSocketStore = create<SocketState>((set) => ({
   setConnectionError: (error: string | null) => set({ connectionError: error }),
 
   setRoomState: (roomState) =>
-    set({
+    set((state) => ({
+      ...state,  // CRITICAL: Spread existing state first to preserve everything
       roomCode: roomState.room_code,
       roomMode: roomState.mode as 'Open' | 'DM-Led',
       creatorPlayerId: roomState.creator_player_id,
       players: roomState.players,
       rollHistory: roomState.roll_history,
       roomState: roomState,
-    }),
+    })),
 
   setCurrentPlayerId: (playerId: string) => set({ currentPlayerId: playerId }),
-
+  setCurrentPlayerName: (name: string) => set({ currentPlayerName: name }),
   createRoom: (playerName: string) => {
-    set({ connectionError: null });
-    // Directly emit socket event
+    // CRITICAL: Set player name FIRST before any async operations
+    set({ 
+      connectionError: null, 
+      currentPlayerName: playerName 
+    });
+    // Emit socket event
     socket.emit('create_room', { player_name: playerName });
   },
 
   joinRoom: (roomCode: string, playerName: string) => {
-    set({ connectionError: null });
-    // Directly emit socket event
+    // CRITICAL: Set player name FIRST before any async operations
+    set({ 
+      connectionError: null, 
+      currentPlayerName: playerName 
+    });
+    // Emit socket event
     socket.emit('join_room', {
       room_code: roomCode,
       player_name: playerName,

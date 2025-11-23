@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useSocketStore } from '../store/socketStore';
+import { useSocket } from '../hooks/useSocket';
 import { socket } from '../services/socket';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
 import PlayerList from '../components/PlayerList';
@@ -8,25 +9,20 @@ import DiceInput from '../components/DiceInput';
 import RollHistory from '../components/RollHistory';
 
 export default function RoomView() {
-  // Get roomCode from URL (React Router provides this)
   const { roomCode } = useParams<{ roomCode: string }>();
-
-  // Get room data from store (populated by polling)
+  const navigate = useNavigate();
+  
+  // CRITICAL: Initialize socket listeners
+  useSocket();
+  
+  // Get data from Zustand store
   const players = useSocketStore((state) => state.players);
   const rollHistory = useSocketStore((state) => state.rollHistory);
   const currentPlayerId = useSocketStore((state) => state.currentPlayerId);
+  const currentPlayerName = useSocketStore((state) => state.currentPlayerName);
   const rollDice = useSocketStore((state) => state.rollDice);
-
+  
   const [isRolling, setIsRolling] = useState(false);
-
-  // Fetch initial room state ONLY if store is empty (direct URL navigation/refresh)
-  // If we just created/joined, store already has state from room_created/room_joined
-  useEffect(() => {
-    if (roomCode && socket.connected && players.length === 0) {
-      // No players means we navigated directly to URL, need to fetch state
-      socket.emit('get_room_state', { room_code: roomCode });
-    }
-  }, [roomCode, players.length]);
 
   if (!roomCode) {
     return (
@@ -36,46 +32,86 @@ export default function RoomView() {
     );
   }
 
-  // Get current player's name
-  const currentPlayer = players.find((p) => p.player_id === currentPlayerId);
-  const playerName = currentPlayer?.name || 'Unknown';
-
   const handleRoll = (formula: string) => {
+    // Get fresh player name from store at roll time
+    const freshPlayerName = useSocketStore.getState().currentPlayerName || 'Unknown';
+    
+    console.log('[RoomView] Rolling with:', {
+      formula,
+      playerName: freshPlayerName,
+      currentPlayerId,
+      roomCode,
+    });
+    
     setIsRolling(true);
-    rollDice(formula, playerName, roomCode);
+    rollDice(formula, freshPlayerName, roomCode);
 
-    // Reset rolling state after a short delay
     setTimeout(() => {
       setIsRolling(false);
     }, 500);
   };
 
+  const handleLeaveRoom = () => {
+    // Disconnect and navigate home
+    socket.disconnect();
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Room Header */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Game Room</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-4">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Game Room</h1>
+            <p className="text-gray-600 mt-1">
+              Playing as: {currentPlayerName || 'Unknown'}
+            </p>
+          </div>
+          <button
+            onClick={handleLeaveRoom}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Leave Room
+          </button>
+        </div>
+
+        {/* Room Code Display */}
+        <div className="mb-6">
           <RoomCodeDisplay roomCode={roomCode} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Players Section */}
-          <div className="md:col-span-1 bg-white rounded-lg shadow-md p-6">
-            <PlayerList
-              players={players}
-              currentPlayerId={currentPlayerId || ''}
-            />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Dice Roller & Player List */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Dice Input */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Roll Dice
+              </h2>
+              <DiceInput onRoll={handleRoll} isRolling={isRolling} />
+            </div>
+
+            {/* Player List */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Players ({players.length})
+              </h2>
+              <PlayerList players={players} currentPlayerId={currentPlayerId} />
+            </div>
           </div>
 
-          {/* Roll History Section */}
-          <div className="md:col-span-2">
-            <RollHistory rolls={rollHistory} />
+          {/* Right Column - Roll History */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Roll History
+              </h2>
+              <RollHistory rolls={rollHistory} />
+            </div>
           </div>
         </div>
-
-        {/* Dice Rolling Section */}
-        <DiceInput onRoll={handleRoll} isRolling={isRolling} />
       </div>
     </div>
   );

@@ -140,8 +140,8 @@ async def create_room(sid: str, data: dict[str, Any]) -> None:
         redis_client = get_redis_client()
         room_manager = RoomManager(redis_client)
 
-        # Create room
-        room = room_manager.create_room(player_name)
+        # Create room (pass socket ID as player_id for consistency)
+        room = room_manager.create_room(player_name, player_id=sid)
 
         # Add socket to Socket.IO room
         await sio.enter_room(sid, room.room_code)
@@ -255,7 +255,8 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
         room_manager = RoomManager(redis_client)
 
         # Join room
-        room = room_manager.join_room(room_code, player_name)
+        # Join room (pass socket ID as player_id for consistency)
+        room = room_manager.join_room(room_code, player_name, player_id=sid)
 
         # Add socket to Socket.IO room
         await sio.enter_room(sid, room_code)
@@ -367,6 +368,7 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
         "[ROLL_DICE] Roll dice event received",
         event_type="roll_dice",
         session_id=sid,
+        data=data,  # Log the full data payload
     )
 
     try:
