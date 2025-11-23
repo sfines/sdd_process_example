@@ -1,6 +1,6 @@
 """Room code generation utilities."""
 
-import random
+import secrets
 
 from redis import Redis
 
@@ -127,8 +127,8 @@ def generate_room_code() -> str:
         >>> code.split("-")[0] in WORD_LIST
         True
     """
-    word = random.choice(WORD_LIST)
-    number = random.randint(0, 9999)
+    word = secrets.choice(WORD_LIST)
+    number = secrets.randbelow(10000)
     return f"{word}-{number:04d}"
 
 

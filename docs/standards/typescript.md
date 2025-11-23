@@ -179,3 +179,161 @@ repos:
 3.  Turn on incremental type checking via `pnpm typecheck` with `strict` toggles per module.
 4.  Add CI gating: lint → format → typecheck → test.
 5.  Incrementally enforce `noImplicitAny` with a targeted schedule.
+
+## React-Specific Patterns
+
+### Component Composition (Humble Components Pattern)
+
+**Rule:** Child components render ONLY content. Parent components provide structure (containers, headings, layout).
+
+**Rationale:** Prevents duplicate DOM elements, ensures consistency, improves reusability.
+
+**Reference:** See ADR-012: Component Composition Pattern
+
+#### Bad Example
+
+```tsx
+// PlayerList.tsx - ❌ BAD: Component includes container and heading
+export default function PlayerList({ players }: Props) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4">Players</h2>
+      <ul className="space-y-2">
+        {players.map((player) => (
+          <li key={player.id}>{player.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+#### Good Example
+
+```tsx
+// PlayerList.tsx - ✅ GOOD: Component renders only content
+export default function PlayerList({ players }: Props) {
+  return (
+    <>
+      {players.length === 0 ? (
+        <p className="text-gray-500 text-sm">No players yet</p>
+      ) : (
+        <ul className="space-y-2" role="list">
+          {players.map((player) => (
+            <li key={player.id}>{player.name}</li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
+// RoomView.tsx - Parent provides structure
+function RoomView() {
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6">
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        Players ({players.length})
+      </h2>
+      <PlayerList players={players} />
+    </div>
+  );
+}
+```
+
+### React useEffect Cleanup Pattern
+
+**Rule:** Never call state reset functions in useEffect cleanup unless certain the component is unmounting, not just dependencies changing.
+
+**Rationale:** Cleanup runs on EVERY dependency change, not just unmount. Resetting state on navigation breaks user experience.
+
+**Reference:** See ADR-011: React State Persistence Pattern
+
+#### Bad Example
+
+```tsx
+// ❌ BAD: reset() called in cleanup - runs on navigate reference change
+useEffect(() => {
+  socket.on('connect', handleConnect);
+  socket.on('room_created', handleRoomCreated);
+
+  return () => {
+    socket.off('connect', handleConnect);
+    socket.off('room_created', handleRoomCreated);
+    reset(); // ❌ WRONG - clears state on navigation
+  };
+}, [handleConnect, handleRoomCreated, reset, navigate]);
+```
+
+#### Good Example
+
+```tsx
+// ✅ GOOD: No reset in cleanup - state persists across navigation
+useEffect(() => {
+  socket.on('connect', handleConnect);
+  socket.on('room_created', handleRoomCreated);
+
+  return () => {
+    socket.off('connect', handleConnect);
+    socket.off('room_created', handleRoomCreated);
+
+    // DO NOT call reset() here!
+    // This cleanup runs when dependencies change (like navigate reference),
+    // NOT just on actual component unmount. Calling reset() here clears
+    // player identity when navigating between routes.
+    // State should only be reset on explicit user actions (logout, leave room).
+  };
+}, [handleConnect, handleRoomCreated, navigate]);
+
+// Explicit state reset on user action
+function handleLeaveRoom() {
+  reset(); // ✅ GOOD - explicit user action
+  navigate('/');
+}
+```
+
+### State Management with Zustand
+
+**Rule:** Never store WebSocket or ephemeral connection state in component state. Always use Zustand store as single source of truth.
+
+**Rationale:** Ensures consistency across components, simplifies testing, enables proper state persistence.
+
+#### Bad Example
+
+```tsx
+// ❌ BAD: Component state for room data
+function RoomView() {
+  const [players, setPlayers] = useState([]);
+  const [roomCode, setRoomCode] = useState('');
+
+  useEffect(() => {
+    socket.on('player_joined', (data) => {
+      setPlayers(data.players); // ❌ State scattered
+    });
+  }, []);
+
+  return <PlayerList players={players} />;
+}
+```
+
+#### Good Example
+
+```tsx
+// ✅ GOOD: Zustand store as single source of truth
+function RoomView() {
+  const players = useSocketStore((state) => state.players);
+  const roomCode = useSocketStore((state) => state.roomCode);
+
+  // Socket updates handled in useSocket hook → updates store
+  // Components just read from store
+
+  return <PlayerList players={players} />;
+}
+```
+
+## React PR Checklist Additions
+
+11. Components follow humble components pattern (content only, no containers/headings)
+12. No state resets in useEffect cleanup (unless certain of unmount)
+13. Zustand store used for shared state, not component state
+14. Socket.io listeners in custom hook, not components directly
