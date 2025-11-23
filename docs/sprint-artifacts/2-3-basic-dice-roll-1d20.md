@@ -1,6 +1,7 @@
 # Story 2.3: Basic Dice Roll (1d20)
 
-Status: in-progress
+Status: complete
+Completed: 2025-11-23
 
 ---
 

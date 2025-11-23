@@ -1,6 +1,7 @@
 # Story 2.2: Join an Existing Room
 
-Status: review
+Status: complete
+Completed: 2025-11-23
 
 ---
 
