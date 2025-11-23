@@ -53,29 +53,25 @@ export default function DiceInput({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Roll Dice</h2>
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <input
+        type="text"
+        value={formula}
+        onChange={(e) => setFormula(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="1d20+5"
+        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        disabled={isRolling}
+        aria-label="Dice formula"
+      />
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={formula}
-          onChange={(e) => setFormula(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="1d20+5"
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          disabled={isRolling}
-          aria-label="Dice formula"
-        />
-
-        <button
-          type="submit"
-          disabled={isRolling || !formula.trim() || !isValidFormula(formula)}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors"
-        >
-          {isRolling ? 'Rolling...' : 'Roll'}
-        </button>
-      </form>
-    </div>
+      <button
+        type="submit"
+        disabled={isRolling || !formula.trim() || !isValidFormula(formula)}
+        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors"
+      >
+        {isRolling ? 'Rolling...' : 'Roll'}
+      </button>
+    </form>
   );
 }

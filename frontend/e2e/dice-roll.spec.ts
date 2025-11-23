@@ -80,19 +80,36 @@ test.describe('Basic Dice Roll (1d20)', () => {
     await expect(page.getByText('Game Room')).toBeVisible();
 
     // Roll three times
+    const rollButton = page.getByRole('button', { name: /roll/i });
+
     for (let i = 0; i < 3; i++) {
       const diceInput = page.getByPlaceholder('1d20+5');
+
+      // Clear and fill the input (formula is cleared after each roll)
+      await diceInput.clear();
       await diceInput.fill('1d20');
-      await page.getByRole('button', { name: /roll/i }).click();
-      await page.waitForTimeout(500);
+
+      // Wait for button to be enabled (requires valid formula)
+      await expect(rollButton).toBeEnabled({ timeout: 3000 });
+
+      await rollButton.click();
+
+      // Wait for roll to complete and appear in history
+      await page.waitForTimeout(1500);
     }
 
     // Verify three rolls appear in history
-    const rollHistoryItems = page
-      .locator('ul[role="list"]')
-      .first()
-      .locator('li');
+    // Wait a moment to ensure all rolls have been processed
+    await page.waitForTimeout(500);
+
+    // Look specifically in the Roll History section (second list on page)
+    const rollHistorySection = page
+      .getByRole('heading', { name: 'Roll History' })
+      .locator('..');
+    const rollHistoryItems = rollHistorySection.locator('ul[role="list"] li');
     const count = await rollHistoryItems.count();
+
+    console.log(`Found ${count} rolls in history`);
     expect(count).toBeGreaterThanOrEqual(3);
   });
 
@@ -222,7 +239,9 @@ test.describe('Basic Dice Roll (1d20)', () => {
       await expect(page2.getByText('Game Room')).toBeVisible();
 
       // CRITICAL: Wait for room code to appear - this indicates socket event has populated store
-      await expect(page2.getByTestId('room-code')).toBeVisible({ timeout: 5000 });
+      await expect(page2.getByTestId('room-code')).toBeVisible({
+        timeout: 5000,
+      });
 
       // Wait for both players to appear (socket events are async, may take a moment)
       await expect(page2.getByTestId(`player-${player1Name}`)).toBeVisible({
@@ -246,10 +265,12 @@ test.describe('Basic Dice Roll (1d20)', () => {
       await page1.getByRole('button', { name: /roll/i }).click();
       await page1.waitForTimeout(1000);
 
-      // Player 2: Should see the roll
+      // Player 2: Should see the roll in roll history
+      // Wait for the roll to appear (async broadcast)
+      await page2.waitForTimeout(500);
       await expect(page2.getByText(player1Name).nth(1)).toBeVisible(); // In roll history
-      // Use .first() to select first matching element (avoids strict mode violation)
-      await expect(page2.locator('text=/1d20\\+3/i').first()).toBeVisible();
+      // Use .first() to avoid matching toast message
+      await expect(page2.getByText(/rolled 1d20\+3/i).first()).toBeVisible();
 
       // Player 2: Roll dice
       const diceInput2 = page2.getByPlaceholder('1d20+5');
@@ -257,9 +278,10 @@ test.describe('Basic Dice Roll (1d20)', () => {
       await page2.getByRole('button', { name: /roll/i }).click();
       await page2.waitForTimeout(1000);
 
-      // Player 1: Should see both rolls
-      await expect(page1.locator('text=/1d20\\+3/i')).toBeVisible();
-      await expect(page1.locator('text=/1d20-1/i')).toBeVisible();
+      // Player 1: Should see both rolls in the roll history
+      await page1.waitForTimeout(500);
+      await expect(page1.getByText(/rolled 1d20\+3/i).first()).toBeVisible();
+      await expect(page1.getByText(/rolled 1d20-1/i).first()).toBeVisible();
     } finally {
       await context1.close();
       await context2.close();
