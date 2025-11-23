@@ -59,8 +59,9 @@ test.describe('Basic Dice Roll (1d20)', () => {
 
     // Verify total is within valid range (6-25 for 1d20+5)
     const totalRegex = /\b([6-9]|1[0-9]|2[0-5])\b/; // 6-25
+    // Use .first() to select first matching element (avoids strict mode violation)
     await expect(
-      rollHistorySection.locator('text=' + totalRegex),
+      rollHistorySection.locator('text=' + totalRegex).first(),
     ).toBeVisible();
   });
 
@@ -241,7 +242,8 @@ test.describe('Basic Dice Roll (1d20)', () => {
 
       // Player 2: Should see the roll
       await expect(page2.getByText(player1Name).nth(1)).toBeVisible(); // In roll history
-      await expect(page2.locator('text=/1d20\\+3/i')).toBeVisible();
+      // Use .first() to select first matching element (avoids strict mode violation)
+      await expect(page2.locator('text=/1d20\\+3/i').first()).toBeVisible();
 
       // Player 2: Roll dice
       const diceInput2 = page2.getByPlaceholder('1d20+5');
