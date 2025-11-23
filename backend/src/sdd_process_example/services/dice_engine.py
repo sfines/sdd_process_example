@@ -1,61 +1,57 @@
 """Dice rolling engine with cryptographic randomness for fairness."""
 
-import re
 import secrets
 from datetime import UTC, datetime
 
 from ..models import DiceResult
+from .dice_parser import DiceParser
 
 
 class DiceEngine:
     """Engine for generating cryptographically secure dice rolls."""
 
     def __init__(self) -> None:
-        """Initialize the dice engine with secure random generator."""
-        self._rng = secrets.SystemRandom()
+        """Initialize the dice engine with a parser."""
+        self._parser = DiceParser()
 
-    def roll_d20(
-        self, modifier: int = 0, player_id: str = "", player_name: str = ""
+    def roll(
+        self, formula: str, player_id: str = "", player_name: str = ""
     ) -> DiceResult:
-        """Roll a single d20 with optional modifier.
+        """Roll dice based on a formula string (e.g., '2d6+3').
 
         Args:
-            modifier: Integer modifier to add to the roll (-20 to +20)
-            player_id: ID of the player making the roll
-            player_name: Name of the player making the roll
+            formula: The dice formula string.
+            player_id: ID of the player making the roll.
+            player_name: Name of the player making the roll.
 
         Returns:
-            DiceResult with formula, individual results, modifier, and total
-        """
-        roll = self._rng.randint(1, 20)
-        total = roll + modifier
+            A DiceResult object with the outcome.
 
-        # Format formula string
-        if modifier > 0:
-            formula = f"1d20+{modifier}"
-        elif modifier < 0:
-            formula = f"1d20{modifier}"  # Negative sign already included
-        else:
-            formula = "1d20"
+        Raises:
+            ValueError: If the formula is invalid.
+        """
+        try:
+            total, individual_rolls = self._parser.parse(formula)
+        except Exception as e:
+            # Re-raise Lark's parsing errors as a ValueError for consistency
+            raise ValueError(f"Invalid dice formula: {formula}") from e
+
+        # Calculate modifier: total - sum of raw dice rolls
+        modifier = total - sum(individual_rolls)
 
         return DiceResult(
             roll_id=secrets.token_urlsafe(16),
             player_id=player_id,
             player_name=player_name,
             formula=formula,
-            individual_results=[roll],
+            individual_results=individual_rolls,
             modifier=modifier,
             total=total,
             timestamp=datetime.now(UTC),
         )
 
     def validate_formula(self, formula: str) -> bool:
-        """Validate a dice roll formula string.
-
-        Accepts formats:
-        - "1d20"
-        - "1d20+5"
-        - "1d20-3"
+        """Validate a dice roll formula string using the parser.
 
         Args:
             formula: Formula string to validate
@@ -63,6 +59,8 @@ class DiceEngine:
         Returns:
             True if formula is valid, False otherwise
         """
-        # Pattern: {count}d{sides}[+/-{modifier}]
-        pattern = r"^\d+d\d+([+-]\d+)?$"
-        return bool(re.match(pattern, formula))
+        try:
+            self._parser.parse(formula)
+            return True
+        except Exception:
+            return False

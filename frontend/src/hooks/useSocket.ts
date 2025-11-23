@@ -63,13 +63,16 @@ export const useSocket = () => {
       players: { player_id: string; name: string; connected: boolean }[];
       roll_history: unknown[];
     }) => {
-      // Cast roll_history to proper type (will be empty array initially)
+      // Update store state (Zustand updates are synchronous)
       setRoomState({ ...data, roll_history: data.roll_history as any[] });
-      setCurrentPlayerId(data.creator_player_id); // Current user is the creator
+      setCurrentPlayerId(data.creator_player_id);
+
+      // Navigate - RoomView will read from updated store
       if (navigate) {
         navigate(`/room/${data.room_code}`);
       }
-      // Show success toast (handled by toast system)
+
+      // Show success toast
       window.dispatchEvent(
         new CustomEvent('toast:show', {
           detail: {
@@ -89,16 +92,22 @@ export const useSocket = () => {
       players: { player_id: string; name: string; connected: boolean }[];
       roll_history: unknown[];
     }) => {
-      // Cast roll_history to proper type
+      // Update store state first
       setRoomState({ ...data, roll_history: data.roll_history as any[] });
+
       // Use the current_player_id sent by backend, or fall back to socket.id
       const playerId = data.current_player_id || socket.id || '';
       if (playerId) {
         setCurrentPlayerId(playerId);
       }
-      if (navigate) {
-        navigate(`/room/${data.room_code}`);
-      }
+
+      // Navigate after next frame
+      requestAnimationFrame(() => {
+        if (navigate) {
+          navigate(`/room/${data.room_code}`);
+        }
+      });
+
       // Show success toast
       window.dispatchEvent(
         new CustomEvent('toast:show', {
@@ -181,6 +190,30 @@ export const useSocket = () => {
       );
     };
 
+    // Handle room_state response (for initial fetch only)
+    const onRoomState = (data: {
+      room_code: string;
+      mode: string;
+      creator_player_id: string;
+      players: { player_id: string; name: string; connected: boolean }[];
+      roll_history: unknown[];
+    }) => {
+      // Get current store state
+      const currentState = useSocketStore.getState();
+
+      // CRITICAL: Only update rollHistory if current store is empty
+      // This prevents stale polling responses from overwriting fresh WebSocket events
+      // After initial fetch, roll_result events are the source of truth
+      const useCurrentRolls = currentState.rollHistory.length > 0;
+
+      setRoomState({
+        ...data,
+        roll_history: useCurrentRolls
+          ? currentState.rollHistory
+          : (data.roll_history as any[]),
+      });
+    };
+
     // Handle create room request from store
     // const onCreateRoom = (event: Event) => {
     //   const customEvent = event as CustomEvent<{ playerName: string }>;
@@ -205,6 +238,7 @@ export const useSocket = () => {
     socket.on('room_joined', onRoomJoined);
     socket.on('player_joined', onPlayerJoined);
     socket.on('roll_result', onRollResult);
+    socket.on('room_state', onRoomState);
     socket.on('error', onError);
     // window.addEventListener('socket:createRoom', onCreateRoom);
     // window.addEventListener('socket:joinRoom', onJoinRoom);
@@ -219,6 +253,7 @@ export const useSocket = () => {
       socket.off('room_joined', onRoomJoined);
       socket.off('player_joined', onPlayerJoined);
       socket.off('roll_result', onRollResult);
+      socket.off('room_state', onRoomState);
       socket.off('error', onError);
       // window.removeEventListener('socket:createRoom', onCreateRoom);
       // window.removeEventListener('socket:joinRoom', onJoinRoom);

@@ -1,19 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useSocketStore } from '../store/socketStore';
+import { socket } from '../services/socket';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
 import PlayerList from '../components/PlayerList';
 import DiceInput from '../components/DiceInput';
 import RollHistory from '../components/RollHistory';
 
 export default function RoomView() {
-  const { roomCode, players, rollHistory, currentPlayerId, rollDice } =
-    useSocketStore();
+  // Get roomCode from URL (React Router provides this)
+  const { roomCode } = useParams<{ roomCode: string }>();
+
+  // Get room data from store (populated by polling)
+  const players = useSocketStore((state) => state.players);
+  const rollHistory = useSocketStore((state) => state.rollHistory);
+  const currentPlayerId = useSocketStore((state) => state.currentPlayerId);
+  const rollDice = useSocketStore((state) => state.rollDice);
+
   const [isRolling, setIsRolling] = useState(false);
+
+  // Fetch initial room state ONLY if store is empty (direct URL navigation/refresh)
+  // If we just created/joined, store already has state from room_created/room_joined
+  useEffect(() => {
+    if (roomCode && socket.connected && players.length === 0) {
+      // No players means we navigated directly to URL, need to fetch state
+      socket.emit('get_room_state', { room_code: roomCode });
+    }
+  }, [roomCode, players.length]);
 
   if (!roomCode) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">Loading room...</div>
+        <div className="text-gray-600">No room specified</div>
       </div>
     );
   }

@@ -1,7 +1,6 @@
 """Socket.IO server manager for WebSocket connections."""
 
 import os
-import re
 from typing import Any
 
 import socketio
@@ -415,6 +414,22 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
             )
             return
 
+        # Validate formula before processing
+        dice_engine = DiceEngine()
+        if not dice_engine.validate_formula(formula):
+            logger.warning(
+                "[ROLL_DICE] Invalid formula",
+                event_type="roll_dice",
+                session_id=sid,
+                formula=formula,
+            )
+            await sio.emit(
+                "error",
+                {"message": f"Invalid dice formula: {formula}"},
+                to=sid,
+            )
+            return
+
         logger.info(
             "[ROLL_DICE] Roll validated successfully",
             event_type="roll_dice",
@@ -423,17 +438,9 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
             room_code=room_code,
         )
 
-        # Parse modifier from formula (e.g., "1d20+5" -> modifier=5)
-        modifier = 0
-        match = re.search(r"([+-]\d+)$", formula)
-        if match:
-            modifier = int(match.group(1))
-
         # Generate dice roll using DiceEngine
-        dice_engine = DiceEngine()
-        # For now, assuming it's always 1d20 (will extend later for other dice)
-        roll_result = dice_engine.roll_d20(
-            modifier=modifier, player_id=sid, player_name=player_name
+        roll_result = dice_engine.roll(
+            formula=formula, player_id=sid, player_name=player_name
         )
 
         logger.info(
@@ -483,5 +490,74 @@ async def roll_dice(sid: str, data: dict[str, Any]) -> None:
         await sio.emit(
             "error",
             {"message": "Failed to process roll"},
+            to=sid,
+        )
+
+
+@sio.event  # type: ignore[misc]
+async def get_room_state(sid: str, data: dict[str, Any]) -> None:
+    """Handle get_room_state event - returns current room state for polling.
+
+    Args:
+        sid: Socket.IO session ID
+        data: Event data containing room_code
+
+    Expected data format:
+        {
+            "room_code": str  # Room code to fetch
+        }
+
+    Emits:
+        room_state: Current room data (players, roll_history)
+        error: On failure with error message
+    """
+    try:
+        room_code = data.get("room_code")
+
+        if not room_code:
+            await sio.emit(
+                "error",
+                {"message": "room_code is required"},
+                to=sid,
+            )
+            return
+
+        redis_client = get_redis_client()
+        room_manager = RoomManager(redis_client)
+
+        # Fetch current room state
+        room_state = room_manager.get_room(room_code)
+
+        if not room_state:
+            await sio.emit(
+                "error",
+                {"message": f"Room {room_code} not found"},
+                to=sid,
+            )
+            return
+
+        # Emit current state back to requesting client
+        await sio.emit(
+            "room_state",
+            room_state.model_dump(),
+            to=sid,
+        )
+
+    except RoomNotFoundError:
+        await sio.emit(
+            "error",
+            {"message": f"Room {room_code} not found"},
+            to=sid,
+        )
+    except Exception as e:
+        logger.error(
+            "[GET_ROOM_STATE] Failed to fetch room state",
+            event_type="get_room_state",
+            session_id=sid,
+            error=str(e),
+        )
+        await sio.emit(
+            "error",
+            {"message": "Failed to fetch room state"},
             to=sid,
         )

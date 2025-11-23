@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --project frontend/tsconfig.json --noEmit",
-    "test": "cd frontend && vitest",
+    "test": "vitest --root frontend --run",
     "test:e2e": "cd frontend && DOCKER_ENV=true NODE_OPTIONS=--unhandled-rejections=warn playwright test",
     "audit": "pnpm audit --audit-level=moderate",
     "audit:fix": "pnpm audit --fix"

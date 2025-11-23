@@ -81,7 +81,7 @@ async def test_roll_dice_generates_result_and_broadcasts(
         "created_at": "2025-11-22T10:00:00Z",
         "creator_player_id": "player1",
         "players": (
-            '[{"player_id": "player1", ' '"name": "TestPlayer", "connected": true}]'
+            '[{"player_id": "player1", "name": "TestPlayer", "connected": true}]'
         ),
         "roll_history": "[]",
     }
@@ -140,7 +140,7 @@ async def test_roll_dice_persists_to_roll_history(
         "created_at": "2025-11-22T10:00:00Z",
         "creator_player_id": "player1",
         "players": (
-            '[{"player_id": "player1", ' '"name": "TestPlayer", "connected": true}]'
+            '[{"player_id": "player1", "name": "TestPlayer", "connected": true}]'
         ),
         "roll_history": "[]",
     }
