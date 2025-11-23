@@ -1,6 +1,6 @@
 # Story 2.11: Mobile Responsive User Interface
 
-Status: drafted
+Status: ready-for-dev
 
 ---
 
@@ -409,7 +409,7 @@ This story is a **UI/UX enhancement** with no backend or business logic changes.
 
 ### Learnings from Stories 2.3-2.10
 
-**From Previous Stories (Status: drafted)**
+**From Previous Stories (Status: ready-for-dev)**
 
 - RoomView structure already exists
 - DiceInput already created

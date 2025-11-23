@@ -1,0 +1,123 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>6</storyId>
+    <title>Roll with Advantage or Disadvantage</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-23</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-6-roll-with-advantage-or-disadvantage.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>roll with advantage or disadvantage</iWant>
+    <soThat>I can follow the rules of D&D for these situations</soThat>
+    <tasks>
+      - Backend dice parser already supports advantage/disadvantage (COMPLETE)
+      - Add advantage/disadvantage toggle to AdvancedDiceInput component
+      - UI shows three options: Normal, Advantage, Disadvantage
+      - Formula format includes advantage indicator (e.g., "1d20 (Advantage)")
+      - Roll generates 2d20 for advantage/disadvantage, takes highest/lowest
+      - Display both rolls in history with indicator showing which was used
+      - Validate advantage/disadvantage only works with d20 rolls
+      - Write unit tests for advantage/disadvantage formula generation
+      - Write E2E test for advantage roll (roll 2d20, take highest)
+      - Write E2E test for disadvantage roll (roll 2d20, take lowest)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Backend generates 2d20 for advantage/disadvantage (ALREADY DONE)
+    2. AdvancedDiceInput has advantage/disadvantage toggle (Normal/Advantage/Disadvantage)
+    3. Advantage takes highest of 2d20, disadvantage takes lowest
+    4. Roll history shows both rolls with indicator for which was used
+    5. Formula display includes advantage indicator (e.g., "1d20 (Advantage)")
+    6. Advantage/disadvantage only available for d20 rolls (validation)
+    7. Server-side logic determines which die to use (client never decides)
+    8. E2E test validates advantage roll (2d20, highest used)
+    9. E2E test validates disadvantage roll (2d20, lowest used)
+    10. Results broadcast correctly to all players in room
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Core Dice Rolling</title>
+        <section>Advantage/Disadvantage Mechanics</section>
+        <snippet>D&D 5e rules: Advantage rolls 2d20, takes highest. Disadvantage rolls 2d20, takes lowest. Server determines which die to use.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>backend/src/sdd_process_example/services/dice_engine.py</path>
+        <kind>service</kind>
+        <symbol>roll_dice</symbol>
+        <lines>N/A</lines>
+        <reason>Backend already supports advantage/disadvantage. No backend changes needed.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/components/RollHistory.tsx</path>
+        <kind>component</kind>
+        <symbol>RollHistory</symbol>
+        <lines>1-95</lines>
+        <reason>Needs UI update to show both dice rolls with indicator for which was used (highest/lowest).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="react" version="^18.2.0" />
+        <package name="zustand" version="^5.0.8" />
+        <package name="socket.io-client" version="^4.8.1" />
+      </npm>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - NO backend changes needed - advantage/disadvantage already supported
+    - Frontend-only story focused on UI controls
+    - Advantage/disadvantage ONLY works with d20 rolls (validation required)
+    - Must roll 2d20 for advantage/disadvantage (not 1d20)
+    - Server determines which die to use (highest/lowest) - client never decides
+    - Display both die results in history with clear indicator
+    - Formula format: "1d20 (Advantage)" or "1d20 (Disadvantage)"
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Socket.io roll_dice Event with Advantage</name>
+      <kind>WebSocket Event</kind>
+      <signature>
+socket.emit('roll_dice', {
+  formula: "1d20",
+  advantage: "advantage" | "disadvantage" | "normal"
+})
+
+socket.on('roll_result', (data) => {
+  roll: {
+    formula: "1d20 (Advantage)",
+    individual_results: [18, 12],  // both rolls shown
+    total: 18,  // highest used
+    advantage: "advantage"
+  }
+})
+      </signature>
+      <path>frontend/src/services/socket.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Unit tests for toggle UI. E2E tests for advantage/disadvantage rolls showing correct results.</standards>
+    <locations>
+      - frontend/src/components/__tests__/AdvancedDiceInput.test.tsx
+      - frontend/e2e/advantage-disadvantage.spec.ts (NEW)
+    </locations>
+    <ideas>
+      <test ac="2,6" desc="Unit test: Advantage/disadvantage toggle only enabled for d20">test_advantage_toggle_validation</test>
+      <test ac="8" desc="E2E test: Roll with advantage, verify 2d20 rolled, highest used">test_advantage_roll</test>
+      <test ac="9" desc="E2E test: Roll with disadvantage, verify 2d20 rolled, lowest used">test_disadvantage_roll</test>
+      <test ac="4" desc="E2E test: Both die results displayed in history">test_both_results_shown</test>
+    </ideas>
+  </tests>
+</story-context>
