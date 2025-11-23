@@ -37,15 +37,15 @@ so that **the application feels trustworthy and enjoyable to use**.
 
 ### Task 1: Install shadcn/ui and Design System Dependencies
 
-- [ ] Install shadcn/ui CLI: `pnpm dlx shadcn@latest init`
-  - [ ] Configure for TypeScript, Tailwind CSS, CSS variables
-  - [ ] Set base color to "neutral" (matches Figma design)
-  - [ ] Install components: Button, Input, Card, Badge, Separator, ScrollArea, Dialog
-- [ ] Install Lucide React icons: `pnpm add lucide-react`
-- [ ] Install class-variance-authority: `pnpm add class-variance-authority`
-- [ ] Copy design tokens from `docs/uex/figma-design/src/styles/globals.css` to `frontend/src/styles/globals.css`
-- [ ] Verify: Run `pnpm run dev`, check styles load correctly
-- [ ] Commit: "feat(frontend): Install shadcn/ui design system and Figma design tokens"
+- [x] Install shadcn/ui CLI: `pnpm dlx shadcn@latest init`
+  - [x] Configure for TypeScript, Tailwind CSS, CSS variables
+  - [x] Set base color to "neutral" (matches Figma design)
+  - [x] Install components: Button, Input, Card, Badge, Separator, ScrollArea, Dialog
+- [x] Install Lucide React icons: `pnpm add lucide-react`
+- [x] Install class-variance-authority: `pnpm add class-variance-authority`
+- [x] Copy design tokens from `docs/uex/figma-design/src/styles/globals.css` to `frontend/src/styles/globals.css`
+- [x] Verify: Run `pnpm run dev`, check styles load correctly
+- [x] Commit: "feat(frontend): Install shadcn/ui design system and Figma design tokens"
 
 ### Task 2: Migrate HomePage to Figma Design
 

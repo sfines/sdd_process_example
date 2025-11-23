@@ -159,9 +159,13 @@ describe('useSocket - Join Room', () => {
       roll_history: [],
     };
 
-    act(() => {
+    await act(async () => {
       result.current.setRoomState(initialRoom);
     });
+
+    // Verify initial state is set
+    expect(result.current.players).toHaveLength(1);
+    expect(result.current.players[0].player_id).toBe('player-1');
 
     // Find the player_joined listener
     const calls = (socket.on as any).mock.calls;
@@ -180,7 +184,7 @@ describe('useSocket - Join Room', () => {
     });
 
     await waitFor(() => {
-      const players = result.current.roomState?.players || [];
+      const players = result.current.players;
       expect(players).toHaveLength(2);
       expect(players[1]).toEqual({
         player_id: 'player-2',

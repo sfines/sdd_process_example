@@ -9,13 +9,14 @@ import { render, screen } from '@testing-library/react';
 import PlayerList from '../components/PlayerList';
 
 describe('PlayerList', () => {
-  it('renders the player list heading', () => {
+  it('renders player list without heading (heading provided by parent)', () => {
     const { container } = render(
       <PlayerList players={[]} currentPlayerId="" />,
     );
 
+    // Component doesn't render heading - that's provided by parent (RoomView)
     const heading = container.querySelector('h2');
-    expect(heading).toHaveTextContent(/players/i);
+    expect(heading).toBeNull();
   });
 
   it('displays a single connected player', () => {
@@ -90,13 +91,10 @@ describe('PlayerList', () => {
   });
 
   it('handles empty player list gracefully', () => {
-    const { container } = render(
-      <PlayerList players={[]} currentPlayerId="" />,
-    );
+    render(<PlayerList players={[]} currentPlayerId="" />);
 
-    const heading = container.querySelector('h2');
-    expect(heading).toHaveTextContent(/players/i);
-    // Should not crash, shows empty state or just the heading
+    // Shows empty state message
+    expect(screen.getByText(/no players yet/i)).toBeInTheDocument();
   });
 
   it('displays players in the order provided', () => {

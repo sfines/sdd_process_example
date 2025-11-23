@@ -9,10 +9,11 @@ import { render, screen, within } from '@testing-library/react';
 import RollHistory from '../components/RollHistory';
 
 describe('RollHistory', () => {
-  it('renders the roll history heading', () => {
+  it('renders roll history without heading (heading provided by parent)', () => {
     render(<RollHistory rolls={[]} />);
 
-    expect(screen.getByText(/roll history/i)).toBeInTheDocument();
+    // Component doesn't have heading - that's in parent (RoomView)
+    expect(screen.queryByText(/roll history/i)).not.toBeInTheDocument();
   });
 
   it('displays empty state when no rolls', () => {
