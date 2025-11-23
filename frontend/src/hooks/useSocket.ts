@@ -118,15 +118,14 @@ export const useSocket = () => {
         }
       }
       
-      // Update store state (after setting currentPlayerId)
+      // CRITICAL: Update store state FIRST, ensuring it's committed
       setRoomState({ ...data, roll_history: data.roll_history as any[] });
 
-      // Navigate after next frame
-      requestAnimationFrame(() => {
-        if (navigate) {
-          navigate(`/room/${data.room_code}`);
-        }
-      });
+      // Navigate immediately after state is set (no need to defer)
+      // The store update is synchronous, so navigation can happen right away
+      if (navigate) {
+        navigate(`/room/${data.room_code}`);
+      }
 
       // Show success toast
       window.dispatchEvent(
