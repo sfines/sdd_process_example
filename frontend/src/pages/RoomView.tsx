@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocketStore } from '../store/socketStore';
-import { useSocket } from '../hooks/useSocket';
 import { socket } from '../services/socket';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
 import PlayerList from '../components/PlayerList';
@@ -12,10 +11,7 @@ export default function RoomView() {
   const { roomCode } = useParams<{ roomCode: string }>();
   const navigate = useNavigate();
   
-  // CRITICAL: Initialize socket listeners
-  useSocket();
-  
-  // Get data from Zustand store
+  // Get data from Zustand store (populated by useSocket in App.tsx)
   const players = useSocketStore((state) => state.players);
   const rollHistory = useSocketStore((state) => state.rollHistory);
   const currentPlayerId = useSocketStore((state) => state.currentPlayerId);
