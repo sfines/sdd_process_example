@@ -78,7 +78,7 @@ def test_get_room_capacity_returns_current_and_max_integration(
     integration_room_manager: RoomManager,
 ) -> None:
     """Test get_room_capacity() returns player count and max capacity.
-    
+
     Tests with real Redis.
     """
     # Create a room
@@ -97,7 +97,7 @@ def test_get_room_capacity_for_nonexistent_room_raises_error_integration(
     integration_room_manager: RoomManager,
 ) -> None:
     """Test get_room_capacity() raises error for non-existent room.
-    
+
     Tests with real Redis.
     """
     # Try to get capacity for non-existent room

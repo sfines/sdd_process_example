@@ -14,16 +14,16 @@ def test_get_room_returns_existing_room(
     """Test that get_room() returns room state for existing room."""
     # Mock room exists
     mock_redis.exists.return_value = True
-    
+
     # Mock hgetall to return room data
     room_data = {
         "room_code": "ALPHA-1234",
         "mode": "Open",
         "created_at": "2024-01-01T00:00:00Z",
         "creator_player_id": "player-1",
-        "players": json.dumps([
-            {"player_id": "player-1", "name": "Alice", "connected": True}
-        ]),
+        "players": json.dumps(
+            [{"player_id": "player-1", "name": "Alice", "connected": True}]
+        ),
         "roll_history": json.dumps([]),
     }
     mock_redis.hgetall.return_value = room_data
@@ -45,7 +45,7 @@ def test_get_room_returns_none_for_nonexistent_room(
     """Test that get_room() returns None for non-existent room."""
     # Mock room doesn't exist
     mock_redis.exists.return_value = False
-    
+
     # Query non-existent room
     retrieved_room = room_manager.get_room("NONEXISTENT-9999")
 
@@ -74,7 +74,7 @@ def test_room_exists_returns_false_for_nonexistent_room(
     """Test that room_exists() returns False for non-existent room."""
     # Mock room doesn't exist
     mock_redis.exists.return_value = False
-    
+
     # Check if non-existent room exists
     exists = room_manager.room_exists("NONEXISTENT-8888")
 
@@ -88,15 +88,15 @@ def test_get_room_capacity_returns_current_and_max(
     """Test that get_room_capacity() returns current player count and max capacity."""
     # Mock room exists
     mock_redis.exists.return_value = True
-    
+
     room_data = {
         "room_code": "CHARLIE-1111",
         "mode": "Open",
         "created_at": "2024-01-01T00:00:00Z",
         "creator_player_id": "player-1",
-        "players": json.dumps([
-            {"player_id": "player-1", "name": "Charlie", "connected": True}
-        ]),
+        "players": json.dumps(
+            [{"player_id": "player-1", "name": "Charlie", "connected": True}]
+        ),
         "roll_history": json.dumps([]),
     }
     mock_redis.hgetall.return_value = room_data
@@ -115,8 +115,7 @@ def test_get_room_capacity_for_nonexistent_room_raises_error(
     """Test that get_room_capacity() raises error for non-existent room."""
     # Mock room doesn't exist
     mock_redis.exists.return_value = False
-    
+
     # Try to get capacity for non-existent room
     with pytest.raises(ValueError, match="Room .* not found"):
         room_manager.get_room_capacity("NONEXISTENT-7777")
-

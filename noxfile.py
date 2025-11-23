@@ -38,7 +38,7 @@ def test(session: nox.Session) -> None:
 @nox.session(python=["3.13"])
 def integration(session: nox.Session) -> None:
     """Run integration tests (requires Redis and other external services).
-    
+
     This session is not run in CI/CD pipelines and must be run manually.
     Requires Redis to be running on localhost:6379.
     """

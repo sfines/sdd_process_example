@@ -44,7 +44,7 @@ def test_join_room_raises_error_for_nonexistent_room_integration(
     integration_room_manager: RoomManager,
 ) -> None:
     """Test that join_room() raises RoomNotFoundError.
-    
+
     Tests non-existent room with real Redis.
     """
     # Try to join non-existent room
@@ -57,7 +57,7 @@ def test_join_room_raises_error_when_room_at_capacity_integration(
     integration_room_manager: RoomManager,
 ) -> None:
     """Test that join_room() raises RoomCapacityExceededError.
-    
+
     Tests when room is full with real Redis.
     """
     # Create a room
@@ -71,9 +71,7 @@ def test_join_room_raises_error_when_room_at_capacity_integration(
     assert len(room.players) == 8
 
     # Try to add 9th player
-    with pytest.raises(
-        RoomCapacityExceededError, match="Room .* is at full capacity"
-    ):
+    with pytest.raises(RoomCapacityExceededError, match="Room .* is at full capacity"):
         integration_room_manager.join_room(room.room_code, "Player9")
 
 

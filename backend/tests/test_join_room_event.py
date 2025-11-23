@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 
-
 @pytest.mark.asyncio
 async def test_join_room_event_success(mock_redis: MagicMock) -> None:
     """Test successful join_room event handling."""
@@ -15,16 +14,16 @@ async def test_join_room_event_success(mock_redis: MagicMock) -> None:
 
     # Mock room exists
     mock_redis.exists.return_value = True
-    
+
     # Mock existing room data
     room_data = {
         "room_code": "ALPHA-1234",
         "mode": "Open",
         "created_at": "2024-01-01T00:00:00Z",
         "creator_player_id": "player-1",
-        "players": json.dumps([
-            {"player_id": "player-1", "name": "Alice", "connected": True}
-        ]),
+        "players": json.dumps(
+            [{"player_id": "player-1", "name": "Alice", "connected": True}]
+        ),
         "roll_history": json.dumps([]),
     }
     mock_redis.hgetall.return_value = room_data
@@ -103,7 +102,7 @@ async def test_join_room_event_room_full(mock_redis: MagicMock) -> None:
 
     # Mock room exists
     mock_redis.exists.return_value = True
-    
+
     # Create room with 8 players (at capacity)
     players = [
         {"player_id": f"player-{i}", "name": f"Player{i}", "connected": True}
@@ -163,4 +162,3 @@ async def test_join_room_event_invalid_player_name() -> None:
     call_args = mock_emit.call_args[0]
     assert call_args[0] == "error"
     assert "name" in call_args[1]["message"].lower()
-
