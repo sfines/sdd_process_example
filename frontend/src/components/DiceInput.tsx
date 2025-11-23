@@ -1,10 +1,14 @@
 /**
  * DiceInput Component
  *
- * Input component for entering and rolling dice formulas (e.g., 1d20+5).
+ * Input component for simple 1d20 dice rolling with Figma design.
+ * Migrated from basic Tailwind to shadcn/ui design system.
  */
 
-import { useState, FormEvent, KeyboardEvent } from 'react';
+import { useState, FormEvent } from 'react';
+import { Dices } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 interface DiceInputProps {
   onRoll: (formula: string) => void;
@@ -15,63 +19,65 @@ export default function DiceInput({
   onRoll,
   isRolling = false,
 }: DiceInputProps): JSX.Element {
-  const [formula, setFormula] = useState('');
-
-  // Validate dice formula format (e.g., 1d20, 1d20+5, 1d20-2)
-  const isValidFormula = (value: string): boolean => {
-    const dicePattern = /^(\d+)d(\d+)([+-]\d+)?$/i;
-    return dicePattern.test(value.trim());
-  };
+  const [modifier, setModifier] = useState<number>(0);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
 
-    const trimmedFormula = formula.trim();
-
-    // Don't submit empty or invalid formulas
-    if (!trimmedFormula || !isValidFormula(trimmedFormula)) {
-      return;
-    }
+    // Build formula: 1d20 with optional modifier
+    const formula = modifier === 0
+      ? '1d20'
+      : `1d20${modifier > 0 ? '+' : ''}${modifier}`;
 
     // Call parent callback with formula
-    onRoll(trimmedFormula);
-
-    // Clear input after successful submission
-    setFormula('');
+    onRoll(formula);
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const trimmedFormula = formula.trim();
-
-      if (trimmedFormula && isValidFormula(trimmedFormula)) {
-        onRoll(trimmedFormula);
-        setFormula('');
-      }
-    }
-  };
+  // Formula preview for display
+  const formulaPreview = modifier === 0
+    ? '1d20'
+    : `1d20${modifier > 0 ? '+' : ''}${modifier}`;
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <input
-        type="text"
-        value={formula}
-        onChange={(e) => setFormula(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="1d20+5"
-        className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        disabled={isRolling}
-        aria-label="Dice formula"
-      />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl">
+              <Dices className="w-8 h-8 text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="text-2xl font-mono text-foreground">
+                {formulaPreview}
+              </div>
+              <div className="text-sm text-muted-foreground">Standard roll</div>
+            </div>
+          </div>
+        </div>
 
-      <button
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-muted-foreground">Modifier:</label>
+          <Input
+            type="number"
+            value={modifier || ''}
+            onChange={(e) => setModifier(parseInt(e.target.value) || 0)}
+            className="w-20 h-10 text-center font-mono"
+            placeholder="0"
+            disabled={isRolling}
+            aria-label="Dice modifier"
+          />
+        </div>
+      </div>
+
+      <Button
         type="submit"
-        disabled={isRolling || !formula.trim() || !isValidFormula(formula)}
-        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors"
+        disabled={isRolling}
+        className="w-full h-12"
+        size="lg"
       >
+        <Dices className="w-5 h-5 mr-2" />
         {isRolling ? 'Rolling...' : 'Roll'}
-      </button>
+      </Button>
     </form>
   );
 }
