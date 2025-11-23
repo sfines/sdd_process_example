@@ -27,6 +27,9 @@ test.describe('Basic Dice Roll (1d20)', () => {
     // Wait for room content to render (Game Room heading)
     await expect(page.getByText('Game Room')).toBeVisible({ timeout: 10000 });
 
+    // CRITICAL: Wait for room code to appear - this indicates socket event has populated store
+    await expect(page.getByTestId('room-code')).toBeVisible({ timeout: 5000 });
+
     // Wait for player to appear (socket event is async, may take a moment)
     await expect(page.getByTestId(`player-${playerName}`)).toBeVisible({
       timeout: 10000,
@@ -217,6 +220,9 @@ test.describe('Basic Dice Roll (1d20)', () => {
 
       await page2.waitForURL(/\/room\/.+/, { timeout: 5000 });
       await expect(page2.getByText('Game Room')).toBeVisible();
+
+      // CRITICAL: Wait for room code to appear - this indicates socket event has populated store
+      await expect(page2.getByTestId('room-code')).toBeVisible({ timeout: 5000 });
 
       // Wait for both players to appear (socket events are async, may take a moment)
       await expect(page2.getByTestId(`player-${player1Name}`)).toBeVisible({
