@@ -8,6 +8,7 @@ from redis import Redis
 
 from .logging_config import get_logger
 from .models import HelloMessage, WorldMessage
+from .services.dice_engine import DiceEngine
 from .services.room_manager import (
     RoomCapacityExceededError,
     RoomManager,
@@ -339,5 +340,224 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
         await sio.emit(
             "error",
             {"message": "Failed to join room"},
+            to=sid,
+        )
+
+
+@sio.event  # type: ignore[misc]
+async def roll_dice(sid: str, data: dict[str, Any]) -> None:
+    """Handle roll_dice event from client.
+
+    Args:
+        sid: Socket.IO session ID
+        data: Event data containing formula, player_name, and room_code
+
+    Expected data format:
+        {
+            "formula": str,  # Dice formula (e.g., "1d20+5")
+            "player_name": str,  # Name of player rolling
+            "room_code": str  # Room code
+        }
+
+    Emits:
+        roll_result: Broadcast to room with DiceResult
+        error: On failure with error message
+    """
+    logger.info(
+        "[ROLL_DICE] Roll dice event received",
+        event_type="roll_dice",
+        session_id=sid,
+    )
+
+    try:
+        # Extract and validate parameters
+        formula = data.get("formula")
+        player_name = data.get("player_name")
+        room_code = data.get("room_code")
+
+        if not formula:
+            logger.warning(
+                "[ROLL_DICE] Missing formula",
+                event_type="roll_dice",
+                session_id=sid,
+            )
+            await sio.emit(
+                "error",
+                {"message": "formula is required"},
+                to=sid,
+            )
+            return
+
+        if not player_name:
+            logger.warning(
+                "[ROLL_DICE] Missing player_name",
+                event_type="roll_dice",
+                session_id=sid,
+            )
+            await sio.emit(
+                "error",
+                {"message": "player_name is required"},
+                to=sid,
+            )
+            return
+
+        if not room_code:
+            logger.warning(
+                "[ROLL_DICE] Missing room_code",
+                event_type="roll_dice",
+                session_id=sid,
+            )
+            await sio.emit(
+                "error",
+                {"message": "room_code is required"},
+                to=sid,
+            )
+            return
+
+        # Validate formula before processing
+        dice_engine = DiceEngine()
+        if not dice_engine.validate_formula(formula):
+            logger.warning(
+                "[ROLL_DICE] Invalid formula",
+                event_type="roll_dice",
+                session_id=sid,
+                formula=formula,
+            )
+            await sio.emit(
+                "error",
+                {"message": f"Invalid dice formula: {formula}"},
+                to=sid,
+            )
+            return
+
+        logger.info(
+            "[ROLL_DICE] Roll validated successfully",
+            event_type="roll_dice",
+            session_id=sid,
+            formula=formula,
+            room_code=room_code,
+        )
+
+        # Generate dice roll using DiceEngine
+        roll_result = dice_engine.roll(
+            formula=formula, player_id=sid, player_name=player_name
+        )
+
+        logger.info(
+            "[ROLL_DICE] Roll generated",
+            event_type="roll_dice",
+            session_id=sid,
+            roll_id=roll_result.roll_id,
+            formula=roll_result.formula,
+            total=roll_result.total,
+        )
+
+        # Broadcast roll result to all players in room
+        await sio.emit(
+            "roll_result",
+            roll_result.model_dump(mode="json"),
+            room=room_code,
+        )
+
+        logger.info(
+            "[ROLL_DICE] Roll broadcast to room",
+            event_type="roll_dice",
+            session_id=sid,
+            room_code=room_code,
+            roll_id=roll_result.roll_id,
+        )
+
+        # Persist roll to room history
+        redis_client = get_redis_client()
+        room_manager = RoomManager(redis_client)
+        room_manager.add_roll_to_history(room_code, roll_result)
+
+        logger.debug(
+            "[ROLL_DICE] Roll persisted to history",
+            event_type="roll_dice",
+            session_id=sid,
+            room_code=room_code,
+            roll_id=roll_result.roll_id,
+        )
+
+    except Exception as e:
+        logger.error(
+            "[ROLL_DICE] Failed to process roll",
+            event_type="roll_dice",
+            session_id=sid,
+            error=str(e),
+        )
+        await sio.emit(
+            "error",
+            {"message": "Failed to process roll"},
+            to=sid,
+        )
+
+
+@sio.event  # type: ignore[misc]
+async def get_room_state(sid: str, data: dict[str, Any]) -> None:
+    """Handle get_room_state event - returns current room state for polling.
+
+    Args:
+        sid: Socket.IO session ID
+        data: Event data containing room_code
+
+    Expected data format:
+        {
+            "room_code": str  # Room code to fetch
+        }
+
+    Emits:
+        room_state: Current room data (players, roll_history)
+        error: On failure with error message
+    """
+    try:
+        room_code = data.get("room_code")
+
+        if not room_code:
+            await sio.emit(
+                "error",
+                {"message": "room_code is required"},
+                to=sid,
+            )
+            return
+
+        redis_client = get_redis_client()
+        room_manager = RoomManager(redis_client)
+
+        # Fetch current room state
+        room_state = room_manager.get_room(room_code)
+
+        if not room_state:
+            await sio.emit(
+                "error",
+                {"message": f"Room {room_code} not found"},
+                to=sid,
+            )
+            return
+
+        # Emit current state back to requesting client
+        await sio.emit(
+            "room_state",
+            room_state.model_dump(),
+            to=sid,
+        )
+
+    except RoomNotFoundError:
+        await sio.emit(
+            "error",
+            {"message": f"Room {room_code} not found"},
+            to=sid,
+        )
+    except Exception as e:
+        logger.error(
+            "[GET_ROOM_STATE] Failed to fetch room state",
+            event_type="get_room_state",
+            session_id=sid,
+            error=str(e),
+        )
+        await sio.emit(
+            "error",
+            {"message": "Failed to fetch room state"},
             to=sid,
         )

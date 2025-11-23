@@ -103,9 +103,8 @@ describe('useSocket - Join Room', () => {
 
     await waitFor(() => {
       expect(result.current.roomState).toEqual(roomData);
+      expect(mockNavigate).toHaveBeenCalledWith('/room/ALPHA-1234');
     });
-
-    expect(mockNavigate).toHaveBeenCalledWith('/room/ALPHA-1234');
   });
 
   it('dispatches success toast on room_joined', async () => {

@@ -5,6 +5,7 @@
 **Real-time multiplayer D&D dice roller** using FastAPI + React + Socket.io + Redis. Core feature: ephemeral game rooms with DM modes, cryptographically secure server-side rolls, and 30-day shareable roll permalinks.
 
 **Critical Architecture Patterns:**
+
 - WebSocket-first design: Socket.io with native room concepts (see `backend/src/sdd_process_example/socket_manager.py`)
 - State stored in Redis as single hash per room (see `RoomState` model)
 - Server-side roll generation only (never client-side for security)
@@ -13,6 +14,7 @@
 ## Development Workflow
 
 ### Quick Start Commands
+
 ```bash
 # Backend development
 uv sync --group dev                    # Install dependencies
@@ -21,7 +23,7 @@ uv run nox -s lint                     # Lint + security scan
 uv run nox -s security                 # Bandit security checks only
 
 # Frontend development
-pnpm install                           # Install dependencies  
+pnpm install                           # Install dependencies
 pnpm run dev                           # Start dev server
 pnpm run test                          # Run vitest tests
 pnpm run lint                          # ESLint
@@ -37,26 +39,28 @@ docker-compose up                      # Starts backend:8000 + frontend:80
 ### Python Backend (`backend/src/sdd_process_example/`)
 
 **Socket.io Event Pattern:**
+
 ```python
 @sio.event
 async def event_name(sid: str, data: dict[str, Any]) -> None:
     # 1. Validate with Pydantic model
     request = EventRequest(**data)
-    
+
     # 2. Process business logic
     result = await service.method(request)
-    
+
     # 3. Emit response to room or client
     await sio.emit("response_event", result.model_dump(), room=room_code)
-    
+
     # 4. Structured logging (see logging_config.py)
-    logger.info("[EVENT_NAME] Action completed", 
-                event_type="event_name", 
+    logger.info("[EVENT_NAME] Action completed",
+                event_type="event_name",
                 session_id=sid,
                 room_code=room_code)
 ```
 
 **Redis Room State Pattern:**
+
 ```python
 # Single hash per room: room:{ROOM_CODE}
 # Fields: mode, created_at, creator_player_id, players (JSON), roll_history (JSON)
@@ -64,11 +68,13 @@ async def event_name(sid: str, data: dict[str, Any]) -> None:
 ```
 
 **Service Layer Convention:**
+
 - All business logic in `services/` directory (e.g., `room_manager.py`)
 - Socket handlers call services, never contain business logic
 - Services return Pydantic models, not raw dicts
 
 **Testing Convention:**
+
 - File naming: `test_*.py` in `backend/tests/`
 - Use `pytest-asyncio` for async tests
 - Mock Redis with `fakeredis` or test fixtures
@@ -77,6 +83,7 @@ async def event_name(sid: str, data: dict[str, Any]) -> None:
 ### Frontend (`frontend/src/`)
 
 **State Management Pattern (Zustand):**
+
 ```typescript
 // store/roomStore.ts - Single source of truth for room state
 // Socket.io integration: listeners update store, components read from store
@@ -93,6 +100,7 @@ export const useRoomStore = create<RoomStore>((set) => ({
 ```
 
 **Socket.io Client Pattern:**
+
 ```typescript
 // hooks/useSocket.ts - Custom hook wraps socket connection
 // Automatic reconnection, event listeners, cleanup on unmount
@@ -105,6 +113,7 @@ socket.on('player_joined', (data) => {
 ```
 
 **Component Structure:**
+
 ```
 src/
 ├── pages/          # Route components (Home, Room, Permalink)
@@ -128,6 +137,7 @@ src/
 **Router:** `frontend/src/App.tsx` - React Router v7 with route definitions
 
 **Configuration:**
+
 - `pyproject.toml` - Python dependencies, Ruff/MyPy/Bandit config
 - `noxfile.py` - Task runner for lint/test/format/security
 - `package.json` - Node dependencies, pnpm scripts
@@ -149,6 +159,7 @@ src/
 ## Specification-Driven Development (SDD)
 
 This project uses the **BMad Method** (Agile SDD workflow):
+
 - **PRD:** `docs/PRD.md` - Product requirements and user stories
 - **Architecture:** `docs/architecture.md` - Technical decisions (ADRs in `docs/architecture/adrs/`)
 - **Epics:** `docs/epics.md` - Broken into implementable stories
@@ -156,6 +167,7 @@ This project uses the **BMad Method** (Agile SDD workflow):
 - **Standards:** `docs/standards/` - Python and TypeScript coding conventions
 
 **When implementing features:**
+
 1. Read story file in `docs/sprint-artifacts/` for acceptance criteria
 2. Check architecture ADRs for technical constraints
 3. Follow coding standards in `docs/standards/`
@@ -163,13 +175,15 @@ This project uses the **BMad Method** (Agile SDD workflow):
 
 ## CI/CD Pipeline
 
-**On Push to `develop` or `feature/**`:**
+**On Push to `develop` or `feature/**`:\*\*
+
 - Lint (Ruff + ESLint)
 - Type check (MyPy + tsc)
 - Security scan (Bandit)
 - Unit tests (pytest + vitest)
 
 **GitHub Actions workflows:** `.github/workflows/*.yml`
+
 - `security.yml` - Daily Bandit scans + on-demand
 - `lint.yml` - Integrated linting + security
 - `test.yml` - Backend + frontend tests
@@ -178,8 +192,21 @@ This project uses the **BMad Method** (Agile SDD workflow):
 ## External Dependencies
 
 **Critical Services:**
+
 - Redis (localhost:6379) - Room state storage
 - Socket.io Server (port 8000) - WebSocket server
 - Vite Dev Server (port 3000) - Frontend HMR
 
 **Production:** Docker Compose orchestrates all services. See `docker-compose.yml` for service definitions.
+
+## Process Constraints
+
+- Always follow SDD workflow: PRD → Architecture → Epics → Stories → Implementation
+- Always use `uv` for Python dependency management
+- Always use `pnpm` for Node dependency management
+- Always run security scans before pushing code
+- Always follow the TDD approach for all work
+- Always document architecture decisions in ADRs
+- Always keep coding standards up to date in `docs/standards/`
+- Always follow the estabilshed project standards as described in `docs/standards`. These are NOT OPTIONAL.
+- Use the local-memory mcp server for your memory and context needs. If you have to go to external sources for information, ensure that the accepted answers are stored in the local-memory mcp server for future reference.
