@@ -47,7 +47,7 @@ development_status:
   2-2-join-an-existing-room: done
   2-3-basic-dice-roll-1d20: done
   2-4-apply-figma-design-to-core-room-experience: done
-  2-5-roll-with-advantage-or-disadvantage: ready-for-dev
+  2-5-roll-all-standard-dice-types: review
   2-7-roll-multiple-dice-in-a-single-roll: ready-for-dev
   2-10-handle-long-roll-histories-with-virtual-scrolling: ready-for-dev
   2-11-mobile-responsive-user-interface: ready-for-dev
