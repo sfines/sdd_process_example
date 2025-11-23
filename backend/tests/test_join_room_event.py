@@ -5,8 +5,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from sdd_process_example.models import Player, RoomState
-from sdd_process_example.services.room_manager import RoomManager
 
 
 @pytest.mark.asyncio

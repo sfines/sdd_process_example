@@ -25,7 +25,14 @@ def test(session: nox.Session) -> None:
     """Run unit tests (excluding integration tests)."""
     session.install("-e", ".")
     session.install("pytest", "pytest-cov", "pytest-asyncio", "httpx")
-    session.run("pytest", "backend/tests/", "-v", "--cov=backend/src", "-m", "not integration")
+    session.run(
+        "pytest",
+        "backend/tests/",
+        "-v",
+        "--cov=backend/src",
+        "-m",
+        "not integration",
+    )
 
 
 @nox.session(python=["3.13"])

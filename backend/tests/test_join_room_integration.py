@@ -1,13 +1,16 @@
 """Integration tests for join_room functionality in RoomManager.
 
-These tests require a running Redis instance and are marked with @pytest.mark.integration.
-They test the actual Redis interactions rather than mocking them.
+These tests require a running Redis instance and are marked with
+@pytest.mark.integration. They test the actual Redis interactions
+rather than mocking them.
 
 To run these tests:
     uv run nox -s integration
 
 Note: These tests are not run in CI/CD pipelines.
 """
+
+from typing import Any
 
 import pytest
 
@@ -40,7 +43,10 @@ def test_join_room_adds_player_to_existing_room_integration(
 def test_join_room_raises_error_for_nonexistent_room_integration(
     integration_room_manager: RoomManager,
 ) -> None:
-    """Test that join_room() raises RoomNotFoundError for non-existent room with real Redis."""
+    """Test that join_room() raises RoomNotFoundError.
+    
+    Tests non-existent room with real Redis.
+    """
     # Try to join non-existent room
     with pytest.raises(RoomNotFoundError, match="Room .* not found"):
         integration_room_manager.join_room("NONEXISTENT-9999", "Charlie")
@@ -50,7 +56,10 @@ def test_join_room_raises_error_for_nonexistent_room_integration(
 def test_join_room_raises_error_when_room_at_capacity_integration(
     integration_room_manager: RoomManager,
 ) -> None:
-    """Test that join_room() raises RoomCapacityExceededError when room full with real Redis."""
+    """Test that join_room() raises RoomCapacityExceededError.
+    
+    Tests when room is full with real Redis.
+    """
     # Create a room
     room = integration_room_manager.create_room("Player1")
 
@@ -70,7 +79,7 @@ def test_join_room_raises_error_when_room_at_capacity_integration(
 
 @pytest.mark.integration
 def test_join_room_refreshes_ttl_integration(
-    integration_room_manager: RoomManager, redis_client: "Redis"  # type: ignore[type-arg, name-defined]
+    integration_room_manager: RoomManager, redis_client: Any
 ) -> None:
     """Test that join_room() refreshes room TTL with real Redis."""
     # Create a room

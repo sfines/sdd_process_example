@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from sdd_process_example.models import Player, RoomState
 from sdd_process_example.services.room_manager import RoomManager
 
 

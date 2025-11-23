@@ -1,6 +1,5 @@
 """Shared pytest fixtures for backend tests."""
 
-from typing import Any
 from unittest.mock import MagicMock
 
 import pytest

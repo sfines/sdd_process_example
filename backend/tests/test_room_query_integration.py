@@ -1,7 +1,8 @@
 """Integration tests for room query methods in RoomManager.
 
-These tests require a running Redis instance and are marked with @pytest.mark.integration.
-They test the actual Redis interactions rather than mocking them.
+These tests require a running Redis instance and are marked with
+@pytest.mark.integration. They test the actual Redis interactions
+rather than mocking them.
 
 To run these tests:
     uv run nox -s integration
@@ -76,7 +77,10 @@ def test_room_exists_returns_false_for_nonexistent_room_integration(
 def test_get_room_capacity_returns_current_and_max_integration(
     integration_room_manager: RoomManager,
 ) -> None:
-    """Test that get_room_capacity() returns current player count and max capacity with real Redis."""
+    """Test get_room_capacity() returns player count and max capacity.
+    
+    Tests with real Redis.
+    """
     # Create a room
     room = integration_room_manager.create_room("Charlie")
 
@@ -92,7 +96,10 @@ def test_get_room_capacity_returns_current_and_max_integration(
 def test_get_room_capacity_for_nonexistent_room_raises_error_integration(
     integration_room_manager: RoomManager,
 ) -> None:
-    """Test that get_room_capacity() raises error for non-existent room with real Redis."""
+    """Test get_room_capacity() raises error for non-existent room.
+    
+    Tests with real Redis.
+    """
     # Try to get capacity for non-existent room
     with pytest.raises(ValueError, match="Room .* not found"):
         integration_room_manager.get_room_capacity("NONEXISTENT-7777")

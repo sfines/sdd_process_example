@@ -1,7 +1,8 @@
 """Integration tests for Socket.IO join_room event handler.
 
-These tests require a running Redis instance and are marked with @pytest.mark.integration.
-They test the actual Redis interactions rather than mocking them.
+These tests require a running Redis instance and are marked with
+@pytest.mark.integration. They test the actual Redis interactions
+rather than mocking them.
 
 To run these tests:
     uv run nox -s integration
