@@ -1,8 +1,13 @@
 /**
  * PlayerList Component
  *
- * Displays the list of players in a room with their connection status.
+ * Displays the list of players in a room with Figma design.
+ * Card-based collapsible drawer with player badges and connection status.
  */
+
+import { Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
 
 interface Player {
   player_id: string;
@@ -19,46 +24,68 @@ export default function PlayerList({
   players,
   currentPlayerId,
 }: PlayerListProps): JSX.Element {
-  // Component renders just the list content, not the container
-  // Parent component (RoomView) provides the container and heading
+  // Count online players
+  const onlineCount = players.filter((p) => p.connected).length;
+
   return (
-    <>
-      {players.length === 0 ? (
-        <p className="text-gray-500 text-sm">No players yet</p>
-      ) : (
-        <ul className="space-y-2" role="list">
-          {players.map((player) => {
-            const isCurrentPlayer = player.player_id === currentPlayerId;
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Users className="w-5 h-5" />
+          Players ({onlineCount}/{players.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {players.length === 0 ? (
+          <p className="text-muted-foreground text-sm text-center py-4">
+            No players yet
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {players.map((player) => {
+              const isCurrentPlayer = player.player_id === currentPlayerId;
 
-            return (
-              <li
-                key={player.player_id}
-                className="flex items-center gap-3 p-2 rounded hover:bg-gray-50"
-                style={{ minHeight: '44px' }}
-                data-testid={`player-${player.name}`}
-              >
-                {/* Connection status indicator */}
+              return (
                 <div
-                  className={`w-2 h-2 rounded-full ${
-                    player.connected ? 'bg-green-500' : 'bg-gray-400'
-                  }`}
-                  aria-label={player.connected ? 'Connected' : 'Disconnected'}
-                />
+                  key={player.player_id}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                  data-testid={`player-${player.name}`}
+                >
+                  {/* Connection status indicator */}
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      player.connected ? 'bg-green-500' : 'bg-gray-400'
+                    }`}
+                    aria-label={
+                      player.connected ? 'Connected' : 'Disconnected'
+                    }
+                  />
 
-                {/* Player name */}
-                <span className="flex-1 text-gray-800">
-                  {player.name}
+                  {/* Player name */}
+                  <span className="flex-1">
+                    {player.name}
+                  </span>
+
+                  {/* Current player badge */}
                   {isCurrentPlayer && (
-                    <span className="ml-2 text-sm text-blue-600 font-medium">
-                      (You)
-                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      You
+                    </Badge>
                   )}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </>
+
+                  {/* Online/Offline badge */}
+                  <Badge
+                    variant={player.connected ? 'default' : 'outline'}
+                    className="text-xs"
+                  >
+                    {player.connected ? 'Online' : 'Offline'}
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
