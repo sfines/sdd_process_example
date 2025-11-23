@@ -49,21 +49,21 @@ so that **the application feels trustworthy and enjoyable to use**.
 
 ### Task 2: Migrate HomePage to Figma Design
 
-- [ ] Reference: `docs/uex/figma-design/src/components/HomePage.tsx`
-- [ ] Update `frontend/src/pages/Home.tsx`:
-  - [ ] Import shadcn Button, Input, Card components
-  - [ ] Import Lucide icons: Dices, Plus, Users
-  - [ ] Replace current form inputs with shadcn Input components
-  - [ ] Replace buttons with shadcn Button (variant="default" for primary, variant="outline" for secondary)
-  - [ ] Apply Figma layout: centered card (max-width: 28rem), prominent branding
-  - [ ] Add Dices icon to header with brand color
-  - [ ] Styling: Use design tokens (--primary, --muted, --radius)
-- [ ] Preserve functionality:
-  - [ ] Keep all useState hooks for form state
-  - [ ] Keep Socket.io event handlers (socket.emit('create_room'), socket.emit('join_room'))
-  - [ ] Keep navigation logic (useNavigate)
-- [ ] Test: Create room and join room flows work identically
-- [ ] Commit: "feat(frontend): Apply Figma design to HomePage"
+- [x] Reference: `docs/uex/figma-design/src/components/HomePage.tsx`
+- [x] Update `frontend/src/pages/Home.tsx`:
+  - [x] Import shadcn Button, Input, Card components
+  - [x] Import Lucide icons: Dices, Plus, Users
+  - [x] Replace current form inputs with shadcn Input components
+  - [x] Replace buttons with shadcn Button (variant="default" for primary, variant="outline" for secondary)
+  - [x] Apply Figma layout: centered card (max-width: 28rem), prominent branding
+  - [x] Add Dices icon to header with brand color
+  - [x] Styling: Use design tokens (--primary, --muted, --radius)
+- [x] Preserve functionality:
+  - [x] Keep all useState hooks for form state
+  - [x] Keep Socket.io event handlers (socket.emit('create_room'), socket.emit('join_room'))
+  - [x] Keep navigation logic (useNavigate)
+- [x] Test: Create room and join room flows work identically
+- [x] Commit: "feat(frontend): Apply Figma design to HomePage"
 
 ### Task 3: Migrate RoomView Layout to Figma Design
 
