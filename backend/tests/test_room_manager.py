@@ -8,18 +8,6 @@ from sdd_process_example.models import RoomState
 from sdd_process_example.services.room_manager import RoomManager
 
 
-@pytest.fixture
-def mock_redis() -> MagicMock:
-    """Create a mock Redis client."""
-    return MagicMock()
-
-
-@pytest.fixture
-def room_manager(mock_redis: MagicMock) -> RoomManager:
-    """Create a RoomManager instance with mocked Redis."""
-    return RoomManager(mock_redis)
-
-
 class TestRoomManagerCreateRoom:
     """Tests for RoomManager.create_room()."""
 
