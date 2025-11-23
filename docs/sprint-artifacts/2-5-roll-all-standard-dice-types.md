@@ -2,6 +2,8 @@
 
 Status: ready-for-dev
 
+**Note:** Story renumbered from 2.4 due to insertion of Figma design story.
+
 **Backend Note:** The dice parser (implemented in Stories 2.1-2.3) already supports all standard dice types and quantities up to 100 dice per roll. This story focuses on **frontend UI convenience only** - adding dice type selector buttons and quantity input per Figma design.
 
 ---

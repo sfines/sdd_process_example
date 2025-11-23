@@ -2,6 +2,8 @@
 
 Status: ready-for-dev
 
+**Note:** Story renumbered from 2.5 due to insertion of Figma design story.
+
 ## **Backend Note:** The dice parser supports rolling 2d20, but does NOT automatically determine which die to use for advantage/disadvantage. Backend requires **minor modification** to add advantage/disadvantage logic and track which result is "active."
 
 ## Story
