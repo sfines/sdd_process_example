@@ -88,62 +88,62 @@ so that **the application feels trustworthy and enjoyable to use**.
 
 ### Task 4: Migrate DiceInput to Figma Design
 
-- [ ] Reference: `docs/uex/figma-design/src/components/DiceRoller.tsx`
-- [ ] Update `frontend/src/components/DiceInput.tsx`:
-  - [ ] Import shadcn Button, Input components
-  - [ ] Import Lucide Dices icon
-  - [ ] Apply Figma styling to simple 1d20 mode:
-    - [ ] Modifier input: shadcn Input with number type
-    - [ ] Roll button: shadcn Button (size="lg", prominent styling)
-    - [ ] Add Dices icon to Roll button
-    - [ ] Formula preview: Muted text showing "1d20+{modifier}"
-  - [ ] Styling: Match Figma spacing, colors, and sizing
-- [ ] Preserve functionality:
-  - [ ] Keep Socket.io emit: socket.emit('roll_dice', { formula })
-  - [ ] Keep all state management (useState for modifier)
-  - [ ] Keep validation logic
-- [ ] Test: Rolling dice works identically to before
-- [ ] Commit: "feat(frontend): Apply Figma design to DiceInput (simple mode)"
+- [x] Reference: `docs/uex/figma-design/src/components/DiceRoller.tsx`
+- [x] Update `frontend/src/components/DiceInput.tsx`:
+  - [x] Import shadcn Button, Input components
+  - [x] Import Lucide Dices icon
+  - [x] Apply Figma styling to simple 1d20 mode:
+    - [x] Modifier input: shadcn Input with number type
+    - [x] Roll button: shadcn Button (size="lg", prominent styling)
+    - [x] Add Dices icon to Roll button
+    - [x] Formula preview: Muted text showing "1d20+{modifier}"
+  - [x] Styling: Match Figma spacing, colors, and sizing
+- [x] Preserve functionality:
+  - [x] Keep Socket.io emit: socket.emit('roll_dice', { formula })
+  - [x] Keep all state management (useState for modifier)
+  - [x] Keep validation logic
+- [x] Test: Rolling dice works identically to before
+- [x] Commit: "feat(frontend): Apply Figma design to DiceInput (simple mode)"
 
 ### Task 5: Migrate RollHistory to Figma Design
 
-- [ ] Reference: `docs/uex/figma-design/src/components/RollHistory.tsx`
-- [ ] Update `frontend/src/components/RollHistory.tsx`:
-  - [ ] Import shadcn Card, ScrollArea, Badge components
-  - [ ] Apply card-based layout for each roll entry:
-    - [ ] Player name: Badge component with player color
-    - [ ] Formula: Bold text with --primary color
-    - [ ] Individual results: Inline with muted color
-    - [ ] Total: Large, prominent text
-    - [ ] Timestamp: Small, muted text
-  - [ ] Wrap in ScrollArea component for smooth scrolling
-  - [ ] Add visual separators between rolls (Separator component)
-  - [ ] Styling: Match Figma spacing and typography
-- [ ] Preserve functionality:
-  - [ ] Keep Zustand store connection (rollHistory from store)
-  - [ ] Keep auto-scroll behavior
-  - [ ] Keep all data display logic
-- [ ] Test: Roll history displays correctly with new styling
-- [ ] Commit: "feat(frontend): Apply Figma design to RollHistory"
+- [x] Reference: `docs/uex/figma-design/src/components/RollHistory.tsx`
+- [x] Update `frontend/src/components/RollHistory.tsx`:
+  - [x] Import shadcn Card, ScrollArea, Badge components
+  - [x] Apply card-based layout for each roll entry:
+    - [x] Player name: Badge component with player color
+    - [x] Formula: Bold text with --primary color
+    - [x] Individual results: Inline with muted color
+    - [x] Total: Large, prominent text
+    - [x] Timestamp: Small, muted text
+  - [x] Wrap in ScrollArea component for smooth scrolling
+  - [x] Add visual separators between rolls (Separator component)
+  - [x] Styling: Match Figma spacing and typography
+- [x] Preserve functionality:
+  - [x] Keep Zustand store connection (rollHistory from store)
+  - [x] Keep auto-scroll behavior
+  - [x] Keep all data display logic
+- [x] Test: Roll history displays correctly with new styling
+- [x] Commit: "feat(frontend): Apply Figma design to RollHistory"
 
 ### Task 6: Migrate PlayerList to Figma Design
 
-- [ ] Reference: `docs/uex/figma-design/src/components/PlayerList.tsx`
-- [ ] Update `frontend/src/components/PlayerList.tsx`:
-  - [ ] Import shadcn Card, Badge components
-  - [ ] Import Lucide Users icon
-  - [ ] Apply Figma collapsible drawer design:
-    - [ ] Header: "Players ({count})" with Users icon
-    - [ ] Each player: Badge with online/offline status indicator
-    - [ ] Current player: Highlighted with accent color
-    - [ ] Mobile: Collapsible with toggle button
-  - [ ] Styling: Match Figma player list design
-- [ ] Preserve functionality:
-  - [ ] Keep Zustand store connection (players from store)
-  - [ ] Keep all player display logic
-  - [ ] Keep current player highlighting
-- [ ] Test: Player list displays and updates correctly
-- [ ] Commit: "feat(frontend): Apply Figma design to PlayerList"
+- [x] Reference: `docs/uex/figma-design/src/components/PlayerList.tsx`
+- [x] Update `frontend/src/components/PlayerList.tsx`:
+  - [x] Import shadcn Card, Badge components
+  - [x] Import Lucide Users icon
+  - [x] Apply Figma collapsible drawer design:
+    - [x] Header: "Players ({count})" with Users icon
+    - [x] Each player: Badge with online/offline status indicator
+    - [x] Current player: Highlighted with accent color
+    - [x] Mobile: Collapsible with toggle button
+  - [x] Styling: Match Figma player list design
+- [x] Preserve functionality:
+  - [x] Keep Zustand store connection (players from store)
+  - [x] Keep all player display logic
+  - [x] Keep current player highlighting
+- [x] Test: Player list displays and updates correctly
+- [x] Commit: "feat(frontend): Apply Figma design to PlayerList"
 
 ### Task 7: Cross-Component Integration Testing
 
@@ -288,27 +288,29 @@ All Socket.io event handlers MUST remain unchanged:
 
 ### Completion Notes
 
-**Tasks Completed (3/9):**
+**Tasks Completed (6/9):**
 
 - ✅ Task 1: shadcn/ui installation + design tokens (Commit: d46f56b)
 - ✅ Task 2: HomePage Figma migration (Commit: 3cbf253)
 - ✅ Task 3: RoomView layout Figma migration (Commit: b25e4dc)
+- ✅ Task 4: DiceInput Figma migration (Commit: f2c5594)
+- ✅ Task 5: RollHistory Figma migration (Commit: c8af4c3)
+- ✅ Task 6: PlayerList Figma migration (Commit: 2c086ae)
 
 **Remaining Work:**
 
-- Task 4-6: Component migrations (DiceInput, RollHistory, PlayerList)
-- Task 7: Integration testing
+- Task 7: Integration testing (responsive, Socket.io verification)
 - Task 8: E2E validation (18/18 target)
 - Task 9: Documentation updates
 
-**Test Status:** 87/91 passing (4 RoomView.figma tests need implementation completion)
+**Test Status:** 86/90 passing (4 RoomView.figma tests pending Task 7 completion)
 
-**Next Session TODO:**
+**Next Steps:**
 
-1. Continue with Task 4 (DiceInput) using TDD RED-GREEN-REFACTOR
-2. Complete Tasks 5-9
-3. Run full E2E suite to validate all 18 tests
-4. Update FIGMA_INTEGRATION_PLAN.md
+1. Run integration tests to verify all components work together
+2. Test responsive behavior at breakpoints (mobile, tablet, desktop)
+3. Run full E2E suite to validate 18/18 tests pass
+4. Update FIGMA_INTEGRATION_PLAN.md with completion status
 
 ---
 
