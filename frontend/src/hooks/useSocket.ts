@@ -65,19 +65,33 @@ export const useSocket = () => {
       roll_history: unknown[];
     }) => {
       console.log('[useSocket] onRoomCreated received:', data);
-      
+
       // CRITICAL: Find player name from the players array
-      const currentPlayer = data.players.find(p => p.player_id === data.creator_player_id);
-      const playerName = currentPlayer?.name || '';
-      
-      // CRITICAL: Call both setters in sequence (Zustand batches updates)
+      const currentPlayer = data.players.find(
+        (p) => p.player_id === data.creator_player_id,
+      );
+      const playerName = currentPlayer?.name;
+
+      console.log('[useSocket] Found current player:', currentPlayer);
+      console.log('[useSocket] Player name:', playerName);
+
+      // CRITICAL: Always set player identity, even if we have to extract it
       setCurrentPlayerId(data.creator_player_id);
       if (playerName) {
         setCurrentPlayerName(playerName);
+      } else {
+        console.error(
+          '[useSocket] WARNING: Player name not found in players array!',
+        );
       }
+
       setRoomState({ ...data, roll_history: data.roll_history as any[] });
 
-      console.log('[useSocket] After setState, currentPlayerId:', data.creator_player_id);
+      console.log(
+        '[useSocket] After setState, currentPlayerId:',
+        data.creator_player_id,
+      );
+      console.log('[useSocket] After setState, currentPlayerName:', playerName);
       console.log('[useSocket] Players:', data.players);
 
       // Navigate - RoomView will read from updated store
@@ -110,14 +124,16 @@ export const useSocket = () => {
       if (playerId) {
         // CRITICAL: Set these BEFORE setRoomState so they get preserved
         setCurrentPlayerId(playerId);
-        
+
         // CRITICAL: Set player name from the players array
-        const currentPlayer = data.players.find(p => p.player_id === playerId);
+        const currentPlayer = data.players.find(
+          (p) => p.player_id === playerId,
+        );
         if (currentPlayer) {
           setCurrentPlayerName(currentPlayer.name);
         }
       }
-      
+
       // CRITICAL: Update store state FIRST, ensuring it's committed
       setRoomState({ ...data, roll_history: data.roll_history as any[] });
 
@@ -142,7 +158,7 @@ export const useSocket = () => {
     const onPlayerJoined = (data: { player_id: string; name: string }) => {
       // Get current store state
       const state = useSocketStore.getState();
-      
+
       // Check if player already exists to avoid duplicates
       const playerExists = state.players.some(
         (p) => p.player_id === data.player_id,
@@ -159,7 +175,7 @@ export const useSocket = () => {
           ],
         });
       }
-      
+
       // Show info toast
       window.dispatchEvent(
         new CustomEvent('toast:show', {
@@ -277,7 +293,12 @@ export const useSocket = () => {
       socket.off('error', onError);
       // window.removeEventListener('socket:createRoom', onCreateRoom);
       // window.removeEventListener('socket:joinRoom', onJoinRoom);
-      reset();
+
+      // DO NOT call reset() here!
+      // This cleanup runs when dependencies change (like navigate reference),
+      // NOT just on actual component unmount. Calling reset() here clears
+      // player identity when navigating between routes, breaking the user experience.
+      // State should only be reset on explicit user actions (leaving room, logout).
     };
   }, [
     setConnected,
