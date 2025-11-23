@@ -2,6 +2,7 @@
  * DiceInput Component Tests
  *
  * Tests for the DiceInput component with Figma design (simple 1d20 mode).
+ * Now includes tests for Simple/Advanced toggle.
  * Migrated to test shadcn/ui components and modifier-based input.
  */
 
@@ -16,6 +17,55 @@ describe('DiceInput - Figma Design', () => {
 
     expect(screen.getByLabelText(/modifier/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /roll/i })).toBeInTheDocument();
+  });
+
+  it('shows Advanced toggle button', () => {
+    render(<DiceInput onRoll={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: /advanced/i })).toBeInTheDocument();
+  });
+
+  it('toggles to Advanced mode when clicking Advanced button', async () => {
+    const user = userEvent.setup();
+    render(<DiceInput onRoll={vi.fn()} />);
+
+    // Initially in simple mode
+    expect(screen.getByText('1d20')).toBeInTheDocument();
+    expect(screen.getByText('Standard roll')).toBeInTheDocument();
+
+    // Click Advanced button
+    const advancedButton = screen.getByRole('button', { name: /advanced/i });
+    await user.click(advancedButton);
+
+    // Should now show advanced controls (dice type selector)
+    expect(screen.getByText('d4')).toBeInTheDocument();
+    expect(screen.getByText('d6')).toBeInTheDocument();
+    expect(screen.getByText('d8')).toBeInTheDocument();
+    expect(screen.getByText('d10')).toBeInTheDocument();
+    expect(screen.getByText('d12')).toBeInTheDocument();
+    expect(screen.getByText('d20')).toBeInTheDocument();
+    expect(screen.getByText('d100')).toBeInTheDocument();
+
+    // Simple mode should be hidden
+    expect(screen.queryByText('Standard roll')).not.toBeInTheDocument();
+  });
+
+  it('toggles back to Simple mode when clicking Simple button', async () => {
+    const user = userEvent.setup();
+    render(<DiceInput onRoll={vi.fn()} />);
+
+    // Go to advanced mode
+    const advancedButton = screen.getByRole('button', { name: /advanced/i });
+    await user.click(advancedButton);
+
+    // Click Simple button
+    const simpleButton = screen.getByRole('button', { name: /simple/i });
+    await user.click(simpleButton);
+
+    // Should be back in simple mode
+    expect(screen.getByText('1d20')).toBeInTheDocument();
+    expect(screen.getByText('Standard roll')).toBeInTheDocument();
+    expect(screen.queryByText('d4')).not.toBeInTheDocument();
   });
 
   it('displays 1d20 formula preview', () => {
