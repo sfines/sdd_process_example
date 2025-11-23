@@ -1,8 +1,8 @@
 # Story 2.5: Roll with Advantage or Disadvantage
 
-Status: drafted
+Status: ready-for-dev
 
----
+## **Backend Note:** The dice parser supports rolling 2d20, but does NOT automatically determine which die to use for advantage/disadvantage. Backend requires **minor modification** to add advantage/disadvantage logic and track which result is "active."
 
 ## Story
 
