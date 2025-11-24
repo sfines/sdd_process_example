@@ -17,14 +17,11 @@ from .services.room_manager import (
 
 logger = get_logger(__name__)
 
-# Create Socket.IO server with CORS enabled for local development
+# Create Socket.IO server with CORS enabled
+# Allow all origins for development/local network access
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins=[
-        "http://localhost",
-        "http://localhost:3000",
-        "http://localhost:8090",
-    ],
+    cors_allowed_origins="*",  # Allow all origins (localhost, IPs, etc.)
     logger=False,
     engineio_logger=False,
 )
