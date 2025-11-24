@@ -151,9 +151,10 @@ export default function VirtualRollHistory({
       if (!roll) return null;
 
       return (
-        <div style={style} className="px-4 pt-3" data-testid={`roll-${roll.roll_id}`}>
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
+        <div style={style} className="px-4" data-testid={`roll-${roll.roll_id}`}>
+          <div className="pt-3 pb-2">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   {/* Player name with badge */}
@@ -215,11 +216,8 @@ export default function VirtualRollHistory({
           </Card>
 
           {/* Separator between rolls (except last) */}
-          {index < sortedRolls.length - 1 && (
-            <div className="pt-2">
-              <Separator />
-            </div>
-          )}
+          {index < sortedRolls.length - 1 && <Separator />}
+          </div>
         </div>
       );
     },
