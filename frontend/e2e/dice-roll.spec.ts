@@ -92,11 +92,11 @@ test.describe('Basic Dice Roll (1d20)', () => {
     // Wait a moment to ensure all rolls have been processed
     await page.waitForTimeout(500);
 
-    // Look for roll cards with data-testid in Roll History
-    const rollHistorySection = page
-      .getByRole('heading', { name: 'Roll History' })
-      .locator('..');
-    const rollCards = rollHistorySection.locator('[data-testid^="roll-"]');
+    // Look for roll cards with data-testid in VirtualRollHistory
+    const virtualHistory = page.locator('[data-testid="virtual-roll-history"]');
+    await expect(virtualHistory).toBeVisible({ timeout: 5000 });
+
+    const rollCards = virtualHistory.locator('[data-testid^="roll-"]');
     const count = await rollCards.count();
 
     console.log(`Found ${count} rolls in history`);
@@ -123,11 +123,12 @@ test.describe('Basic Dice Roll (1d20)', () => {
     // Verify formula with negative modifier appears
     await expect(page.locator('text=/1d20-2/i').first()).toBeVisible();
 
-    // Verify total is within valid range (-1 to 18 for 1d20-2)
-    // Just check that a number appears - specific range validation is in backend tests
-    const rollHistorySection = page.locator('text=Roll History').locator('..');
-    const totalElement = rollHistorySection
-      .locator('div[class*="blue"]')
+    // Verify total appears (large circular badge with total value)
+    const virtualHistory = page.locator('[data-testid="virtual-roll-history"]');
+    await expect(virtualHistory).toBeVisible({ timeout: 5000 });
+
+    const totalElement = virtualHistory
+      .locator('.rounded-full.text-2xl')
       .first();
     await expect(totalElement).toBeVisible();
   });
@@ -153,8 +154,9 @@ test.describe('Basic Dice Roll (1d20)', () => {
     await page.waitForTimeout(500);
 
     // Verify roll appeared (proves validation allows valid rolls)
-    const rollHistorySection = page.locator('text=Roll History').locator('..');
-    await expect(rollHistorySection.getByText(/1d20/i)).toBeVisible();
+    const virtualHistory = page.locator('[data-testid="virtual-roll-history"]');
+    await expect(virtualHistory).toBeVisible({ timeout: 5000 });
+    await expect(virtualHistory.getByText(/1d20/i)).toBeVisible();
   });
 
   test('should show timestamp for each roll', async ({ page }) => {
@@ -173,7 +175,7 @@ test.describe('Basic Dice Roll (1d20)', () => {
     await page.waitForTimeout(500);
 
     // Verify timestamp element exists (time tag)
-    const timeElement = page.locator('time[role="time"]').first();
+    const timeElement = page.locator('time').first();
     await expect(timeElement).toBeVisible();
 
     // Timestamp should be in format HH:MM:SS

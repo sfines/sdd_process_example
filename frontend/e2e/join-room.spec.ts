@@ -158,18 +158,21 @@ test.describe('Story 2.2: Join an Existing Room', () => {
       });
 
       // Both players should have green connection indicator (connected: true)
-      // Look for green circle indicators (bg-green-500 in PlayerList component)
-      // Scope to player list items to avoid matching other green elements
-      const greenIndicators1 = page1.locator('[role="list"] .bg-green-500');
-      const greenIndicators2 = page2.locator('[role="list"] .bg-green-500');
+      // Look for green circle indicators (bg-green-500) within player cards
+      const greenIndicators1 = page1.locator(
+        '[data-testid^="player-"] .bg-green-500',
+      );
+      const greenIndicators2 = page2.locator(
+        '[data-testid^="player-"] .bg-green-500',
+      );
 
       // Should have at least 2 green indicators (both players connected)
       await expect(greenIndicators1).toHaveCount(2, { timeout: 5000 });
       await expect(greenIndicators2).toHaveCount(2, { timeout: 5000 });
 
-      // Verify current player sees "(You)" label
-      await expect(page1.getByText('(You)')).toBeVisible();
-      await expect(page2.getByText('(You)')).toBeVisible();
+      // Verify current player sees "You" label
+      await expect(page1.getByText('You')).toBeVisible();
+      await expect(page2.getByText('You')).toBeVisible();
     } finally {
       await context1.close();
       await context2.close();
