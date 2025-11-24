@@ -99,24 +99,17 @@ export default function RoomView() {
 
           {/* Right: Connection Status and Leave */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              {isConnected ? (
-                <>
-                  <Wifi className="w-4 h-4 text-green-500" />
-                  <span className="text-xs text-green-500 hidden sm:inline">Online</span>
-                </>
-              ) : (
-                <>
-                  <WifiOff className="w-4 h-4 text-red-500" />
-                  <span className="text-xs text-red-500 hidden sm:inline">Offline</span>
-                </>
-              )}
-            </div>
+            {isConnected ? (
+              <Wifi className="w-4 h-4 text-green-500" aria-label="Connected" />
+            ) : (
+              <WifiOff className="w-4 h-4 text-red-500" aria-label="Disconnected" />
+            )}
             <Button
               onClick={handleLeaveRoom}
               variant="ghost"
               size="sm"
               className="h-8"
+              aria-label="Leave Room"
             >
               <LogOut className="w-4 h-4" />
             </Button>
