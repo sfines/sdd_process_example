@@ -31,7 +31,8 @@ export default function RoomView() {
       const roomCodeHeight = 60; // Room code display
       const separatorHeight = 24; // Separator margin
       const cardHeaderHeight = 60; // Card header with title
-      const padding = 40; // Additional padding/gaps
+      const bottomDrawerHeight = 60; // Player drawer button height
+      const padding = 60; // Additional padding/gaps
 
       const availableHeight =
         viewportHeight -
@@ -39,6 +40,7 @@ export default function RoomView() {
         roomCodeHeight -
         separatorHeight -
         cardHeaderHeight -
+        bottomDrawerHeight -
         padding;
 
       // Minimum 300px, maximum 800px
