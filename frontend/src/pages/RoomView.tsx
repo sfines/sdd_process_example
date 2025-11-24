@@ -118,7 +118,7 @@ export default function RoomView() {
       </div>
 
       {/* Main Content - Centered Single Column */}
-      <div className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6 pb-24">
+      <div className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6 pb-32">{/* Increased pb-24 to pb-32 for player drawer */}
         {/* Dice Roller */}
         <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
           <DiceInput onRoll={handleRoll} isRolling={isRolling} />
