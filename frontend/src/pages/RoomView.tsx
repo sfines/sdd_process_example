@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Wifi, WifiOff, LogOut } from 'lucide-react';
 import { useSocketStore } from '../store/socketStore';
@@ -9,7 +9,7 @@ import { Separator } from '../components/ui/separator';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
 import PlayerList from '../components/PlayerList';
 import DiceInput from '../components/DiceInput';
-import RollHistory from '../components/RollHistory';
+import VirtualRollHistory from '../components/VirtualRollHistory';
 
 export default function RoomView() {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -24,6 +24,36 @@ export default function RoomView() {
   const rollDice = useSocketStore((state) => state.rollDice);
 
   const [isRolling, setIsRolling] = useState(false);
+  const [rollHistoryHeight, setRollHistoryHeight] = useState(400); // Default 400px
+
+  // Calculate available height for roll history based on viewport
+  useEffect(() => {
+    const calculateHeight = () => {
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 80; // Approx height of header section
+      const roomCodeHeight = 60; // Room code display
+      const separatorHeight = 24; // Separator margin
+      const cardHeaderHeight = 60; // Card header with title
+      const padding = 40; // Additional padding/gaps
+
+      const availableHeight =
+        viewportHeight -
+        headerHeight -
+        roomCodeHeight -
+        separatorHeight -
+        cardHeaderHeight -
+        padding;
+
+      // Minimum 300px, maximum 800px
+      const clampedHeight = Math.max(300, Math.min(800, availableHeight));
+      setRollHistoryHeight(clampedHeight);
+    };
+
+    calculateHeight();
+    window.addEventListener('resize', calculateHeight);
+
+    return () => window.removeEventListener('resize', calculateHeight);
+  }, []);
 
   if (!roomCode) {
     return (
@@ -125,7 +155,11 @@ export default function RoomView() {
                 <CardTitle>Roll History</CardTitle>
               </CardHeader>
               <CardContent>
-                <RollHistory rolls={rollHistory} />
+                <VirtualRollHistory
+                  rolls={rollHistory}
+                  height={rollHistoryHeight}
+                  shouldAutoScroll={true}
+                />
               </CardContent>
             </Card>
           </div>

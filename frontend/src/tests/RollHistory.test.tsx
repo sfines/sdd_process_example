@@ -40,7 +40,8 @@ describe('RollHistory', () => {
 
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText(/1d20/i)).toBeInTheDocument();
-    expect(screen.getByText('15')).toBeInTheDocument();
+    // Total appears twice: once in results span, once in large circle
+    expect(screen.getAllByText('15')).toHaveLength(2);
   });
 
   it('displays multiple rolls', () => {
@@ -129,8 +130,9 @@ describe('RollHistory', () => {
 
     render(<RollHistory rolls={rolls} />);
 
-    // Individual result should be shown in the "Results: [X]" format (updated for Figma design)
-    expect(screen.getByText(/Results: \[15\]/)).toBeInTheDocument();
+    // Individual result shown in separate span elements due to Figma design
+    expect(screen.getByText('Results:')).toBeInTheDocument();
+    expect(screen.getAllByText('15')).toHaveLength(2); // Once in result, once in total circle
   });
 
   it('displays most recent roll first', () => {

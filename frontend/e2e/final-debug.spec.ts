@@ -7,13 +7,15 @@ test('final debug - check state before roll', async ({ page }) => {
   const playerName = `TestPlayer${Math.floor(Math.random() * 10000)}`;
   await page.getByLabel('Your Name').first().fill(playerName);
   await page.getByRole('button', { name: /create room/i }).click();
-  
+
   await page.waitForURL(/\/room\/.+/, { timeout: 5000 });
   await expect(page.getByText('Game Room')).toBeVisible();
-  
+
   // Wait for player in list
-  await expect(page.getByTestId(`player-${playerName}`)).toBeVisible({ timeout: 5000 });
-  
+  await expect(page.getByTestId(`player-${playerName}`)).toBeVisible({
+    timeout: 5000,
+  });
+
   // NOW check what RoomView will use
   const stateAtRollTime = await page.evaluate(() => {
     // Access the React component's props/state via the DOM
@@ -21,30 +23,15 @@ test('final debug - check state before roll', async ({ page }) => {
     const rollButton = document.querySelector('button[type="button"]');
     return {
       buttonExists: !!rollButton,
-      pageHTML: document.body.innerHTML.substring(0, 500)
+      pageHTML: document.body.innerHTML.substring(0, 500),
     };
   });
-  
+
   console.log('State check:', stateAtRollTime);
-  
-  // Roll dice
-  const diceInput = page.getByPlaceholder('1d20+5');
-  await diceInput.fill('1d20');
-  
-  // Add a breakpoint by injecting code that logs when roll button is clicked
-  await page.evaluate(() => {
-    const rollBtn = Array.from(document.querySelectorAll('button')).find(
-      b => b.textContent?.toLowerCase().includes('roll')
-    );
-    if (rollBtn) {
-      rollBtn.addEventListener('click', () => {
-        console.log('ROLL BUTTON CLICKED - about to call handleRoll');
-      }, { once: true, capture: true });
-    }
-  });
-  
+
+  // Roll dice using Simple mode
   await page.getByRole('button', { name: /roll/i }).click();
   await page.waitForTimeout(2000);
-  
+
   console.log('Expected player name:', playerName);
 });

@@ -4,22 +4,24 @@
 
 This document defines a concise, practical TypeScript coding standard for frontend services and libraries. It is written for developers and for AI agents that will generate or review code. It includes: high-value rules, a one-page Decision Table, "bad → good" examples, tooling/config snippets (ESLint, Prettier, Vitest, tsconfig), a one-page PR checklist, CI snippet, and a migration plan.
 
+**Package Manager:** All TypeScript work uses `pnpm` exclusively. Never use `npm` or `yarn`.
+
 ## Decision Table (Top 12 rules)
 
-| #   | Rule                                               | Enforcement | Rationale                                                                    |
-| --- | -------------------------------------------------- | ----------: | ---------------------------------------------------------------------------- |
-| 1   | Use ESLint + Prettier for formatting/linting       |        FAIL | Single-source formatting + linting ensures consistent style and fast checks. |
-| 2   | Require strict type checking (`tsconfig.json`)     |        FAIL | Prevents major runtime errors and enables safe refactors.                    |
-| 3   | No `any` in new code                               |        FAIL | Avoids unsafe type assertions that undermine the type system.                |
-| 4   | Use named exports only (no `default export`)       |        FAIL | Ensures consistency and avoids naming collisions.                            |
-| 5   | Use structured logging                             |        WARN | Facilitates log parsing for observability—structured logs reduce ambiguity.  |
-| 6   | Secure secrets handling                            |        FAIL | Prevents accidental exposure of credentials and secrets.                     |
-| 7   | Use `for...of` for array iteration                 |        INFO | More readable and less error-prone than traditional `for` loops.             |
-| 8   | Use `pnpm` and a pinned Node.js version (e.g., 24) |        INFO | Standardizes local and CI environments.                                      |
-| 9   | Avoid global mutable states                        |        WARN | Easier to test and reason about code.                                        |
-| 10  | Catch explicit exceptions only                     |        FAIL | Avoids hiding unexpected errors and protects control flow.                   |
-| 11  | Use `async/await` for I/O-bound code               |        WARN | Prevents blocking and enables concurrency for web apps.                      |
-| 12  | Document public functions with JSDoc               |        INFO | Improves discoverability and guarantees clearer APIs.                        |
+| #   | Rule                                           | Enforcement | Rationale                                                                    |
+| --- | ---------------------------------------------- | ----------: | ---------------------------------------------------------------------------- |
+| 1   | Use ESLint + Prettier for formatting/linting   |        FAIL | Single-source formatting + linting ensures consistent style and fast checks. |
+| 2   | Require strict type checking (`tsconfig.json`) |        FAIL | Prevents major runtime errors and enables safe refactors.                    |
+| 3   | No `any` in new code                           |        FAIL | Avoids unsafe type assertions that undermine the type system.                |
+| 4   | Use named exports only (no `default export`)   |        FAIL | Ensures consistency and avoids naming collisions.                            |
+| 5   | Use structured logging                         |        WARN | Facilitates log parsing for observability—structured logs reduce ambiguity.  |
+| 6   | Secure secrets handling                        |        FAIL | Prevents accidental exposure of credentials and secrets.                     |
+| 7   | Use `for...of` for array iteration             |        INFO | More readable and less error-prone than traditional `for` loops.             |
+| 8   | Use `pnpm` exclusively (never npm/yarn)        |        FAIL | Standardizes local and CI environments with fast, efficient installs.        |
+| 9   | Avoid global mutable states                    |        WARN | Easier to test and reason about code.                                        |
+| 10  | Catch explicit exceptions only                 |        FAIL | Avoids hiding unexpected errors and protects control flow.                   |
+| 11  | Use `async/await` for I/O-bound code           |        WARN | Prevents blocking and enables concurrency for web apps.                      |
+| 12  | Document public functions with JSDoc           |        INFO | Improves discoverability and guarantees clearer APIs.                        |
 
 ## Core rules & explanations
 
@@ -67,6 +69,42 @@ This document defines a concise, practical TypeScript coding standard for fronte
 
 - **Throw Errors**: Always `throw new Error()`. Never throw strings or objects.
 - **Catching**: Catch as `unknown` and perform instance checks.
+
+## Package Management with pnpm
+
+**Rule:** All TypeScript projects MUST use `pnpm` as the package manager. Never use `npm` or `yarn`.
+
+**Rationale:**
+
+- Fast, disk-space efficient installations via content-addressable storage
+- Strict dependency resolution prevents phantom dependencies
+- Workspace support for monorepos
+- Consistent lockfile format (`pnpm-lock.yaml`)
+
+**Common Commands:**
+
+```bash
+pnpm install           # Install dependencies
+pnpm add <package>     # Add dependency
+pnpm add -D <package>  # Add dev dependency
+pnpm run <script>      # Run package.json script
+pnpm test              # Run tests
+pnpm lint              # Run linter
+pnpm format            # Format code
+```
+
+**Project Setup:**
+
+```bash
+# Install pnpm globally (if needed)
+npm install -g pnpm
+
+# Initialize new project
+pnpm init
+
+# Install dependencies from package.json
+pnpm install
+```
 
 ## Tooling & Config snippets
 
@@ -171,14 +209,17 @@ repos:
 8.  Tests cover new behaviors and edge cases.
 9.  Files formatted and imports sorted.
 10. Update the Decision Table if the change introduces a new rule.
+11. Verify `pnpm-lock.yaml` is committed (never `package-lock.json` or `yarn.lock`).
 
 ## Migration plan
 
-1.  Add `tsconfig.json`, `.eslintrc.cjs`, `prettier.config.js`, and `.pre-commit-config.yaml`.
-2.  Run `pnpm format --fix` and `pnpm lint --fix` to fix format and easy style errors.
-3.  Turn on incremental type checking via `pnpm typecheck` with `strict` toggles per module.
-4.  Add CI gating: lint → format → typecheck → test.
-5.  Incrementally enforce `noImplicitAny` with a targeted schedule.
+1.  Install `pnpm` globally if not present: `npm install -g pnpm`
+2.  Add `tsconfig.json`, `.eslintrc.cjs`, `prettier.config.js`, and `.pre-commit-config.yaml`.
+3.  Run `pnpm install` to generate `pnpm-lock.yaml`.
+4.  Run `pnpm format` and `pnpm lint --fix` to fix format and easy style errors.
+5.  Turn on incremental type checking via `pnpm typecheck` with `strict` toggles per module.
+6.  Add CI gating: lint → format → typecheck → test.
+7.  Incrementally enforce `noImplicitAny` with a targeted schedule.
 
 ## React-Specific Patterns
 

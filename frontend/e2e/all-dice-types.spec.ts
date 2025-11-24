@@ -7,7 +7,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:8090';
 
 test.describe('All Standard Dice Types', () => {
   test('Player A rolls all dice types (d4-d100) and Player B sees results', async ({
