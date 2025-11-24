@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Wifi, WifiOff, LogOut } from 'lucide-react';
+import { Wifi, WifiOff, LogOut, Users } from 'lucide-react';
 import { useSocketStore } from '../store/socketStore';
 import { socket } from '../services/socket';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Separator } from '../components/ui/separator';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
 import PlayerList from '../components/PlayerList';
 import DiceInput from '../components/DiceInput';
@@ -19,7 +18,6 @@ export default function RoomView() {
   const players = useSocketStore((state) => state.players);
   const rollHistory = useSocketStore((state) => state.rollHistory);
   const currentPlayerId = useSocketStore((state) => state.currentPlayerId);
-  const currentPlayerName = useSocketStore((state) => state.currentPlayerName);
   const isConnected = useSocketStore((state) => state.isConnected);
   const rollDice = useSocketStore((state) => state.rollDice);
 
@@ -88,82 +86,106 @@ export default function RoomView() {
     navigate('/');
   };
 
+  const [showPlayerList, setShowPlayerList] = useState(false);
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-4">
-        {/* Header with Connection Status */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Game Room</h1>
-              <p className="text-muted-foreground mt-1">
-                Playing as: {currentPlayerName || 'Unknown'}
-              </p>
-            </div>
-            {/* Connection Status Indicator */}
-            <div className="flex items-center gap-2">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Top Sticky Bar - Figma Design */}
+      <div className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          {/* Left: Room Code */}
+          <div className="flex items-center gap-2">
+            <RoomCodeDisplay roomCode={roomCode} compact />
+          </div>
+
+          {/* Right: Connection Status and Leave */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {isConnected ? (
-                <Wifi className="w-5 h-5 text-green-500" aria-label="Connected" />
+                <>
+                  <Wifi className="w-4 h-4 text-green-500" />
+                  <span className="text-xs text-green-500 hidden sm:inline">Online</span>
+                </>
               ) : (
-                <WifiOff className="w-5 h-5 text-red-500" aria-label="Disconnected" />
+                <>
+                  <WifiOff className="w-4 h-4 text-red-500" />
+                  <span className="text-xs text-red-500 hidden sm:inline">Offline</span>
+                </>
               )}
-              <span className="text-sm text-muted-foreground">
-                {isConnected ? 'Connected' : 'Disconnected'}
-              </span>
             </div>
+            <Button
+              onClick={handleLeaveRoom}
+              variant="ghost"
+              size="sm"
+              className="h-8"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
-          <Button
-            onClick={handleLeaveRoom}
-            variant="outline"
-            size="sm"
+        </div>
+      </div>
+
+      {/* Main Content - Centered Single Column */}
+      <div className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6 pb-24">
+        {/* Dice Roller */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Roll Dice</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DiceInput onRoll={handleRoll} isRolling={isRolling} />
+          </CardContent>
+        </Card>
+
+        {/* Roll History */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Roll History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <VirtualRollHistory
+              rolls={rollHistory}
+              height={rollHistoryHeight}
+              shouldAutoScroll={true}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Player List Drawer - Figma Design */}
+      <div className="fixed bottom-0 left-0 right-0 z-40">
+        <div className={`max-w-4xl mx-auto transition-transform duration-300 ${
+          showPlayerList ? 'translate-y-0' : 'translate-y-full'
+        }`}>
+          <Card className="rounded-t-lg rounded-b-none border-b-0">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg">Players</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPlayerList(false)}
+                className="h-8 w-8 p-0"
+              >
+                ✕
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <PlayerList players={players} currentPlayerId={currentPlayerId} compact />
+            </CardContent>
+          </Card>
+        </div>
+
+        {!showPlayerList && (
+          <button
+            onClick={() => setShowPlayerList(true)}
+            className="w-full max-w-4xl mx-auto bg-background border-t border-border px-4 py-3 flex items-center justify-center gap-2 hover:bg-accent transition-colors"
           >
-            <LogOut className="w-4 h-4 mr-2" />
-            Leave Room
-          </Button>
-        </div>
-
-        {/* Room Code Display */}
-        <div className="mb-6">
-          <RoomCodeDisplay roomCode={roomCode} />
-        </div>
-
-        <Separator className="mb-6" />
-
-        {/* Main Content Grid - Three Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Player List */}
-          <div className="lg:col-span-1 space-y-6">
-            <PlayerList players={players} currentPlayerId={currentPlayerId} />
-          </div>
-
-          {/* Center Column - Dice Roller */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Roll Dice</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DiceInput onRoll={handleRoll} isRolling={isRolling} />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Roll History */}
-          <div className="lg:col-span-1">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Roll History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <VirtualRollHistory
-                  rolls={rollHistory}
-                  height={rollHistoryHeight}
-                  shouldAutoScroll={true}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+            <Users className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-foreground">
+              {players.length} player{players.length !== 1 ? 's' : ''} online
+            </span>
+          </button>
+        )}
       </div>
     </div>
   );
