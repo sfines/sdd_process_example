@@ -26,7 +26,7 @@ export default function RoomCodeDisplay({ roomCode, compact = false }: RoomCodeD
       <div className="flex items-center gap-2">
         <Badge
           variant="outline"
-          className="font-mono text-sm px-3 py-1"
+          className="font-mono text-sm px-3 py-1 border-purple-600/50 bg-purple-950/30 text-purple-300"
           data-testid="room-code"
         >
           {roomCode}
