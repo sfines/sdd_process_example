@@ -4,7 +4,6 @@ import { Wifi, WifiOff, LogOut, Users } from 'lucide-react';
 import { useSocketStore } from '../store/socketStore';
 import { socket } from '../services/socket';
 import { Button } from '../components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import RoomCodeDisplay from '../components/RoomCodeDisplay';
 import PlayerList from '../components/PlayerList';
 import DiceInput from '../components/DiceInput';
@@ -89,9 +88,9 @@ export default function RoomView() {
   const [showPlayerList, setShowPlayerList] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-slate-950">
       {/* Top Sticky Bar - Figma Design */}
-      <div className="sticky top-0 z-50 bg-background border-b border-border px-4 py-3">
+      <div className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 px-4 py-3">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           {/* Left: Room Code */}
           <div className="flex items-center gap-2">
@@ -128,28 +127,19 @@ export default function RoomView() {
       {/* Main Content - Centered Single Column */}
       <div className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6 pb-24">
         {/* Dice Roller */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Roll Dice</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DiceInput onRoll={handleRoll} isRolling={isRolling} />
-          </CardContent>
-        </Card>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+          <DiceInput onRoll={handleRoll} isRolling={isRolling} />
+        </div>
 
         {/* Roll History */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Roll History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <VirtualRollHistory
-              rolls={rollHistory}
-              height={rollHistoryHeight}
-              shouldAutoScroll={true}
-            />
-          </CardContent>
-        </Card>
+        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+          <h2 className="text-xl font-semibold text-slate-100 mb-4">Roll History</h2>
+          <VirtualRollHistory
+            rolls={rollHistory}
+            height={rollHistoryHeight}
+            shouldAutoScroll={true}
+          />
+        </div>
       </div>
 
       {/* Bottom Player List Drawer - Figma Design */}
@@ -157,31 +147,31 @@ export default function RoomView() {
         <div className={`max-w-4xl mx-auto transition-transform duration-300 ${
           showPlayerList ? 'translate-y-0' : 'translate-y-full'
         }`}>
-          <Card className="rounded-t-lg rounded-b-none border-b-0">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-lg">Players</CardTitle>
+          <div className="bg-slate-900 border-t border-slate-800 rounded-t-xl">
+            <div className="flex items-center justify-between p-4 border-b border-slate-800">
+              <h3 className="text-lg font-semibold text-slate-100">Players</h3>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPlayerList(false)}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 text-slate-400 hover:text-slate-100"
               >
                 ✕
               </Button>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div className="p-4">
               <PlayerList players={players} currentPlayerId={currentPlayerId} compact />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {!showPlayerList && (
           <button
             onClick={() => setShowPlayerList(true)}
-            className="w-full max-w-4xl mx-auto bg-background border-t border-border px-4 py-3 flex items-center justify-center gap-2 hover:bg-accent transition-colors"
+            className="w-full max-w-4xl mx-auto bg-slate-900 border-t border-slate-800 px-4 py-3 flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
           >
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-foreground">
+            <Users className="w-4 h-4 text-slate-400" />
+            <span className="text-sm text-slate-100">
               {players.length} player{players.length !== 1 ? 's' : ''} online
             </span>
           </button>
