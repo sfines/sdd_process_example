@@ -7,7 +7,13 @@
 import { io, Socket } from 'socket.io-client';
 
 // Configure socket connection
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000';
+// Use relative URL so it works from any IP/hostname
+// In production, backend is on same host but different port
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL ||
+  (import.meta.env.DEV
+    ? 'http://localhost:8000'
+    : `${window.location.protocol}//${window.location.hostname}:8000`);
 
 export const socket: Socket = io(SOCKET_URL, {
   path: '/socket.io',
