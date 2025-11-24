@@ -144,10 +144,12 @@ export default function RoomView() {
 
       {/* Bottom Player List Drawer - Figma Design */}
       <div className="fixed bottom-0 left-0 right-0 z-40">
-        <div className={`max-w-4xl mx-auto transition-transform duration-300 ${
-          showPlayerList ? 'translate-y-0' : 'translate-y-full'
-        }`}>
-          <div className="bg-slate-900 border-t border-slate-800 rounded-t-xl">
+        <div
+          className={`max-w-4xl mx-auto transition-transform duration-300 ${
+            showPlayerList ? 'translate-y-0' : 'translate-y-full'
+          } ${!showPlayerList ? 'pointer-events-none' : ''}`}
+        >
+          <div className="bg-slate-900 border-t border-slate-800 rounded-t-xl shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-slate-800">
               <h3 className="text-lg font-semibold text-slate-100">Players</h3>
               <Button
@@ -159,22 +161,28 @@ export default function RoomView() {
                 ✕
               </Button>
             </div>
-            <div className="p-4">
-              <PlayerList players={players} currentPlayerId={currentPlayerId} compact />
+            <div className="p-4 max-h-80 overflow-y-auto">
+              <PlayerList
+                players={players}
+                currentPlayerId={currentPlayerId}
+                compact
+              />
             </div>
           </div>
         </div>
 
         {!showPlayerList && (
-          <button
-            onClick={() => setShowPlayerList(true)}
-            className="w-full max-w-4xl mx-auto bg-slate-900 border-t border-slate-800 px-4 py-3 flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
-          >
-            <Users className="w-4 h-4 text-slate-400" />
-            <span className="text-sm text-slate-100">
-              {players.length} player{players.length !== 1 ? 's' : ''} online
-            </span>
-          </button>
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowPlayerList(true)}
+              className="w-full max-w-4xl bg-slate-900 border-t border-slate-800 px-4 py-3 flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
+            >
+              <Users className="w-4 h-4 text-slate-400" />
+              <span className="text-sm text-slate-100">
+                {players.length} player{players.length !== 1 ? 's' : ''} online
+              </span>
+            </button>
+          </div>
         )}
       </div>
     </div>
