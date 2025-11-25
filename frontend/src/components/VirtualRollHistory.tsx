@@ -35,7 +35,7 @@ interface VirtualRollHistoryProps {
 export default function VirtualRollHistory({
   rolls,
   height = 400,
-  itemHeight = 180, // Base height for simple rolls
+  itemHeight: _itemHeight = 180, // Unused - dynamic measurement used
   onScroll: _onScroll, // Unused but kept for API compatibility
   shouldAutoScroll = true,
 }: VirtualRollHistoryProps): JSX.Element {
@@ -47,38 +47,16 @@ export default function VirtualRollHistory({
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
 
-  // Calculate dynamic height for each item based on content
-  const estimateSize = (index: number): number => {
-    const roll = sortedRolls[index];
-    if (!roll) return itemHeight;
-
-    const baseHeight = 180; // Base card height
-    const diceCount = roll.individual_results.length;
-    const isExpanded = expandedRolls.has(roll.roll_id);
-
-    // If expanded or many dice that will wrap
-    if (isExpanded && diceCount > 10) {
-      // Estimate rows needed: 8 dice per row (approximate)
-      const rows = Math.ceil(diceCount / 8);
-      return baseHeight + rows * 40; // 40px per additional row
-    } else if (diceCount > 10) {
-      // Collapsed but still shows 6 dice + "...+N more"
-      return baseHeight;
-    } else if (diceCount > 6) {
-      // Dice wrap to multiple rows
-      const rows = Math.ceil(diceCount / 8);
-      return baseHeight + (rows - 1) * 40;
-    }
-
-    return baseHeight;
-  };
-
-  // Initialize virtualizer
+  // Initialize virtualizer with dynamic measurement
   const virtualizer = useVirtualizer({
     count: sortedRolls.length,
     getScrollElement: () => parentRef.current,
-    estimateSize,
+    estimateSize: () => 200, // Initial estimate, will be measured
     overscan: 5,
+    measureElement:
+      typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1
+        ? (element) => element.getBoundingClientRect().height
+        : undefined,
   });
 
   // Auto-scroll to top when new rolls added
@@ -98,9 +76,6 @@ export default function VirtualRollHistory({
       }
       return next;
     });
-
-    // Measure all items again after toggle
-    virtualizer.measure();
   };
 
   // Format timestamp to readable time (HH:MM:SS)
@@ -200,6 +175,7 @@ export default function VirtualRollHistory({
             <div
               key={roll.roll_id}
               data-index={virtualItem.index}
+              ref={virtualizer.measureElement}
               data-testid={`roll-${roll.roll_id}`}
               style={{
                 position: 'absolute',
