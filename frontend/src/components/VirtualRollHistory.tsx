@@ -2,12 +2,12 @@
  * VirtualRollHistory Component
  *
  * High-performance virtual scrolling for roll history with 100+ rolls.
- * Uses react-window FixedSizeList for efficient DOM rendering.
+ * Uses @tanstack/react-virtual for efficient DOM rendering with dynamic heights.
  * Preserves complete Figma design system styling.
  */
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { FixedSizeList as List, FixedSizeList } from 'react-window';
+import { useEffect, useRef, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
@@ -35,11 +35,11 @@ interface VirtualRollHistoryProps {
 export default function VirtualRollHistory({
   rolls,
   height = 400,
-  itemHeight = 180, // Increased to 180px to ensure timestamp is fully visible
-  onScroll,
+  itemHeight = 180, // Base height for simple rolls
+  onScroll: _onScroll, // Unused but kept for API compatibility
   shouldAutoScroll = true,
 }: VirtualRollHistoryProps): JSX.Element {
-  const listRef = useRef<FixedSizeList>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
   const [expandedRolls, setExpandedRolls] = useState<Set<string>>(new Set());
 
   // Sort rolls by timestamp descending (most recent first)
@@ -47,19 +47,46 @@ export default function VirtualRollHistory({
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   );
 
-  // Auto-scroll to top when new rolls added (if shouldAutoScroll is true)
-  useEffect(() => {
-    if (shouldAutoScroll && listRef.current && sortedRolls.length > 0) {
-      // Force scroll to top to show newest roll
-      listRef.current.scrollToItem(0, 'start');
-    }
-  }, [sortedRolls.length, shouldAutoScroll]);
+  // Calculate dynamic height for each item based on content
+  const estimateSize = (index: number): number => {
+    const roll = sortedRolls[index];
+    if (!roll) return itemHeight;
 
-  // Force re-render when rolls change by tracking count
-  const [renderKey, setRenderKey] = useState(0);
+    const baseHeight = 180; // Base card height
+    const diceCount = roll.individual_results.length;
+    const isExpanded = expandedRolls.has(roll.roll_id);
+
+    // If expanded or many dice that will wrap
+    if (isExpanded && diceCount > 10) {
+      // Estimate rows needed: 8 dice per row (approximate)
+      const rows = Math.ceil(diceCount / 8);
+      return baseHeight + rows * 40; // 40px per additional row
+    } else if (diceCount > 10) {
+      // Collapsed but still shows 6 dice + "...+N more"
+      return baseHeight;
+    } else if (diceCount > 6) {
+      // Dice wrap to multiple rows
+      const rows = Math.ceil(diceCount / 8);
+      return baseHeight + (rows - 1) * 40;
+    }
+
+    return baseHeight;
+  };
+
+  // Initialize virtualizer
+  const virtualizer = useVirtualizer({
+    count: sortedRolls.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize,
+    overscan: 5,
+  });
+
+  // Auto-scroll to top when new rolls added
   useEffect(() => {
-    setRenderKey((prev) => prev + 1);
-  }, [rolls.length]);
+    if (shouldAutoScroll && sortedRolls.length > 0) {
+      virtualizer.scrollToIndex(0, { align: 'start' });
+    }
+  }, [sortedRolls.length, shouldAutoScroll, virtualizer]);
 
   const toggleExpand = (rollId: string): void => {
     setExpandedRolls((prev) => {
@@ -71,6 +98,9 @@ export default function VirtualRollHistory({
       }
       return next;
     });
+
+    // Measure all items again after toggle
+    virtualizer.measure();
   };
 
   // Format timestamp to readable time (HH:MM:SS)
@@ -129,108 +159,6 @@ export default function VirtualRollHistory({
     );
   };
 
-  // Handle scroll events to track position
-  const handleScroll = ({
-    scrollOffset,
-  }: {
-    scrollOffset: number;
-    scrollUpdateWasRequested: boolean;
-  }): void => {
-    const maxScrollOffset = sortedRolls.length * itemHeight - height;
-    const isAtBottom = scrollOffset >= maxScrollOffset - 100; // Within 100px of bottom
-
-    if (onScroll) {
-      onScroll(isAtBottom);
-    }
-  };
-
-  // Row renderer for FixedSizeList - MUST be memoized for react-window
-  const RollItem = useCallback(
-    ({ index, style }: { index: number; style: React.CSSProperties }) => {
-      const roll = sortedRolls[index];
-      if (!roll) return null;
-
-      return (
-        <div
-          style={{
-            ...style,
-            height: itemHeight, // Explicitly set height for Firefox
-          }}
-          className="px-4"
-          data-testid={`roll-${roll.roll_id}`}
-        >
-          <div className="pt-3 pb-2 h-full">{/* Ensure full height */}
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  {/* Player name with badge */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="font-medium">
-                      {roll.player_name}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">rolled</span>
-                  </div>
-
-                  {/* Formula in primary color, bold */}
-                  <div className="text-lg font-bold text-primary mb-2">
-                    {roll.formula}
-                  </div>
-
-                  {/* Individual results with expandable display */}
-                  <div className="space-y-2">
-                    <div className="text-sm text-muted-foreground">
-                      Results:{' '}
-                      {formatResults(roll, expandedRolls.has(roll.roll_id))}
-                      {roll.modifier !== 0 && (
-                        <span className="ml-2">
-                          {roll.modifier > 0 ? '+' : ''}
-                          {roll.modifier}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Show expand/collapse button for large rolls */}
-                    {roll.individual_results.length > 10 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleExpand(roll.roll_id)}
-                        className="h-6 px-2 text-xs"
-                      >
-                        {expandedRolls.has(roll.roll_id)
-                          ? 'Show less'
-                          : 'Show all'}
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Timestamp - small, muted */}
-                  <time
-                    dateTime={roll.timestamp}
-                    className="text-xs text-muted-foreground mt-1 block"
-                  >
-                    {formatTime(roll.timestamp)}
-                  </time>
-                </div>
-
-                {/* Total result - large, prominent */}
-                <div className="ml-4 flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-full text-2xl font-bold">
-                  {roll.total}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Separator between rolls (except last) */}
-          {index < sortedRolls.length - 1 && <Separator />}
-          </div>
-        </div>
-      );
-    },
-    [sortedRolls, expandedRolls],
-  );
-
   // Empty state
   if (sortedRolls.length === 0) {
     return (
@@ -247,20 +175,108 @@ export default function VirtualRollHistory({
     );
   }
 
+  const items = virtualizer.getVirtualItems();
+
   return (
-    <div role="list" className="virtual-roll-container" data-testid="virtual-roll-history">
-      <List
-        key={`roll-list-${renderKey}`}
-        ref={listRef}
-        height={height}
-        itemCount={sortedRolls.length}
-        itemSize={itemHeight}
-        width="100%"
-        onScroll={handleScroll}
-        className="virtual-roll-list"
+    <div
+      ref={parentRef}
+      role="list"
+      className="virtual-roll-container overflow-auto"
+      data-testid="virtual-roll-history"
+      style={{ height: `${height}px` }}
+    >
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
       >
-        {RollItem}
-      </List>
+        {items.map((virtualItem) => {
+          const roll = sortedRolls[virtualItem.index];
+          if (!roll) return null;
+
+          return (
+            <div
+              key={roll.roll_id}
+              data-index={virtualItem.index}
+              data-testid={`roll-${roll.roll_id}`}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+            >
+              <div className="px-4 pt-3 pb-2">
+                <Card className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        {/* Player name with badge */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="secondary" className="font-medium">
+                            {roll.player_name}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">rolled</span>
+                        </div>
+
+                        {/* Formula in primary color, bold */}
+                        <div className="text-lg font-bold text-primary mb-2">
+                          {roll.formula}
+                        </div>
+
+                        {/* Individual results with expandable display */}
+                        <div className="space-y-2">
+                          <div className="text-sm text-muted-foreground">
+                            Results:{' '}
+                            {formatResults(roll, expandedRolls.has(roll.roll_id))}
+                            {roll.modifier !== 0 && (
+                              <span className="ml-2">
+                                {roll.modifier > 0 ? '+' : ''}
+                                {roll.modifier}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Show expand/collapse button for large rolls */}
+                          {roll.individual_results.length > 10 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleExpand(roll.roll_id)}
+                              className="h-6 px-2 text-xs"
+                            >
+                              {expandedRolls.has(roll.roll_id) ? 'Show less' : 'Show all'}
+                            </Button>
+                          )}
+                        </div>
+
+                        {/* Timestamp - small, muted */}
+                        <time
+                          dateTime={roll.timestamp}
+                          className="text-xs text-muted-foreground mt-1 block"
+                        >
+                          {formatTime(roll.timestamp)}
+                        </time>
+                      </div>
+
+                      {/* Total result - large, prominent */}
+                      <div className="ml-4 flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-full text-2xl font-bold">
+                        {roll.total}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Separator between rolls (except last) */}
+                {virtualItem.index < sortedRolls.length - 1 && <Separator className="mt-2" />}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
