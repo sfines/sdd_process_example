@@ -50,7 +50,7 @@ export default function VirtualRollHistory({
   const virtualizer = useVirtualizer({
     count: sortedRolls.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 200, // Initial estimate, will be measured
+    estimateSize: () => 120, // Reduced from 200px - more compact layout
     overscan: 5,
     measureElement:
       typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1
@@ -184,26 +184,33 @@ export default function VirtualRollHistory({
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >
-              <div className="px-4 pt-3 pb-2">
+              <div className="px-4 pt-2 pb-2">
                 <Card className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        {/* Player name with badge */}
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary" className="font-medium">
-                            {roll.player_name}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">rolled</span>
-                        </div>
-
-                        {/* Formula in primary color, bold */}
-                        <div className="text-lg font-bold text-primary mb-2">
-                          {roll.formula}
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        {/* Top row: Player name, formula, timestamp */}
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="secondary" className="font-medium">
+                              {roll.player_name}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">rolled</span>
+                            <span className="text-lg font-bold text-primary">
+                              {roll.formula}
+                            </span>
+                          </div>
+                          {/* Timestamp - right aligned */}
+                          <time
+                            dateTime={roll.timestamp}
+                            className="text-xs text-muted-foreground whitespace-nowrap"
+                          >
+                            {formatTime(roll.timestamp)}
+                          </time>
                         </div>
 
                         {/* Individual results with expandable display */}
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                           <div className="text-sm text-muted-foreground">
                             Results:{' '}
                             {formatResults(roll, expandedRolls.has(roll.roll_id))}
@@ -227,18 +234,10 @@ export default function VirtualRollHistory({
                             </Button>
                           )}
                         </div>
-
-                        {/* Timestamp - small, muted */}
-                        <time
-                          dateTime={roll.timestamp}
-                          className="text-xs text-muted-foreground mt-1 block"
-                        >
-                          {formatTime(roll.timestamp)}
-                        </time>
                       </div>
 
                       {/* Total result - large, prominent */}
-                      <div className="ml-4 flex items-center justify-center w-16 h-16 bg-primary text-primary-foreground rounded-full text-2xl font-bold">
+                      <div className="flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full text-xl font-bold flex-shrink-0">
                         {roll.total}
                       </div>
                     </div>
