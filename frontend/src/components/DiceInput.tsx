@@ -21,16 +21,20 @@ export default function DiceInput({
   onRoll,
   isRolling = false,
 }: DiceInputProps): JSX.Element {
+  const [diceType, setDiceType] = useState<number>(20); // Default d20
   const [modifier, setModifier] = useState<number>(0);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+
+  // Standard D&D dice types
+  const diceTypes = [4, 6, 8, 10, 12, 20, 100];
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
 
-    // Build formula: 1d20 with optional modifier
+    // Build formula: 1d{type} with optional modifier
     const formula = modifier === 0
-      ? '1d20'
-      : `1d20${modifier > 0 ? '+' : ''}${modifier}`;
+      ? `1d${diceType}`
+      : `1d${diceType}${modifier > 0 ? '+' : ''}${modifier}`;
 
     // Call parent callback with formula
     onRoll(formula);
@@ -38,8 +42,8 @@ export default function DiceInput({
 
   // Formula preview for display
   const formulaPreview = modifier === 0
-    ? '1d20'
-    : `1d20${modifier > 0 ? '+' : ''}${modifier}`;
+    ? `1d${diceType}`
+    : `1d${diceType}${modifier > 0 ? '+' : ''}${modifier}`;
 
   return (
     <div className="space-y-4">
@@ -74,19 +78,40 @@ export default function DiceInput({
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground">Modifier:</label>
-              <Input
-                type="number"
-                value={modifier || ''}
-                onChange={(e) => setModifier(parseInt(e.target.value) || 0)}
-                className="w-20 h-10 text-center font-mono"
-                placeholder="0"
-                disabled={isRolling}
-                aria-label="Dice modifier"
-              />
+          {/* Dice Type Selector */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground whitespace-nowrap">Dice Type:</label>
+            <div className="flex gap-2 flex-wrap">
+              {diceTypes.map((type) => (
+                <Button
+                  key={type}
+                  type="button"
+                  variant={diceType === type ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDiceType(type)}
+                  disabled={isRolling}
+                  className="w-12 h-10"
+                >
+                  d{type}
+                </Button>
+              ))}
             </div>
+          </div>
+
+          {/* Modifier Input */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground whitespace-nowrap">Modifier:</label>
+            <Input
+              type="number"
+              value={modifier || ''}
+              onChange={(e) => setModifier(parseInt(e.target.value) || 0)}
+              className="w-20 h-10 text-center font-mono"
+              placeholder="0"
+              disabled={isRolling}
+              aria-label="Dice modifier"
+            />
           </div>
 
           <Button
