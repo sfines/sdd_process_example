@@ -35,7 +35,7 @@ interface VirtualRollHistoryProps {
 export default function VirtualRollHistory({
   rolls,
   height = 400,
-  itemHeight = 120, // Reduced - more items fit in viewport for better test visibility
+  itemHeight = 140, // Increased from 120px to prevent overlap in Firefox
   onScroll,
   shouldAutoScroll = true,
 }: VirtualRollHistoryProps): JSX.Element {
@@ -151,8 +151,15 @@ export default function VirtualRollHistory({
       if (!roll) return null;
 
       return (
-        <div style={style} className="px-4" data-testid={`roll-${roll.roll_id}`}>
-          <div className="pt-3 pb-2">
+        <div
+          style={{
+            ...style,
+            height: itemHeight, // Explicitly set height for Firefox
+          }}
+          className="px-4"
+          data-testid={`roll-${roll.roll_id}`}
+        >
+          <div className="pt-3 pb-2 h-full">{/* Ensure full height */}
             <Card className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
               <div className="flex items-center justify-between">
