@@ -35,7 +35,7 @@ interface VirtualRollHistoryProps {
 export default function VirtualRollHistory({
   rolls,
   height = 400,
-  itemHeight = 140, // Increased from 120px to prevent overlap in Firefox
+  itemHeight = 180, // Increased to 180px to ensure timestamp is fully visible
   onScroll,
   shouldAutoScroll = true,
 }: VirtualRollHistoryProps): JSX.Element {
