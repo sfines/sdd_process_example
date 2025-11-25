@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
-import { Separator } from './ui/separator';
 import { Button } from './ui/button';
 
 interface DiceResult {
@@ -245,9 +244,6 @@ export default function VirtualRollHistory({
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Separator between rolls (except last) */}
-                {virtualItem.index < sortedRolls.length - 1 && <Separator className="mt-2" />}
               </div>
             </div>
           );
