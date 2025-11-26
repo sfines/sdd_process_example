@@ -23,6 +23,9 @@ interface DiceResult {
   total: number;
   timestamp: string;
   dc_pass?: boolean | null;
+  hidden?: boolean;
+  revealed?: boolean;
+  advantage?: 'normal' | 'advantage' | 'disadvantage';
 }
 
 interface SocketState {
@@ -36,6 +39,7 @@ interface SocketState {
   currentPlayerName: string | null;
   players: Player[];
   rollHistory: DiceResult[];
+  shouldAutoScroll: boolean;
   roomState?: {
     room_code: string;
     mode: string;
@@ -59,6 +63,8 @@ interface SocketState {
   joinRoom: (roomCode: string, playerName: string) => void;
   rollDice: (formula: string, playerName: string, roomCode: string) => void;
   addRollToHistory: (roll: DiceResult) => void;
+  setRollHistory: (rolls: DiceResult[]) => void;
+  setShouldAutoScroll: (value: boolean) => void;
   reset: () => void;
 }
 
@@ -73,6 +79,7 @@ const initialState = {
   currentPlayerName: null,
   players: [],
   rollHistory: [],
+  shouldAutoScroll: true,
 };
 
 export const useSocketStore = create<SocketState>((set) => ({
@@ -87,16 +94,17 @@ export const useSocketStore = create<SocketState>((set) => ({
 
   setRoomState: (roomState) =>
     set((state) => ({
-      ...state,  // CRITICAL: Spread existing state first to preserve everything
+      ...state, // CRITICAL: Spread existing state first to preserve everything
       roomCode: roomState.room_code,
       roomMode: roomState.mode as 'Open' | 'DM-Led',
       creatorPlayerId: roomState.creator_player_id,
       players: roomState.players,
       // CRITICAL: Preserve existing rollHistory if it's longer than incoming
       // This prevents older roomState from overwriting rolls added via roll_result events
-      rollHistory: roomState.roll_history.length > state.rollHistory.length
-        ? roomState.roll_history
-        : state.rollHistory,
+      rollHistory:
+        roomState.roll_history.length > state.rollHistory.length
+          ? roomState.roll_history
+          : state.rollHistory,
       roomState: roomState,
     })),
 
@@ -104,9 +112,9 @@ export const useSocketStore = create<SocketState>((set) => ({
   setCurrentPlayerName: (name: string) => set({ currentPlayerName: name }),
   createRoom: (playerName: string) => {
     // CRITICAL: Set player name FIRST before any async operations
-    set({ 
-      connectionError: null, 
-      currentPlayerName: playerName 
+    set({
+      connectionError: null,
+      currentPlayerName: playerName,
     });
     // Emit socket event
     socket.emit('create_room', { player_name: playerName });
@@ -114,9 +122,9 @@ export const useSocketStore = create<SocketState>((set) => ({
 
   joinRoom: (roomCode: string, playerName: string) => {
     // CRITICAL: Set player name FIRST before any async operations
-    set({ 
-      connectionError: null, 
-      currentPlayerName: playerName 
+    set({
+      connectionError: null,
+      currentPlayerName: playerName,
     });
     // Emit socket event
     socket.emit('join_room', {
@@ -138,6 +146,14 @@ export const useSocketStore = create<SocketState>((set) => ({
     set((state) => ({
       rollHistory: [...state.rollHistory, roll],
     }));
+  },
+
+  setRollHistory: (rolls: DiceResult[]) => {
+    set({ rollHistory: rolls, shouldAutoScroll: true });
+  },
+
+  setShouldAutoScroll: (value: boolean) => {
+    set({ shouldAutoScroll: value });
   },
 
   reset: () => set(initialState),

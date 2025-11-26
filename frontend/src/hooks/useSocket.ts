@@ -18,6 +18,8 @@ export const useSocket = () => {
     setCurrentPlayerId,
     setCurrentPlayerName,
     addRollToHistory,
+    setRollHistory,
+    setShouldAutoScroll,
     reset,
   } = useSocketStore();
 
@@ -134,6 +136,9 @@ export const useSocket = () => {
         }
       }
 
+      // CRITICAL: Update roll history separately with shouldAutoScroll=true
+      setRollHistory(data.roll_history as any[]);
+
       // CRITICAL: Update store state FIRST, ensuring it's committed
       setRoomState({ ...data, roll_history: data.roll_history as any[] });
 
@@ -226,6 +231,16 @@ export const useSocket = () => {
       );
     };
 
+    // Handle roll_revealed from server (Story 4.2 - DM features)
+    const onRollRevealed = (data: { roll_id: string }) => {
+      // Update roll item in history to mark as revealed
+      const state = useSocketStore.getState();
+      const updatedHistory = state.rollHistory.map((roll) =>
+        roll.roll_id === data.roll_id ? { ...roll, revealed: true } : roll,
+      );
+      setRollHistory(updatedHistory);
+    };
+
     // Handle room_state response (for initial fetch only)
     const onRoomState = (data: {
       room_code: string;
@@ -274,6 +289,7 @@ export const useSocket = () => {
     socket.on('room_joined', onRoomJoined);
     socket.on('player_joined', onPlayerJoined);
     socket.on('roll_result', onRollResult);
+    socket.on('roll_revealed', onRollRevealed);
     socket.on('room_state', onRoomState);
     socket.on('error', onError);
     // window.addEventListener('socket:createRoom', onCreateRoom);
@@ -289,6 +305,7 @@ export const useSocket = () => {
       socket.off('room_joined', onRoomJoined);
       socket.off('player_joined', onPlayerJoined);
       socket.off('roll_result', onRollResult);
+      socket.off('roll_revealed', onRollRevealed);
       socket.off('room_state', onRoomState);
       socket.off('error', onError);
       // window.removeEventListener('socket:createRoom', onCreateRoom);
@@ -308,6 +325,8 @@ export const useSocket = () => {
     setCurrentPlayerId,
     setCurrentPlayerName,
     addRollToHistory,
+    setRollHistory,
+    setShouldAutoScroll,
     reset,
     navigate,
   ]);
