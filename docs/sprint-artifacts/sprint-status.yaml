@@ -49,7 +49,7 @@ development_status:
   2-4-apply-figma-design-to-core-room-experience: done
   2-5-roll-all-standard-dice-types: done
   2-7-roll-multiple-dice-in-a-single-roll: done
-  2-10-handle-long-roll-histories-with-virtual-scrolling: in-progress
+  2-10-handle-long-roll-histories-with-virtual-scrolling: review
   2-11-mobile-responsive-user-interface: ready-for-dev
   epic-2-retrospective: optional
 
