@@ -55,6 +55,8 @@ export default function RoomView() {
     return () => window.removeEventListener('resize', calculateHeight);
   }, []);
 
+  const currentPlayerName = useSocketStore((state) => state.currentPlayerName);
+
   if (!roomCode) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -107,29 +109,32 @@ export default function RoomView() {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         roomCode={roomCode}
-        playerName={
-          useSocketStore.getState().currentPlayerName || 'Unknown Player'
-        }
+        playerName={currentPlayerName || 'Unknown Player'}
         onLeaveRoom={handleLeaveRoom}
+        rollHistory={rollHistory}
       />
 
-      {/* Main Content - Centered Single Column */}
-      <div className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6 pb-32">{/* Increased pb-24 to pb-32 for player drawer */}
-        {/* Dice Roller */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <DiceInput onRoll={handleRoll} isRolling={isRolling} />
+      {/* Main Content - Responsive Layout */}
+      <main className="flex-1 overflow-hidden flex flex-col md:flex-row max-w-7xl w-full mx-auto">
+        {/* Desktop/Tablet: Roll History visible on left or right side */}
+        <div className="hidden md:flex md:flex-1 md:flex-col">
+          <div className="bg-slate-900 border-r border-slate-800 p-6 h-full overflow-hidden">
+            <h2 className="text-xl font-semibold text-slate-100 mb-4">Roll History</h2>
+            <VirtualRollHistory
+              rolls={rollHistory}
+              height={rollHistoryHeight}
+              shouldAutoScroll={true}
+            />
+          </div>
         </div>
 
-        {/* Roll History */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-          <h2 className="text-xl font-semibold text-slate-100 mb-4">Roll History</h2>
-          <VirtualRollHistory
-            rolls={rollHistory}
-            height={rollHistoryHeight}
-            shouldAutoScroll={true}
-          />
+        {/* Dice Input Section - Always visible */}
+        <div className="flex-1 flex flex-col px-4 py-6 pb-32 md:pb-6">
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-4 md:p-6">
+            <DiceInput onRoll={handleRoll} isRolling={isRolling} />
+          </div>
         </div>
-      </div>
+      </main>
 
       {/* Bottom Player List Drawer - Figma Design */}
       <div className="fixed bottom-0 left-0 right-0 z-40">
