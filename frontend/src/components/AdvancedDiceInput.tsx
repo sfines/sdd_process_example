@@ -1,8 +1,9 @@
 /**
- * AdvancedDiceInput Component
+ * AdvancedDiceInput Component - Mobile Responsive
  *
  * Advanced dice rolling controls supporting all standard D&D dice types,
  * quantities (1-100), and modifiers (-99 to +99).
+ * Mobile-first design with 44px touch targets.
  */
 
 import { useState, FormEvent } from 'react';
@@ -61,12 +62,12 @@ export default function AdvancedDiceInput({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Dice Type Selector */}
+      {/* Dice Type Selector - Mobile: 3-4 cols, Desktop: 7 cols */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-muted-foreground">
           Dice Type
         </label>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
           {DICE_TYPES.map((type) => (
             <Button
               key={type}
@@ -75,7 +76,7 @@ export default function AdvancedDiceInput({
               size="sm"
               onClick={() => setDiceSize(type)}
               disabled={isLoading}
-              className="font-mono"
+              className="font-mono h-11"
             >
               d{type}
             </Button>
@@ -83,7 +84,7 @@ export default function AdvancedDiceInput({
         </div>
       </div>
 
-      {/* Quantity Input */}
+      {/* Quantity Input - Mobile optimized */}
       <div className="space-y-2">
         <label htmlFor="quantity" className="text-sm font-medium text-muted-foreground">
           Quantity (1-100)
@@ -91,6 +92,7 @@ export default function AdvancedDiceInput({
         <Input
           id="quantity"
           type="number"
+          inputMode="numeric"
           min={1}
           max={100}
           value={isNaN(numDice) ? '' : numDice}
@@ -99,7 +101,7 @@ export default function AdvancedDiceInput({
             setNumDice(value);
           }}
           disabled={isLoading}
-          className="font-mono"
+          className="h-11 text-base md:text-sm font-mono"
           aria-label="Number of dice"
         />
         {!isValidQuantity && (
@@ -109,7 +111,7 @@ export default function AdvancedDiceInput({
         )}
       </div>
 
-      {/* Modifier Input */}
+      {/* Modifier Input - Mobile optimized */}
       <div className="space-y-2">
         <label htmlFor="modifier" className="text-sm font-medium text-muted-foreground">
           Modifier (-99 to +99)
@@ -122,12 +124,14 @@ export default function AdvancedDiceInput({
             onClick={handleModifierDecrement}
             disabled={isLoading || modifier <= -99}
             aria-label="Decrease modifier"
+            className="h-11 w-11"
           >
             -
           </Button>
           <Input
             id="modifier"
             type="number"
+            inputMode="numeric"
             min={-99}
             max={99}
             value={isNaN(modifier) ? '' : modifier}
@@ -136,7 +140,7 @@ export default function AdvancedDiceInput({
               setModifier(value);
             }}
             disabled={isLoading}
-            className="text-center font-mono flex-1"
+            className="h-11 text-base md:text-sm text-center font-mono flex-1"
             aria-label="Dice modifier"
           />
           <Button
@@ -146,6 +150,7 @@ export default function AdvancedDiceInput({
             onClick={handleModifierIncrement}
             disabled={isLoading || modifier >= 99}
             aria-label="Increase modifier"
+            className="h-11 w-11"
           >
             +
           </Button>
@@ -157,19 +162,19 @@ export default function AdvancedDiceInput({
         )}
       </div>
 
-      {/* Formula Preview */}
+      {/* Formula Preview - Responsive text */}
       <div className="p-4 bg-muted rounded-lg">
         <div className="text-sm text-muted-foreground mb-1">Formula:</div>
-        <div className="text-3xl font-mono font-bold text-foreground">
+        <div className="text-2xl md:text-3xl font-mono font-bold text-foreground">
           {formulaPreview}
         </div>
       </div>
 
-      {/* Roll Button */}
+      {/* Roll Button - Large touch target */}
       <Button
         type="submit"
         disabled={!isFormValid || isLoading}
-        className="w-full h-12"
+        className="w-full h-12 md:h-14 text-base md:text-lg"
         size="lg"
       >
         <Dices className="w-5 h-5 mr-2" />

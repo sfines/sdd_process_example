@@ -1,3 +1,7 @@
+---
+applyTo: '**'
+---
+
 # AI Coding Agent Instructions - D&D Dice Roller
 
 ## Project Overview
@@ -210,3 +214,4 @@ This project uses the **BMad Method** (Agile SDD workflow):
 - Always keep coding standards up to date in `docs/standards/`
 - Always follow the estabilshed project standards as described in `docs/standards`. These are NOT OPTIONAL.
 - Use the local-memory mcp server for your memory and context needs. If you have to go to external sources for information, ensure that the accepted answers are stored in the local-memory mcp server for future reference.
+- When searching for information about code, libraries, or frameworks, always prefer official documentation and reputable sources. Use sourcebot and docs-mcp as needed to locate this information.

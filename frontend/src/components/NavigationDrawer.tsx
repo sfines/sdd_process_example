@@ -2,13 +2,25 @@
  * NavigationDrawer Component - Mobile slide-in navigation menu
  *
  * Appears on mobile devices (md:hidden) with smooth slide-in animation.
- * Contains room info, player details, and navigation actions.
+ * Contains room info, player details, roll history, and navigation actions.
  */
 
 import { X } from 'lucide-react';
 import { Button } from './ui/button';
 import RoomCodeDisplay from './RoomCodeDisplay';
+import DrawerRollHistory from './DrawerRollHistory';
 import { useEffect } from 'react';
+
+interface DiceResult {
+  roll_id: string;
+  player_id: string;
+  player_name: string;
+  formula: string;
+  individual_results: number[];
+  modifier: number;
+  total: number;
+  timestamp: string;
+}
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -16,6 +28,7 @@ interface NavigationDrawerProps {
   roomCode: string;
   playerName: string;
   onLeaveRoom: () => void;
+  rollHistory?: DiceResult[];
 }
 
 export default function NavigationDrawer({
@@ -24,6 +37,7 @@ export default function NavigationDrawer({
   roomCode,
   playerName,
   onLeaveRoom,
+  rollHistory = [],
 }: NavigationDrawerProps) {
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -93,34 +107,30 @@ export default function NavigationDrawer({
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            {/* Room Code Section */}
-            <div>
-              <h3 className="text-sm font-medium text-slate-400 mb-2">
-                Room Code
-              </h3>
-              <RoomCodeDisplay roomCode={roomCode} compact={false} />
-            </div>
+          <div className="flex-1 overflow-y-auto">
+            {/* Room Info Section - Fixed at top */}
+            <div className="p-4 space-y-6 border-b border-slate-800">
+              {/* Room Code Section */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-400 mb-2">
+                  Room Code
+                </h3>
+                <RoomCodeDisplay roomCode={roomCode} compact={false} />
+              </div>
 
-            {/* Player Info Section */}
-            <div>
-              <h3 className="text-sm font-medium text-slate-400 mb-2">
-                Player
-              </h3>
-              <div className="bg-slate-800 rounded-lg p-3">
-                <p className="text-slate-100 font-medium">{playerName}</p>
+              {/* Player Info Section */}
+              <div>
+                <h3 className="text-sm font-medium text-slate-400 mb-2">
+                  Player
+                </h3>
+                <div className="bg-slate-800 rounded-lg p-3">
+                  <p className="text-slate-100 font-medium">{playerName}</p>
+                </div>
               </div>
             </div>
 
-            {/* Future: Room Settings */}
-            {/* <div>
-              <h3 className="text-sm font-medium text-slate-400 mb-2">
-                Settings
-              </h3>
-              <Button variant="outline" className="w-full justify-start">
-                Room Settings
-              </Button>
-            </div> */}
+            {/* Roll History Section - Scrollable */}
+            <DrawerRollHistory isOpen={isOpen} rolls={rollHistory} />
           </div>
 
           {/* Footer with Leave Button */}
