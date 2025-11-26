@@ -187,23 +187,22 @@ export default function VirtualRollHistory({
               <div className="px-4 pt-2 pb-2">
                 <Card className="hover:shadow-md transition-shadow">
                   <CardContent className="p-3">
-                    <div className="flex items-start justify-between gap-4">
+                    {/* Mobile: Stack vertically, Desktop: Side-by-side */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         {/* Top row: Player name, formula, timestamp */}
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="secondary" className="font-medium">
-                              {roll.player_name}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">rolled</span>
-                            <span className="text-lg font-bold text-primary">
-                              {roll.formula}
-                            </span>
-                          </div>
-                          {/* Timestamp - right aligned */}
+                        <div className="flex items-center flex-wrap gap-2 mb-2">
+                          <Badge variant="secondary" className="font-medium">
+                            {roll.player_name}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">rolled</span>
+                          <span className="text-lg font-bold text-primary">
+                            {roll.formula}
+                          </span>
+                          {/* Timestamp - inline on mobile, separate on desktop */}
                           <time
                             dateTime={roll.timestamp}
-                            className="text-xs text-muted-foreground whitespace-nowrap"
+                            className="text-xs text-muted-foreground whitespace-nowrap ml-auto sm:ml-0"
                           >
                             {formatTime(roll.timestamp)}
                           </time>
@@ -236,9 +235,11 @@ export default function VirtualRollHistory({
                         </div>
                       </div>
 
-                      {/* Total result - large, prominent */}
-                      <div className="flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full text-xl font-bold flex-shrink-0">
-                        {roll.total}
+                      {/* Total result - large badge on mobile center, right on desktop */}
+                      <div className="flex items-center justify-center sm:justify-end">
+                        <div className="flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full text-xl font-bold flex-shrink-0">
+                          {roll.total}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
