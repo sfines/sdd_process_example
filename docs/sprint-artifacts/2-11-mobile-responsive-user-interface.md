@@ -31,16 +31,16 @@ so that **I can play from anywhere**.
 
 ### Task 1: Design System - Tailwind Breakpoints
 
-- [ ] Review `frontend/tailwind.config.js`
-  - [ ] Verify default breakpoints present:
-    - [ ] `sm: 640px`
-    - [ ] `md: 768px`
-    - [ ] `lg: 1024px`
-    - [ ] `xl: 1280px`
-  - [ ] Add custom breakpoints if needed:
-    - [ ] `xs: 375px` (smallest phone size target)
-    - [ ] Document in project README
-  - [ ] Commit: "config(frontend): Verify Tailwind breakpoints"
+- [x] Review `frontend/tailwind.config.js`
+  - [x] Verify default breakpoints present:
+    - [x] `sm: 640px`
+    - [x] `md: 768px`
+    - [x] `lg: 1024px`
+    - [x] `xl: 1280px`
+  - [x] Add custom breakpoints if needed:
+    - [x] `xs: 375px` (smallest phone size target)
+    - [x] Document in project README
+  - [x] Commit: "config(frontend): Add xs breakpoint for mobile-first design"
 
 ### Task 2: Layout - Header Component (Responsive)
 

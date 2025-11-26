@@ -4,6 +4,9 @@ export default {
   content: ['./frontend/index.html', './frontend/src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      screens: {
+        xs: '375px', // Smallest phone size (iPhone SE, small Android phones)
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
