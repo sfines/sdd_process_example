@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Wifi, WifiOff, LogOut, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useSocketStore } from '../store/socketStore';
 import { socket } from '../services/socket';
 import { Button } from '../components/ui/button';
-import RoomCodeDisplay from '../components/RoomCodeDisplay';
+import Header from '../components/Header';
 import PlayerList from '../components/PlayerList';
 import DiceInput from '../components/DiceInput';
 import VirtualRollHistory from '../components/VirtualRollHistory';
@@ -91,33 +91,13 @@ export default function RoomView() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950">
-      {/* Top Sticky Bar - Figma Design */}
-      <div className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 px-4 py-3">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          {/* Left: Room Code */}
-          <div className="flex items-center gap-2">
-            <RoomCodeDisplay roomCode={roomCode} compact />
-          </div>
-
-          {/* Right: Connection Status and Leave */}
-          <div className="flex items-center gap-2">
-            {isConnected ? (
-              <Wifi className="w-4 h-4 text-green-500" aria-label="Connected" />
-            ) : (
-              <WifiOff className="w-4 h-4 text-red-500" aria-label="Disconnected" />
-            )}
-            <Button
-              onClick={handleLeaveRoom}
-              variant="ghost"
-              size="sm"
-              className="h-8"
-              aria-label="Leave Room"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Responsive Header Component */}
+      <Header
+        roomCode={roomCode}
+        isConnected={isConnected}
+        onLeaveRoom={handleLeaveRoom}
+        showMenuButton={false}
+      />
 
       {/* Main Content - Centered Single Column */}
       <div className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-6 pb-32">{/* Increased pb-24 to pb-32 for player drawer */}

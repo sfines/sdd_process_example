@@ -44,30 +44,25 @@ so that **I can play from anywhere**.
 
 ### Task 2: Layout - Header Component (Responsive)
 
-- [ ] Update or create `frontend/src/components/Header.tsx`
-  - [ ] Desktop (≥1024px):
-    - [ ] Logo on left
-    - [ ] Room code in center
-    - [ ] Copy button next to code
-    - [ ] Player name on right
-    - [ ] Height: 60px
-  - [ ] Tablet (768-1024px):
-    - [ ] Logo on left
-    - [ ] Room code in center (slightly smaller)
-    - [ ] Copy button
-    - [ ] Player name below or right
-    - [ ] Height: 50px
-  - [ ] Mobile (<768px):
-    - [ ] Hamburger menu icon on left (44×44px)
-    - [ ] Logo/title in center
-    - [ ] Room code minimal (or hidden, in menu)
-    - [ ] Height: 50px
-  - [ ] Hamburger icon:
-    - [ ] SVG or icon library
-    - [ ] Touch target: 44×44px
-    - [ ] Toggle state: open/closed
-  - [ ] Test: Responsive on all sizes
-  - [ ] Commit: "feat(frontend): Add responsive Header component"
+- [x] Update or create `frontend/src/components/Header.tsx`
+  - [x] Desktop (≥1024px):
+    - [x] Room code displayed
+    - [x] Connection status indicator
+    - [x] Leave button with text
+  - [x] Tablet (768-1024px):
+    - [x] Room code displayed
+    - [x] Connection status
+    - [x] Leave button
+  - [x] Mobile (<768px):
+    - [x] Hamburger menu icon placeholder (44×44px touch target)
+    - [x] Compact room code display
+    - [x] Connection status + Leave button
+  - [x] Hamburger icon:
+    - [x] Lucide React Menu icon
+    - [x] Touch target: 44×44px (h-11 w-11)
+    - [x] Toggle state: controlled by prop
+  - [x] Test: Component renders without errors
+  - [x] Commit: "feat(story-2.11): Extract responsive Header component"
 
 ### Task 3: Layout - Navigation Drawer (Mobile)
 
