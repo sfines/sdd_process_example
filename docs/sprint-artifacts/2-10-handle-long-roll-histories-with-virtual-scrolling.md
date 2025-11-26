@@ -45,7 +45,7 @@ so that **the application remains responsive during long game sessions**.
 - [x] Decision: Use `react-window` (small bundle, battle-tested, good docs)
   - [x] Reasoning: 33KB gzipped, FixedSizeList perfect for roll items
   - [x] Alternative note: Can swap to `react-virtual` later if needed
-- [ ] Document: Add decision to Architecture Decision Records (ADR)
+- [x] Document: Add decision to Architecture Decision Records (ADR)
 - [x] Commit: "feat(frontend): Add react-window dependency"
 
 ### Task 2: Frontend Dependencies - Install react-window
