@@ -1,6 +1,6 @@
 # Story 2.10: Handle Long Roll Histories with Virtual Scrolling
 
-Status: review
+Status: done
 
 ---
 
