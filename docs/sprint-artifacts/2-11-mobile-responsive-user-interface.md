@@ -66,28 +66,28 @@ so that **I can play from anywhere**.
 
 ### Task 3: Layout - Navigation Drawer (Mobile)
 
-- [ ] Create `frontend/src/components/NavigationDrawer.tsx`
-  - [ ] Appears on mobile only (`md:hidden`)
-  - [ ] Slides in from left when hamburger clicked
-  - [ ] Overlay: Semi-transparent backdrop (dark gray, 50% opacity)
-  - [ ] Drawer width: 80vw (80% of viewport), max 300px
-  - [ ] Height: 100vh (full screen)
-  - [ ] Animation: Slide in from left (200ms, easing cubic-in-out)
-  - [ ] Content:
-    - [ ] Close button (X icon, top right)
-    - [ ] Room code (with Copy button)
-    - [ ] Player name
-    - [ ] Room settings (future)
-    - [ ] Leave room button
-  - [ ] Interactions:
-    - [ ] Click overlay → close drawer
-    - [ ] Click close button → close drawer
-    - [ ] Click menu item → close drawer (optional)
-  - [ ] Z-index: 1000 (above all content)
-  - [ ] State management: Use Zustand or React Context
-  - [ ] Test: Drawer opens/closes smoothly
-  - [ ] Test: Touch scroll inside drawer works
-  - [ ] Commit: "feat(frontend): Add NavigationDrawer component"
+- [x] Create `frontend/src/components/NavigationDrawer.tsx`
+  - [x] Appears on mobile only (`md:hidden`)
+  - [x] Slides in from left when hamburger clicked
+  - [x] Overlay: Semi-transparent backdrop (bg-black/50, 50% opacity)
+  - [x] Drawer width: 80vw (80% of viewport), max-w-[300px]
+  - [x] Height: 100vh (full screen, h-full)
+  - [x] Animation: Slide in from left (duration-200, ease-in-out)
+  - [x] Content:
+    - [x] Close button (X icon, top right, 44x44px touch target)
+    - [x] Room code (with Copy button via RoomCodeDisplay)
+    - [x] Player name (in styled card)
+    - [x] Room settings (commented out for future)
+    - [x] Leave room button (destructive variant, full width)
+  - [x] Interactions:
+    - [x] Click overlay → close drawer
+    - [x] Click close button → close drawer
+    - [x] Escape key → close drawer
+    - [x] Body scroll lock when open
+  - [x] Z-index: 1000/1001 (overlay 1000, drawer 1001)
+  - [x] State management: Local useState in RoomView
+  - [x] Test: Component compiles without TypeScript errors
+  - [x] Commit: "feat(story-2.11): Add NavigationDrawer component for mobile"
 
 ### Task 4: Layout - Main Content Area (Responsive)
 

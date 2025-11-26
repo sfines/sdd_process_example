@@ -5,6 +5,7 @@ import { useSocketStore } from '../store/socketStore';
 import { socket } from '../services/socket';
 import { Button } from '../components/ui/button';
 import Header from '../components/Header';
+import NavigationDrawer from '../components/NavigationDrawer';
 import PlayerList from '../components/PlayerList';
 import DiceInput from '../components/DiceInput';
 import VirtualRollHistory from '../components/VirtualRollHistory';
@@ -88,6 +89,7 @@ export default function RoomView() {
   };
 
   const [showPlayerList, setShowPlayerList] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Navigation drawer state
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950">
@@ -96,7 +98,19 @@ export default function RoomView() {
         roomCode={roomCode}
         isConnected={isConnected}
         onLeaveRoom={handleLeaveRoom}
-        showMenuButton={false}
+        onMenuToggle={() => setIsDrawerOpen(true)}
+        showMenuButton={true}
+      />
+
+      {/* Mobile Navigation Drawer */}
+      <NavigationDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        roomCode={roomCode}
+        playerName={
+          useSocketStore.getState().currentPlayerName || 'Unknown Player'
+        }
+        onLeaveRoom={handleLeaveRoom}
       />
 
       {/* Main Content - Centered Single Column */}
