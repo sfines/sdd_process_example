@@ -26,6 +26,10 @@ sio = socketio.AsyncServer(
     engineio_logger=False,
 )
 
+# Session tracking: maps socket session ID to (room_code, player_id)
+# Used to track which room/player a socket belongs to for disconnect handling
+session_rooms: dict[str, tuple[str, str]] = {}
+
 
 def get_redis_client() -> Redis:  # type: ignore[type-arg]
     """Get Redis client instance.
@@ -58,12 +62,109 @@ async def connect(sid: str, environ: dict[str, Any]) -> None:
 
 @sio.event  # type: ignore[misc]
 async def disconnect(sid: str) -> None:
-    """Handle client disconnection."""
+    """Handle client disconnection.
+
+    When a client disconnects, mark the player as disconnected (not removed)
+    and broadcast player_disconnected event to the room.
+    """
     logger.info(
         "[DISCONNECT] Client disconnected",
         event_type="disconnect",
         session_id=sid,
     )
+
+    # Check if this session was in a room
+    if sid in session_rooms:
+        room_code, player_id = session_rooms[sid]
+
+        try:
+            # Get Redis client and room manager
+            redis_client = get_redis_client()
+            room_manager = RoomManager(redis_client)
+
+            # Get player info before marking disconnected
+            room = room_manager.get_room(room_code)
+            if room:
+                player = next(
+                    (p for p in room.players if p.player_id == player_id), None
+                )
+                player_name = player.name if player else "Unknown"
+
+                # Mark player as disconnected (don't remove - allow reconnection)
+                room_manager.update_player_status(room_code, player_id, connected=False)
+
+                # Broadcast player_disconnected to room
+                await sio.emit(
+                    "player_disconnected",
+                    {"player_id": player_id, "player_name": player_name},
+                    room=room_code,
+                )
+
+                logger.info(
+                    "[DISCONNECT] Player marked disconnected",
+                    event_type="disconnect",
+                    session_id=sid,
+                    room_code=room_code,
+                    player_id=player_id,
+                    player_name=player_name,
+                )
+
+        except Exception as e:
+            logger.error(
+                "[DISCONNECT] Failed to update player status",
+                event_type="disconnect",
+                session_id=sid,
+                error=str(e),
+            )
+
+        # Remove session from tracking
+        del session_rooms[sid]
+
+
+@sio.event  # type: ignore[misc]
+async def ping(sid: str, data: dict[str, Any]) -> None:
+    """Handle ping heartbeat from client.
+
+    Updates the player's last_activity timestamp and responds with pong.
+    Used for connection health monitoring.
+
+    Args:
+        sid: Socket.IO session ID
+        data: Optional data (may include player_id for verification)
+
+    Emits:
+        pong: Response to client confirming heartbeat received
+    """
+    try:
+        # Check if session is in a room
+        if sid in session_rooms:
+            room_code, player_id = session_rooms[sid]
+
+            # Update last_activity timestamp
+            redis_client = get_redis_client()
+            room_manager = RoomManager(redis_client)
+            room_manager.update_player_status(room_code, player_id, connected=True)
+
+            logger.debug(
+                "[PING] Heartbeat received",
+                event_type="ping",
+                session_id=sid,
+                room_code=room_code,
+                player_id=player_id,
+            )
+
+        # Always respond with pong
+        await sio.emit("pong", {}, to=sid)
+
+    except Exception as e:
+        logger.error(
+            "[PING] Failed to process ping",
+            event_type="ping",
+            session_id=sid,
+            error=str(e),
+        )
+        # Still send pong even on error
+        await sio.emit("pong", {}, to=sid)
 
 
 @sio.event  # type: ignore[misc]
@@ -142,6 +243,9 @@ async def create_room(sid: str, data: dict[str, Any]) -> None:
 
         # Add socket to Socket.IO room
         await sio.enter_room(sid, room.room_code)
+
+        # Track session for disconnect handling
+        session_rooms[sid] = (room.room_code, sid)
 
         logger.info(
             "[ROOM_CREATE] Room created successfully",
@@ -251,38 +355,97 @@ async def join_room(sid: str, data: dict[str, Any]) -> None:
         redis_client = get_redis_client()
         room_manager = RoomManager(redis_client)
 
-        # Join room
-        # Join room (pass socket ID as player_id for consistency)
-        room = room_manager.join_room(room_code, player_name, player_id=sid)
+        # Check if this is a reconnection (player already exists in room)
+        existing_room = room_manager.get_room(room_code)
+        is_reconnection = False
+        reconnecting_player = None
 
-        # Add socket to Socket.IO room
-        await sio.enter_room(sid, room_code)
+        if existing_room:
+            # Check if a disconnected player with same name exists
+            for player in existing_room.players:
+                if player.name == player_name and not player.connected:
+                    is_reconnection = True
+                    reconnecting_player = player
+                    break
 
-        # Get the newly added player (last in list)
-        new_player = room.players[-1]
+        if is_reconnection and reconnecting_player:
+            # Reconnection flow - mark player as connected again
+            room_manager.update_player_status(
+                room_code, reconnecting_player.player_id, connected=True
+            )
 
-        logger.info(
-            "[PLAYER_JOIN] Player joined room successfully",
-            event_type="join_room",
-            session_id=sid,
-            room_code=room_code,
-            player_name=player_name,
-            player_id=new_player.player_id,
-            total_players=len(room.players),
-        )
+            # Add socket to Socket.IO room
+            await sio.enter_room(sid, room_code)
 
-        # Emit room_joined to joining player with their player_id
-        room_data = room.model_dump()
-        room_data["current_player_id"] = new_player.player_id
-        await sio.emit("room_joined", room_data, to=sid)
+            # Track session with original player_id
+            session_rooms[sid] = (room_code, reconnecting_player.player_id)
 
-        # Broadcast player_joined to all other players in room
-        await sio.emit(
-            "player_joined",
-            {"player_id": new_player.player_id, "name": new_player.name},
-            room=room_code,
-            skip_sid=sid,  # Don't send to joining player
-        )
+            # Get updated room state
+            room = room_manager.get_room(room_code)
+            if room is None:
+                raise RoomNotFoundError(f"Room {room_code} not found after reconnect")
+
+            logger.info(
+                "[PLAYER_RECONNECT] Player reconnected to room",
+                event_type="join_room",
+                session_id=sid,
+                room_code=room_code,
+                player_name=player_name,
+                player_id=reconnecting_player.player_id,
+            )
+
+            # Emit room_joined to reconnecting player
+            room_data = room.model_dump()
+            room_data["current_player_id"] = reconnecting_player.player_id
+            await sio.emit("room_joined", room_data, to=sid)
+
+            # Broadcast player_reconnected to all other players in room
+            await sio.emit(
+                "player_reconnected",
+                {
+                    "player_id": reconnecting_player.player_id,
+                    "player_name": reconnecting_player.name,
+                },
+                room=room_code,
+                skip_sid=sid,
+            )
+
+        else:
+            # New player join flow
+            # Join room (pass socket ID as player_id for consistency)
+            room = room_manager.join_room(room_code, player_name, player_id=sid)
+
+            # Add socket to Socket.IO room
+            await sio.enter_room(sid, room_code)
+
+            # Track session for disconnect handling
+            session_rooms[sid] = (room_code, sid)
+
+            # Get the newly added player (last in list)
+            new_player = room.players[-1]
+
+            logger.info(
+                "[PLAYER_JOIN] Player joined room successfully",
+                event_type="join_room",
+                session_id=sid,
+                room_code=room_code,
+                player_name=player_name,
+                player_id=new_player.player_id,
+                total_players=len(room.players),
+            )
+
+            # Emit room_joined to joining player with their player_id
+            room_data = room.model_dump()
+            room_data["current_player_id"] = new_player.player_id
+            await sio.emit("room_joined", room_data, to=sid)
+
+            # Broadcast player_joined to all other players in room
+            await sio.emit(
+                "player_joined",
+                {"player_id": new_player.player_id, "name": new_player.name},
+                room=room_code,
+                skip_sid=sid,  # Don't send to joining player
+            )
 
     except RoomNotFoundError as e:
         # Room doesn't exist

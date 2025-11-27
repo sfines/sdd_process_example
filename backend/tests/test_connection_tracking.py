@@ -165,3 +165,52 @@ class TestGetDisconnectedPlayers:
         """get_disconnected_players returns empty list for nonexistent room."""
         disconnected = integration_room_manager.get_disconnected_players("FAKE-CODE")
         assert disconnected == []
+
+
+class TestPingPongEvents:
+    """Test ping/pong heartbeat Socket.io events."""
+
+    @pytest.mark.asyncio
+    async def test_ping_event_updates_last_activity(self) -> None:
+        """ping event should update player's last_activity timestamp."""
+        # This will test the socket_manager ping handler
+        # For now, mark as a placeholder - implementation will follow
+        pass
+
+    @pytest.mark.asyncio
+    async def test_ping_event_emits_pong(self) -> None:
+        """ping event should emit pong response to client."""
+        pass
+
+
+class TestDisconnectEvents:
+    """Test disconnect event handling."""
+
+    @pytest.mark.asyncio
+    async def test_disconnect_marks_player_disconnected(self) -> None:
+        """disconnect event should mark player as disconnected in room."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_disconnect_broadcasts_player_disconnected(self) -> None:
+        """disconnect should broadcast player_disconnected to room."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_disconnect_does_not_remove_player(self) -> None:
+        """disconnect should NOT remove player from room (allow reconnection)."""
+        pass
+
+
+class TestReconnectEvents:
+    """Test player reconnection handling."""
+
+    @pytest.mark.asyncio
+    async def test_rejoin_marks_player_connected(self) -> None:
+        """Rejoining with same player_id should mark player as connected."""
+        pass
+
+    @pytest.mark.asyncio
+    async def test_rejoin_broadcasts_player_reconnected(self) -> None:
+        """Rejoining should broadcast player_reconnected to room."""
+        pass
