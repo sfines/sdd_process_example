@@ -77,7 +77,7 @@ describe('Responsive Layout Integration Tests', () => {
       );
 
       // Desktop roll history should be hidden (md:flex means hidden on mobile)
-      const mainContent = screen.getByRole('main');
+      screen.getByRole('main');
 
       // Roll history in main area should not be visible on mobile
       // The heading exists but is hidden by CSS
