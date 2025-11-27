@@ -50,7 +50,7 @@ development_status:
   2-5-roll-all-standard-dice-types: done
   2-7-roll-multiple-dice-in-a-single-roll: done
   2-10-handle-long-roll-histories-with-virtual-scrolling: done
-  2-11-mobile-responsive-user-interface: review
+  2-11-mobile-responsive-user-interface: done
   epic-2-retrospective: optional
 
   # Epic 3: Session Management & Presence
