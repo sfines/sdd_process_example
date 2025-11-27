@@ -1,338 +1,157 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<story_context>
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
   <metadata>
-    <story_id>2-11</story_id>
-    <story_title>Mobile Responsive User Interface</story_title>
-    <epic_id>2</epic_id>
-    <epic_title>Core Dice Rolling - D&D Mechanics</epic_title>
+    <epicId>2</epicId>
+    <storyId>11</storyId>
+    <title>Mobile Responsive User Interface</title>
     <status>drafted</status>
-    <created_date>2025-11-17T02:41:25.298Z</created_date>
-    <context_generated_at>2025-11-17T02:41:25.298Z</context_generated_at>
+    <generatedAt>2025-11-23</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-11-mobile-responsive-user-interface.md</sourceStoryPath>
   </metadata>
 
-  <story_summary>
-    Implements mobile-first responsive design for all screen sizes: 375px (small phone), 768px (tablet), 1200px+ (desktop). Features drawer navigation for mobile, responsive typography, and touch-friendly controls (44×44px minimum).
-  </story_summary>
+  <story>
+    <asA>User</asA>
+    <iWant>use the application effectively on my mobile phone</iWant>
+    <soThat>I can play from anywhere</soThat>
+    <tasks>
+      - Audit existing Tailwind responsive breakpoints (sm, md, lg)
+      - Test HomePage on mobile (320px, 375px, 414px widths)
+      - Test RoomView on mobile (vertical layout stacking)
+      - Optimize DiceInput for touch interaction (larger tap targets)
+      - Make PlayerList collapsible drawer on mobile
+      - Optimize RollHistory scrolling for mobile
+      - Test on iOS Safari and Android Chrome
+      - Add viewport meta tag for proper mobile rendering
+      - Test landscape orientation
+      - Write E2E tests with mobile viewport emulation
+      - Document responsive design patterns
+    </tasks>
+  </story>
 
-  <architectural_context>
-    <layer name="frontend">
-      <component id="header-responsive">
-        <description>Responsive app header with hamburger menu on mobile</description>
-        <responsibility>
-          - Desktop (≥1024px): Show logo, room code, player name in full width
-          - Tablet (768-1024px): Compact layout, all info visible
-          - Mobile (<768px): Hamburger menu icon, minimal info
-        </responsibility>
-        <file_path>frontend/src/components/Header.tsx (NEW)</file_path>
-        <breakpoints>
-          xs: 375px (min)
-          sm: 640px
-          md: 768px
-          lg: 1024px
-          xl: 1280px
-        </breakpoints>
-        <touch_targets>All clickable elements ≥44×44px on mobile</touch_targets>
-      </component>
+  <acceptanceCriteria>
+    1. HomePage renders correctly on mobile (320px-414px widths)
+    2. RoomView three-column layout stacks vertically on mobile
+    3. PlayerList collapses to drawer on mobile (tap to expand)
+    4. DiceInput has touch-friendly tap targets (44px minimum)
+    5. RollHistory scrolls smoothly on mobile with touch gestures
+    6. Room code copy button works on mobile
+    7. All text readable without zooming (minimum 16px font)
+    8. Viewport meta tag prevents unwanted zooming
+    9. Works on iOS Safari and Android Chrome
+    10. Landscape orientation usable (not blocked)
+    11. E2E tests with mobile viewport emulation pass
+    12. No horizontal scrolling on narrow viewports
+  </acceptanceCriteria>
 
-      <component id="navigation-drawer">
-        <description>Side drawer for mobile navigation and secondary content</description>
-        <responsibility>
-          - Slide in from left on hamburger click
-          - Contain: room code, player info, roll history (mobile)
-          - Overlay: semi-transparent backdrop
-          - Animation: smooth 200ms slide in/out
-        </responsibility>
-        <file_path>frontend/src/components/NavigationDrawer.tsx (NEW)</file_path>
-        <mobile_only>Display only on md breakpoint (&lt;768px)</mobile_only>
-      </component>
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture/adrs/007-styling-system.md</path>
+        <title>ADR-007: Styling System</title>
+        <section>Responsive Design</section>
+        <snippet>Tailwind CSS mobile-first approach. Breakpoints: sm 640px, md 768px, lg 1024px. Mobile is default, desktop adds complexity.</snippet>
+      </doc>
+      <doc>
+        <path>docs/uex/FIGMA_INTEGRATION_PLAN.md</path>
+        <title>Figma Integration Plan</title>
+        <section>Mobile Responsive Patterns</section>
+        <snippet>Mobile-first design. Three-column layout stacks vertically. PlayerList becomes drawer. Touch targets 44px minimum.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>frontend/src/pages/Home.tsx</path>
+        <kind>page</kind>
+        <symbol>Home</symbol>
+        <lines>N/A</lines>
+        <reason>Verify HomePage is mobile-responsive with proper spacing and touch targets.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/pages/RoomView.tsx</path>
+        <kind>page</kind>
+        <symbol>RoomView</symbol>
+        <lines>N/A</lines>
+        <reason>Verify three-column layout stacks vertically on mobile. Test drawer behavior for PlayerList.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/components/RollHistory.tsx</path>
+        <kind>component</kind>
+        <symbol>RollHistory</symbol>
+        <lines>1-95</lines>
+        <reason>Verify touch scrolling works smoothly. Check scroll area has proper mobile optimization.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/index.html</path>
+        <kind>config</kind>
+        <symbol>viewport meta tag</symbol>
+        <lines>N/A</lines>
+        <reason>Add viewport meta tag: &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="react" version="^18.2.0" />
+        <package name="tailwindcss" version="latest" />
+      </npm>
+      <devDependencies>
+        <package name="@playwright/test" version="^1.56.1" note="Mobile emulation in E2E tests" />
+      </devDependencies>
+    </dependencies>
+  </artifacts>
 
-      <component id="dice-input-responsive">
-        <description>Dice input form with responsive layout</description>
-        <responsibility>
-          - Mobile: Full width, stacked layout, 44px buttons/inputs
-          - Tablet: Horizontal layout, medium size
-          - Desktop: Standard layout
-        </responsibility>
-        <file_path>frontend/src/components/DiceInput.tsx (update)</file_path>
-        <font_sizes>16px on inputs (prevents iOS zoom)</font_sizes>
-      </component>
+  <constraints>
+    - Mobile-first design approach (desktop is enhancement)
+    - Minimum touch target size: 44px (Apple/Google guidelines)
+    - Minimum font size: 16px (prevents auto-zoom on iOS)
+    - No horizontal scrolling on any viewport width
+    - Must work on iOS Safari (WebKit) and Android Chrome
+    - Tailwind breakpoints: default (mobile), sm 640px, md 768px, lg 1024px
+    - Test widths: 320px (iPhone SE), 375px (iPhone 12), 414px (iPhone Pro Max)
+    - Landscape orientation must remain usable
+    - Viewport meta tag required for proper mobile rendering
+  </constraints>
 
-      <component id="room-view-responsive">
-        <description>Main layout with responsive flex structure</description>
-        <responsibility>
-          - Mobile: Single column (input below history in drawer)
-          - Tablet: Full width, stacked or side-by-side
-          - Desktop: Side-by-side (history right, input left)
-        </responsibility>
-        <file_path>frontend/src/pages/RoomView.tsx (update)</file_path>
-        <layout>
-          flex flex-col on mobile
-          md:flex-row on tablet/desktop
-        </layout>
-      </component>
+  <interfaces>
+    <interface>
+      <name>Tailwind Responsive Classes</name>
+      <kind>CSS Utilities</kind>
+      <signature>
+// Mobile-first approach
+className="block md:flex"      // block on mobile, flex on desktop
+className="w-full md:w-1/2"    // full width mobile, half on desktop
+className="text-base md:text-lg" // 16px mobile, 18px desktop
 
-      <component id="typography-responsive">
-        <description>Responsive text sizes and spacing</description>
-        <responsibility>
-          - Body text: 16px minimum (mobile), 18px+ on desktop
-          - Headings: Scale with device size
-          - Spacing: Use Tailwind gap and padding utilities
-        </responsibility>
-        <implementation>Tailwind classes like text-lg md:text-xl</implementation>
-      </component>
-    </layer>
+// Breakpoints
+sm: 640px   // Small tablets
+md: 768px   // Tablets
+lg: 1024px  // Desktops
+      </signature>
+      <path>Tailwind CSS utility classes</path>
+    </interface>
+    <interface>
+      <name>Viewport Meta Tag</name>
+      <kind>HTML Meta</kind>
+      <signature>
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0"&gt;
+      </signature>
+      <path>frontend/index.html</path>
+    </interface>
+  </interfaces>
 
-    <layer name="design_system">
-      <tailwind_config>
-        <breakpoints>
-          xs: 375px (custom, for smallest phones)
-          sm: 640px (default)
-          md: 768px (tablets)
-          lg: 1024px (small desktop)
-          xl: 1280px (desktop)
-        </breakpoints>
-        <touch_target_min>44px × 44px (iOS/Android standard)</touch_target_min>
-        <font_min_size>16px on inputs (prevents auto-zoom on iOS)</font_min_size>
-      </tailwind_config>
-    </layer>
-  </architectural_context>
-
-  <dependencies>
-    <technical>
-      <dependency type="framework">
-        <name>Tailwind CSS</name>
-        <purpose>Responsive design utility classes</purpose>
-        <already_in_use>Yes, from project setup</already_in_use>
-      </dependency>
-      <dependency type="extends">
-        <story>2-3 through 2-10 (All rolling and history features)</story>
-        <purpose>Make all existing features work on mobile</purpose>
-      </dependency>
-    </technical>
-
-    <story_dependencies>
-      <depends_on>
-        <story>2-3 through 2-10</story>
-        <reason>All functionality must work on mobile without changes</reason>
-      </depends_on>
-    </story_dependencies>
-  </dependencies>
-
-  <acceptance_criteria_breakdown>
-    <criterion id="1">
-      <text>Mobile (375px) layout optimized with hamburger menu</text>
-      <dev_task>Create responsive Header with hamburger icon on mobile</dev_task>
-      <test_approach>Component test at 375px viewport, verify hamburger visible, menu hidden</test_approach>
-    </criterion>
-    <criterion id="2">
-      <text>Hamburger menu opens drawer with full navigation</text>
-      <dev_task>Create NavigationDrawer component, toggle on hamburger click</dev_task>
-      <test_approach>E2E test: click hamburger, verify drawer slides in, click close, verifies slides out</test_approach>
-    </criterion>
-    <criterion id="3">
-      <text>Roll history visible in drawer on mobile, main area on tablet/desktop</text>
-      <dev_task>Conditional rendering: hidden on mobile, visible on md+</dev_task>
-      <test_approach>Component test: render at 3 sizes, verify visibility changes</test_approach>
-    </criterion>
-    <criterion id="4">
-      <text>All touch targets 44×44px minimum (buttons, inputs)</text>
-      <dev_task>Set min-height: 44px, min-width: 44px on all clickables</dev_task>
-      <test_approach>Unit test: measure all buttons/inputs, verify ≥44px</test_approach>
-    </criterion>
-    <criterion id="5">
-      <text>All text readable without zooming (16px minimum on mobile)</text>
-      <dev_task>Set font-size: 16px on inputs, 14px+ on labels/buttons</dev_task>
-      <test_approach>Manual test at 375px without zoom, verify readable</test_approach>
-    </criterion>
-    <criterion id="6">
-      <text>Tablet layout (768px) displays optimally</text>
-      <dev_task>Configure md: breakpoint styles</dev_task>
-      <test_approach>Component test at 768px, verify layout is optimal (not too cramped)</test_approach>
-    </criterion>
-    <criterion id="7">
-      <text>Desktop layout (1200px) uses full screen space</text>
-      <dev_task>Configure lg:, xl: breakpoint styles, side-by-side layout</dev_task>
-      <test_approach>Component test at 1200px, verify side-by-side layout</test_approach>
-    </criterion>
-    <criterion id="8">
-      <text>Scroll performance smooth on mobile (60fps)</text>
-      <dev_task>Virtual scrolling from Story 2-10 handles this</dev_task>
-      <test_approach>Performance test on mobile device (real or emulated)</test_approach>
-    </criterion>
-    <criterion id="9">
-      <text>Hamburger drawer animation smooth (200ms)</text>
-      <dev_task>CSS transitions or Framer Motion animation</dev_task>
-      <test_approach>E2E test: measure drawer open/close timing, verify smooth 60fps</test_approach>
-    </criterion>
-    <criterion id="10">
-      <text>E2E test covers mobile/tablet/desktop layouts</text>
-      <dev_task>Create E2E tests with 3 viewport sizes</dev_task>
-      <test_approach>E2E test: run same test at 375px, 768px, 1200px</test_approach>
-    </criterion>
-  </acceptance_criteria_breakdown>
-
-  <tech_decisions>
-    <decision id="MOBILE-001">
-      <title>Mobile-first design approach</title>
-      <implementation>Design for 375px first, enhance for larger screens with md:, lg: Tailwind classes</implementation>
-      <rationale>Ensures simplicity on mobile, graceful enhancement on desktop</rationale>
-    </decision>
-    <decision id="DRAWER-001">
-      <title>Use drawer navigation pattern for mobile</title>
-      <implementation>Hidden by default, slides in on hamburger click</implementation>
-      <rationale>Maximizes mobile screen space, standard pattern users expect</rationale>
-    </decision>
-    <decision id="BREAKPOINT-001">
-      <title>Add custom xs: 375px breakpoint</title>
-      <implementation>tailwind.config.js: extend theme with xs breakpoint</implementation>
-      <rationale>Ensures smallest phones (iPhone SE) are properly supported</rationale>
-    </decision>
-    <decision id="TOUCH-001">
-      <title>Enforce 44×44px minimum touch targets</title>
-      <implementation>All buttons, inputs: min-h-[44px] min-w-[44px]</implementation>
-      <rationale>iOS/Android accessibility standard, prevents accidental mis-taps</rationale>
-    </decision>
-  </tech_decisions>
-
-  <known_constraints>
-    <constraint id="PERF-001">
-      <description>Mobile must maintain 60fps even with 100+ rolls visible</description>
-      <implication>Virtual scrolling (Story 2-10) is essential</implication>
-    </constraint>
-    <constraint id="SPACE-001">
-      <description>375px mobile viewport is tight for all information</description>
-      <implication>Drawer for secondary content, hamburger menu for navigation, minimal margins</implication>
-    </constraint>
-    <constraint id="FONT-001">
-      <description>16px+ font on inputs prevents iOS auto-zoom</description>
-      <implication>Don't use font-size &lt;16px on text inputs</implication>
-    </constraint>
-  </known_constraints>
-
-  <environment_setup>
-    <tailwind_config_update>
-      module.exports = {
-        theme: {
-          extend: {
-            screens: {
-              xs: '375px',
-            }
-          }
-        }
-      }
-    </tailwind_config_update>
-
-    <frontend_changes>
-      - Add: frontend/src/components/Header.tsx (NEW)
-      - Add: frontend/src/components/NavigationDrawer.tsx (NEW)
-      - Update: frontend/src/pages/RoomView.tsx
-        - Use flex layout with responsive breakpoints
-      - Update: frontend/src/components/DiceInput.tsx
-        - Responsive padding and button sizes
-      - Update: frontend/src/components/RollHistory.tsx or use VirtualRollHistory
-        - Show/hide based on breakpoint
-      - Add: frontend/tailwind.config.js (update with xs breakpoint)
-      - Add: frontend/src/__tests__/responsive-layout.test.tsx (NEW)
-      - Add: frontend/e2e/responsive-layout.spec.ts (NEW)
-    </frontend_changes>
-
-    <no_backend_changes>Responsive design is frontend-only</no_backend_changes>
-  </environment_setup>
-
-  <team_notes>
-    <note type="mobile_first">
-      Start by designing for 375px mobile. Every additional breakpoint should enhance, not detract. Mobile should be the best possible experience, not a compromise.
-    </note>
-    <note type="ios">
-      Test on real iOS devices (iPhone SE, iPhone 14). iOS Safari has quirks (address bar hiding, viewport sizing) that don't show up in DevTools emulation.
-    </note>
-    <note type="drawer">
-      Drawer should animate smoothly. Use CSS transitions or Framer Motion. Overlay click should close drawer. Escape key should also close.
-    </note>
-    <note type="font_size">
-      16px minimum on form inputs is a hard requirement to prevent iOS auto-zoom. Don't go below 16px even if it feels spacious.
-    </note>
-    <note type="spacing">
-      On mobile, every pixel counts. But don't compromise accessibility. Touch targets must be 44×44px minimum. Design spacing accordingly (generous padding on inputs, tight margins on headers).
-    </note>
-  </team_notes>
-
-  <testing_strategy>
-    <unit_tests>
-      <test_file>frontend/src/components/__tests__/Header.test.tsx (NEW)</test_file>
-      <test_case>test_header_mobile_shows_hamburger_at_375px</test_case>
-      <test_case>test_header_desktop_shows_full_info_at_1200px</test_case>
-
-      <test_file>frontend/src/components/__tests__/NavigationDrawer.test.tsx (NEW)</test_file>
-      <test_case>test_drawer_hidden_by_default</test_case>
-      <test_case>test_drawer_opens_on_hamburger_click</test_case>
-      <test_case>test_drawer_closes_on_close_button_click</test_case>
-      <test_case>test_drawer_closes_on_overlay_click</test_case>
-    </unit_tests>
-
-    <responsive_tests>
-      <test_file>frontend/src/__tests__/responsive-layout.test.tsx (NEW)</test_file>
-      <test_case>test_layout_responsive_at_375px_mobile</test_case>
-      <test_case>test_layout_responsive_at_768px_tablet</test_case>
-      <test_case>test_layout_responsive_at_1200px_desktop</test_case>
-      <test_case>test_touch_target_sizes_44px_minimum</test_case>
-    </responsive_tests>
-
-    <e2e_tests>
-      <test_file>frontend/e2e/responsive-layout.spec.ts (NEW)</test_file>
-      <test_case>test_mobile_375px_hamburger_drawer_navigation</test_case>
-      <test_case>test_tablet_768px_full_layout</test_case>
-      <test_case>test_desktop_1200px_side_by_side_layout</test_case>
-      <test_case>test_roll_functionality_on_all_screen_sizes</test_case>
-      <test_case>test_drawer_animation_smooth_no_jank</test_case>
-    </e2e_tests>
-
-    <manual_tests>
-      <test_procedure>Real device testing on iOS and Android</test_procedure>
-      <devices>iPhone SE (375px), iPad (768px), desktop browser</devices>
-      <checklist>
-        - [ ] All buttons easily tappable (44×44px)
-        - [ ] Text readable without zoom
-        - [ ] Drawer opens/closes smoothly
-        - [ ] Rolls visible and scrollable
-        - [ ] Keyboard appears/disappears correctly
-        - [ ] No address bar jumping (iOS Safari)
-      </checklist>
-    </manual_tests>
-  </testing_strategy>
-
-  <success_metrics>
-    <metric name="Mobile Performance">
-      <target>60fps scroll on mobile device with 100+ rolls</target>
-      <measurement>Mobile device profiling or Lighthouse mobile score ≥90</measurement>
-    </metric>
-    <metric name="Touch Target Size">
-      <target>100% of buttons/inputs ≥44×44px</target>
-      <measurement>Automated test measuring dimensions</measurement>
-    </metric>
-    <metric name="Font Readability">
-      <target>All text readable at 375px without zoom</target>
-      <measurement>Manual visual inspection</measurement>
-    </metric>
-    <metric name="Viewport Coverage">
-      <target>All screen sizes 375px-2560px tested and working</target>
-      <measurement>E2E tests at breakpoints</measurement>
-    </metric>
-  </success_metrics>
-
-  <open_questions>
-    <question id="Q1">
-      <text>Should we use Framer Motion for drawer animation or just CSS transitions?</text>
-      <answer>CSS transitions are simpler and sufficient. Use Framer Motion only if animations are complex (spring, gesture-based).</answer>
-    </question>
-    <question id="Q2">
-      <text>Should roll history be in the drawer or replace main content on mobile?</text>
-      <answer>In drawer. Main area shows DiceInput to encourage rolling. History accessible via hamburger.</answer>
-    </question>
-    <question id="Q3">
-      <text>What's the minimum supported screen width?</text>
-      <answer>375px (iPhone SE). Below that is not a supported target (very few users).</answer>
-    </question>
-  </open_questions>
-
-</story_context>
+  <tests>
+    <standards>E2E tests with Playwright mobile emulation. Test on real devices (iOS Safari, Android Chrome) manually.</standards>
+    <locations>
+      - frontend/e2e/mobile-responsive.spec.ts (NEW)
+      - Manual testing on real devices
+    </locations>
+    <ideas>
+      <test ac="1" desc="E2E test: HomePage renders on 320px, 375px, 414px widths">test_homepage_mobile_widths</test>
+      <test ac="2" desc="E2E test: RoomView layout stacks vertically on mobile">test_roomview_mobile_layout</test>
+      <test ac="3" desc="E2E test: PlayerList drawer collapses/expands on mobile">test_player_list_drawer_mobile</test>
+      <test ac="4,5" desc="E2E test: Touch targets are 44px+, scrolling works">test_touch_interaction</test>
+      <test ac="9" desc="Manual test: iOS Safari and Android Chrome functionality">test_mobile_browsers (manual)</test>
+      <test ac="10" desc="E2E test: Landscape orientation usable">test_landscape_mode</test>
+      <test ac="12" desc="E2E test: No horizontal scroll at any width">test_no_horizontal_scroll</test>
+    </ideas>
+  </tests>
+</story-context>

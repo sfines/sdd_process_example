@@ -27,11 +27,12 @@
     "io.github.github/github-mcp-server": {
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "${input:Authorization}"
-      },
       "gallery": "https://api.mcp.github.com",
       "version": "0.21.1"
+    },
+    "figma": {
+      "url": "https://mcp.figma.com/mcp",
+      "type": "http"
     }
   },
   "inputs": [
@@ -39,6 +40,12 @@
       "id": "Authorization",
       "type": "promptString",
       "description": "Authentication token (PAT or App token)",
+      "password": true
+    },
+    {
+      "id": "FigmaToken",
+      "type": "promptString",
+      "description": "Figma Personal Access Token",
       "password": true
     }
   ]

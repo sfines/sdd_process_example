@@ -5,11 +5,27 @@
  */
 
 import { create } from 'zustand';
+import { socket } from '../services/socket';
 
 interface Player {
   player_id: string;
   name: string;
   connected: boolean;
+}
+
+interface DiceResult {
+  roll_id: string;
+  player_id: string;
+  player_name: string;
+  formula: string;
+  individual_results: number[];
+  modifier: number;
+  total: number;
+  timestamp: string;
+  dc_pass?: boolean | null;
+  hidden?: boolean;
+  revealed?: boolean;
+  advantage?: 'normal' | 'advantage' | 'disadvantage';
 }
 
 interface SocketState {
@@ -19,8 +35,18 @@ interface SocketState {
   roomCode: string | null;
   roomMode: 'Open' | 'DM-Led' | null;
   creatorPlayerId: string | null;
+  currentPlayerId: string | null;
+  currentPlayerName: string | null;
   players: Player[];
-  rollHistory: unknown[];
+  rollHistory: DiceResult[];
+  shouldAutoScroll: boolean;
+  roomState?: {
+    room_code: string;
+    mode: string;
+    creator_player_id: string;
+    players: Player[];
+    roll_history: DiceResult[];
+  };
   setConnected: (connected: boolean) => void;
   setConnectionMessage: (message: string | null) => void;
   setConnectionError: (error: string | null) => void;
@@ -29,9 +55,16 @@ interface SocketState {
     mode: string;
     creator_player_id: string;
     players: Player[];
-    roll_history: unknown[];
+    roll_history: DiceResult[];
   }) => void;
+  setCurrentPlayerId: (playerId: string) => void;
+  setCurrentPlayerName: (name: string) => void;
   createRoom: (playerName: string) => void;
+  joinRoom: (roomCode: string, playerName: string) => void;
+  rollDice: (formula: string, playerName: string, roomCode: string) => void;
+  addRollToHistory: (roll: DiceResult) => void;
+  setRollHistory: (rolls: DiceResult[]) => void;
+  setShouldAutoScroll: (value: boolean) => void;
   reset: () => void;
 }
 
@@ -42,8 +75,11 @@ const initialState = {
   roomCode: null,
   roomMode: null,
   creatorPlayerId: null,
+  currentPlayerId: null,
+  currentPlayerName: null,
   players: [],
   rollHistory: [],
+  shouldAutoScroll: true,
 };
 
 export const useSocketStore = create<SocketState>((set) => ({
@@ -57,27 +93,68 @@ export const useSocketStore = create<SocketState>((set) => ({
   setConnectionError: (error: string | null) => set({ connectionError: error }),
 
   setRoomState: (roomState) =>
-    set({
+    set((state) => ({
+      ...state, // CRITICAL: Spread existing state first to preserve everything
       roomCode: roomState.room_code,
       roomMode: roomState.mode as 'Open' | 'DM-Led',
       creatorPlayerId: roomState.creator_player_id,
       players: roomState.players,
-      rollHistory: roomState.roll_history,
-    }),
+      // CRITICAL: Preserve existing rollHistory if it's longer than incoming
+      // This prevents older roomState from overwriting rolls added via roll_result events
+      rollHistory:
+        roomState.roll_history.length > state.rollHistory.length
+          ? roomState.roll_history
+          : state.rollHistory,
+      roomState: roomState,
+    })),
 
+  setCurrentPlayerId: (playerId: string) => set({ currentPlayerId: playerId }),
+  setCurrentPlayerName: (name: string) => set({ currentPlayerName: name }),
   createRoom: (playerName: string) => {
-    // This will be called by the component
-    // The actual socket emission happens in useSocket hook
-    set({ connectionError: null });
-    // Hook will listen for this action
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('socket:createRoom', { detail: { playerName } }),
-      );
-    }
+    // CRITICAL: Set player name FIRST before any async operations
+    set({
+      connectionError: null,
+      currentPlayerName: playerName,
+    });
+    // Emit socket event
+    socket.emit('create_room', { player_name: playerName });
+  },
+
+  joinRoom: (roomCode: string, playerName: string) => {
+    // CRITICAL: Set player name FIRST before any async operations
+    set({
+      connectionError: null,
+      currentPlayerName: playerName,
+    });
+    // Emit socket event
+    socket.emit('join_room', {
+      room_code: roomCode,
+      player_name: playerName,
+    });
+  },
+
+  rollDice: (formula: string, playerName: string, roomCode: string) => {
+    // Emit roll_dice event to backend
+    socket.emit('roll_dice', {
+      formula,
+      player_name: playerName,
+      room_code: roomCode,
+    });
+  },
+
+  addRollToHistory: (roll: DiceResult) => {
+    set((state) => ({
+      rollHistory: [...state.rollHistory, roll],
+    }));
+  },
+
+  setRollHistory: (rolls: DiceResult[]) => {
+    set({ rollHistory: rolls, shouldAutoScroll: true });
+  },
+
+  setShouldAutoScroll: (value: boolean) => {
+    set({ shouldAutoScroll: value });
   },
 
   reset: () => set(initialState),
 }));
-
-export default useSocketStore;

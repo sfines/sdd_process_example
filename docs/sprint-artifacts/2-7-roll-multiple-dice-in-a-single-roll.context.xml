@@ -1,453 +1,111 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<story_context>
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
   <metadata>
-    <story_id>2-7</story_id>
-    <story_title>Roll Multiple Dice in a Single Roll</story_title>
-    <epic_id>2</epic_id>
-    <epic_title>Core Dice Rolling - D&D Mechanics</epic_title>
-    <status>drafted</status>
-    <created_date>2025-11-17T02:41:25.298Z</created_date>
-    <context_generated_at>2025-11-17T02:41:25.298Z</context_generated_at>
+    <epicId>2</epicId>
+    <storyId>7</storyId>
+    <title>Roll Multiple Dice in a Single Roll</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-23</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-7-roll-multiple-dice-in-a-single-roll.md</sourceStoryPath>
   </metadata>
 
-  <story_summary>
-    Extends basic rolling to support multiple dice in a single roll notation (e.g., 3d6, 4d8+2). This is essential for damage rolls and other complex mechanics. Supports modifiers (additions) to the total.
-  </story_summary>
+  <story>
+    <asA>User</asA>
+    <iWant>roll multiple dice of the same type in one roll (e.g., 3d6, 8d10, 20d6)</iWant>
+    <soThat>I can efficiently roll damage or ability scores</soThat>
+    <tasks>
+      - Backend dice parser already supports multiple dice (COMPLETE - via Story 2.5)
+      - AdvancedDiceInput quantity control already implemented (Story 2.5)
+      - Verify RollHistory displays all individual die results clearly
+      - Add visual grouping for large quantities (e.g., 20d6 fireball)
+      - Optimize display for 10+ individual results (scrolling or collapse)
+      - Write E2E test for 3d6 roll (damage)
+      - Write E2E test for 20d6 roll (fireball damage with many dice)
+      - Write E2E test verifying all individual results appear in history
+    </tasks>
+  </story>
 
-  <architectural_context>
-    <layer name="backend">
-      <component id="dice-engine-multi">
-        <description>Extends DiceService to handle multiple dice and modifiers</description>
-        <responsibility>
-          - Parse notation: NdN+M format (e.g., 3d6, 4d8+2, 2d10-3)
-          - Validate: N count (1-100), die size (4,6,8,10,12,20,100), modifier (-999 to +999)
-          - Roll each die individually
-          - Apply modifier to total
-          - Return individual results and final total
-        </responsibility>
-        <notation_support>
-          2d6 = roll 2 six-sided dice
-          3d6+2 = roll 3 six-sided dice, add 2 to total
-          4d8-1 = roll 4 eight-sided dice, subtract 1 from total
-          1d20 = single die (already supported)
-          NdN = N dice of size N
-          NdM±K = N dice of size M, add/subtract modifier K
-        </notation_support>
-        <algorithm>
-          Input: "3d6+2"
-          1. Parse: count=3, size=6, modifier=+2
-          2. Roll 3 times: [4, 3, 5]
-          3. Sum rolls: 4+3+5 = 12
-          4. Apply modifier: 12+2 = 14
-          5. Return: {
-               notation: "3d6+2",
-               individual_rolls: [4, 3, 5],
-               subtotal: 12,
-               modifier: +2,
-               total: 14
-             }
-        </algorithm>
-      </component>
+  <acceptanceCriteria>
+    1. Backend correctly rolls multiple dice (ALREADY DONE via Story 2.5)
+    2. User can specify quantity 1-100 in AdvancedDiceInput (ALREADY DONE)
+    3. Roll history displays all individual die results clearly
+    4. Large quantities (10+) display with visual grouping or collapse
+    5. Formula shows quantity prominently (e.g., "3d6", "20d6")
+    6. Total is sum of all individual results
+    7. E2E test validates 3d6 roll shows 3 individual results
+    8. E2E test validates 20d6 roll shows 20 individual results
+    9. Performance acceptable even with 100d6 (extreme case)
+  </acceptanceCriteria>
 
-      <component id="notation-parser">
-        <description>Robust dice notation parser</description>
-        <responsibility>
-          - Parse XdY or XdY+Z or XdY-Z notation
-          - Extract: count, size, modifier
-          - Validate each part
-          - Return structured result or error
-        </responsibility>
-        <file_path>backend/src/services/DiceNotationParser.ts (NEW)</file_path>
-        <regex>^(\d+)d(\d+)([\+\-]\d+)?$</regex>
-        <examples_valid>
-          1d20, 3d6, 2d10+5, 4d8-2, 100d100
-        </examples_valid>
-        <examples_invalid>
-          d20 (no count), 3d (no size), 3d6d2 (malformed), 3.5d6 (float count)
-        </examples_invalid>
-      </component>
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Core Dice Rolling</title>
+        <section>Multiple Dice Notation</section>
+        <snippet>Backend parser supports NdM notation. Validates up to 100 dice per roll. Returns all individual results as array.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>frontend/src/components/RollHistory.tsx</path>
+        <kind>component</kind>
+        <symbol>RollHistory</symbol>
+        <lines>1-95</lines>
+        <reason>May need UI optimization for displaying 10+ individual results (visual grouping or collapse/expand).</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/components/AdvancedDiceInput.tsx</path>
+        <kind>component</kind>
+        <symbol>AdvancedDiceInput</symbol>
+        <lines>N/A</lines>
+        <reason>Quantity input already implemented in Story 2.5. Verify it works for multiple dice rolls.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="react" version="^18.2.0" />
+        <package name="socket.io-client" version="^4.8.1" />
+      </npm>
+    </dependencies>
+  </artifacts>
 
-      <component id="roll-history-modifiers">
-        <description>Store dice breakdown with modifiers</description>
-        <responsibility>
-          - Store notation, individual rolls, subtotal, modifier, total
-          - Support queries by notation or die size
-        </responsibility>
-        <database_change>
-          Update rolls table:
-          - modifier_total: integer (e.g., +2)
-          - roll_subtotal: integer (e.g., 12, before modifier)
-          - notation field already stores "3d6+2"
-        </database_change>
-      </component>
-    </layer>
+  <constraints>
+    - NO backend changes needed - multiple dice already supported
+    - Frontend verification story ensuring UI handles multiple dice well
+    - Must display ALL individual die results (no hiding)
+    - Large quantities (10+) should have visual grouping for readability
+    - Performance must remain acceptable with 100d6 rolls
+    - Formula display must be clear: "3d6+2" = 3 dice, size 6, modifier +2
+  </constraints>
 
-    <layer name="frontend">
-      <component id="dice-input-advanced">
-        <description>Enhanced input accepting notation with modifiers</description>
-        <responsibility>
-          - Accept notation: "3d6", "3d6+2", "4d8-1"
-          - Validate notation in real-time
-          - Show validation error if invalid
-          - Support both simple (1d20) and advanced (3d6+2) notation
-        </responsibility>
-        <file_path>frontend/src/components/DiceInput.tsx (update)</file_path>
-        <validation_rules>
-          - Pattern: /^\d+d\d+([\+\-]\d+)?$/
-          - Die count: 1-100
-          - Die size: 4, 6, 8, 10, 12, 20, or 100
-          - Modifier: -999 to +999
-        </validation_rules>
-        <error_messages>
-          - "Invalid notation. Use NdN or NdN±M (e.g., 3d6+2)"
-          - "Die count must be 1-100"
-          - "Die size must be 4, 6, 8, 10, 12, 20, or 100"
-          - "Modifier must be between -999 and +999"
-        </error_messages>
-      </component>
+  <interfaces>
+    <interface>
+      <name>RollResult with Multiple Dice</name>
+      <kind>Data Model</kind>
+      <signature>
+{
+  roll_id: "uuid",
+  formula: "3d6+2",
+  individual_results: [4, 5, 6],  // all 3 results
+  modifier: 2,
+  total: 17  // (4+5+6) + 2
+}
+      </signature>
+      <path>frontend/src/store/socketStore.ts</path>
+    </interface>
+  </interfaces>
 
-      <component id="roll-result-breakdown">
-        <description>Display multi-die rolls with clear breakdown</description>
-        <responsibility>
-          - Show notation and all individual dice
-          - Show subtotal (sum of individual rolls)
-          - Show modifier clearly
-          - Show final total prominently
-        </responsibility>
-        <file_path>frontend/src/components/RollResult.tsx (update)</file_path>
-        <display_format>
-          Player: 3d6+2
-          Rolls: [4, 3, 5] = 12
-          Modifier: +2
-          Total: 14
-          
-          Or for large rolls (10+ dice):
-          Player: 10d6+5
-          Rolls: 10 dice (4, 2, 5, 3, 6, 1, 4, 5, 3, 2) = 35
-          Modifier: +5
-          Total: 40
-        </display_format>
-        <optimization>
-          For rolls with 10+ dice, don't list individual rolls inline. Use collapsible or summary instead.
-        </optimization>
-      </component>
-
-      <component id="quick-roll-presets">
-        <description>Common roll presets for fast access</description>
-        <responsibility>
-          - Buttons: "Damage (3d6)", "Healing (2d4+2)", etc.
-          - Clicking sets DiceInput value
-          - Customizable by user (future Story 6)
-        </responsibility>
-        <file_path>frontend/src/components/RollPresets.tsx (NEW)</file_path>
-        <default_presets>
-          - 1d20 (Standard check)
-          - 1d100 (Percentile)
-          - 2d6 (Common damage)
-          - 3d6 (Common damage)
-          - 1d4+1 (Small healing)
-          - 2d4+2 (Medium healing)
-        </default_presets>
-        <note>This component may be deferred to Story 6 (Presets). Can use simple text input for now.</note>
-      </component>
-    </layer>
-
-    <layer name="data_model">
-      <entity name="Roll" update="true">
-        <new_field name="diceCount">
-          <type>integer</type>
-          <example>3 in "3d6"</example>
-        </new_field>
-        <new_field name="dieSize">
-          <type>integer</type>
-          <example>6 in "3d6"</example>
-        </new_field>
-        <new_field name="modifierTotal">
-          <type>integer</type>
-          <example>2 in "3d6+2", or -1 in "2d10-1"</example>
-        </new_field>
-        <new_field name="rollSubtotal">
-          <type>integer</type>
-          <description>Sum of individual rolls before modifier</description>
-          <example>12 in "3d6+2" roll of [4,3,5]</example>
-        </new_field>
-        <unchanged_field name="notation">
-          <type>string</type>
-          <description>Still stores full notation like "3d6+2"</description>
-        </unchanged_field>
-        <unchanged_field name="individualRolls">
-          <type>number[]</type>
-          <description>Array of each individual die result</description>
-        </unchanged_field>
-        <unchanged_field name="total">
-          <type>integer</type>
-          <description>Final total including modifier</description>
-        </unchanged_field>
-      </entity>
-    </layer>
-  </architectural_context>
-
-  <dependencies>
-    <technical>
-      <dependency type="extends">
-        <story>2-3, 2-4, 2-5</story>
-        <extension>Consolidates all rolling mechanics into unified notation system</extension>
-      </dependency>
-      <dependency type="reuse">
-        <component>DiceService.roll()</component>
-        <extension>Update to support count parameter and modifier</extension>
-      </dependency>
-    </technical>
-
-    <story_dependencies>
-      <depends_on>
-        <story>2-3, 2-4 (Basic rolling and dice types)</story>
-        <reason>Foundation for multiple dice rolling</reason>
-      </depends_on>
-      <depends_on>
-        <story>2-5 (Advantage/Disadvantage)</story>
-        <reason>Should work together (e.g., "2d20 adv" still valid)</reason>
-      </depends_on>
-    </story_dependencies>
-
-    <story_enables>
-      <enables>
-        <story>2-10 (Virtual Scrolling)</story>
-        <reason>Complex rolls have longer history entries</reason>
-      </enables>
-      <enables>
-        <story>2-11 (Mobile Responsive)</story>
-        <reason>Need space for notation with modifiers</reason>
-      </enables>
-      <enables>
-        <story>6 (Presets)</story>
-        <reason>Users will want to save "3d6+2" as a preset</reason>
-      </enables>
-    </story_enables>
-  </dependencies>
-
-  <acceptance_criteria_breakdown>
-    <criterion id="1">
-      <text>User can input notation like "3d6" and roll multiple dice</text>
-      <dev_task>Update DiceInput to accept multi-die notation</dev_task>
-      <test_approach>Component test: input "3d6", verify submit passes correct notation</test_approach>
-    </criterion>
-    <criterion id="2">
-      <text>Roll displays all individual results (e.g., [4, 3, 5])</text>
-      <dev_task>Update RollResult to list all individual rolls</dev_task>
-      <test_approach>Component test: pass 3d6 roll, verify 3 numbers displayed</test_approach>
-    </criterion>
-    <criterion id="3">
-      <text>Roll displays subtotal (sum before modifier) and modifier separately</text>
-      <dev_task>Update RollResult to show breakdown: subtotal, modifier, total</dev_task>
-      <test_approach>Component test: pass 3d6+2 roll, verify "12 + 2 = 14"</test_approach>
-    </criterion>
-    <criterion id="4">
-      <text>Modifiers (+/- numbers) are applied correctly to total</text>
-      <dev_task>Update DiceService to parse and apply modifier</dev_task>
-      <test_approach>Unit test: roll 3d6+2, verify total is subtotal + 2</test_approach>
-    </criterion>
-    <criterion id="5">
-      <text>Invalid notation (e.g., "3d", "d20") shows error message</text>
-      <dev_task>Implement notation validator, show error on frontend</dev_task>
-      <test_approach>Component test: input invalid notation, verify error appears</test_approach>
-    </criterion>
-    <criterion id="6">
-      <text>Die count (N) validated as 1-100</text>
-      <dev_task>Add validation to parser: count between 1 and 100</dev_task>
-      <test_approach>Unit test: "0d6" and "101d6" rejected, "1d6" and "100d6" accepted</test_approach>
-    </criterion>
-    <criterion id="7">
-      <text>Modifier value validated as -999 to +999</text>
-      <dev_task>Add validation to parser: modifier in range</dev_task>
-      <test_approach>Unit test: "1d6+1000" rejected, "1d6+999" accepted</test_approach>
-    </criterion>
-    <criterion id="8">
-      <text>Multiple dice rolls broadcast correctly to room</text>
-      <dev_task>Extend Socket.io to include all roll fields (count, subtotal, modifier)</dev_task>
-      <test_approach>E2E test: Player A rolls "3d6+2", Player B sees breakdown</test_approach>
-    </criterion>
-    <criterion id="9">
-      <text>Multiple dice rolls persist in database with full breakdown</text>
-      <dev_task>Update DB schema and save logic</dev_task>
-      <test_approach>E2E test: roll "3d6+2", refresh, verify fields intact</test_approach>
-    </criterion>
-    <criterion id="10">
-      <text>Large rolls (10+ dice) display without UI overflow or lag</text>
-      <dev_task>Implement collapsible or summary display for 10+ dice</dev_task>
-      <test_approach>Component test: pass 50d6, verify renders without overflow or lag (&lt;100ms)</test_approach>
-    </criterion>
-  </acceptance_criteria_breakdown>
-
-  <tech_decisions>
-    <decision id="NOTATION-001">
-      <title>Support XdY±Z notation (standard tabletop format)</title>
-      <implementation>Regex parser /^\d+d\d+([\+\-]\d+)?$/</implementation>
-      <rationale>Matches existing tabletop notation. Users expect this from other tools.</rationale>
-    </decision>
-    <decision id="MODIFIER-001">
-      <title>Single modifier only per roll, no complex expressions</title>
-      <implementation>Allow "3d6+2", not "3d6+2d4" or "3d6*2"</implementation>
-      <rationale>Simplifies parsing. Complex rolls can be handled in future if needed.</rationale>
-    </decision>
-    <decision id="VALIDATION-001">
-      <title>Validate die count (1-100) to prevent DoS</title>
-      <implementation>Reject N if N < 1 or N > 100</implementation>
-      <rationale>Prevents malicious "1000000d20" from bogging down server or frontend</rationale>
-    </decision>
-    <decision id="DISPLAY-001">
-      <title>Show full breakdown for multi-dice rolls</title>
-      <implementation>Display: rolls, subtotal, modifier, total (all visible)</implementation>
-      <rationale>Transparency. Players need to verify results.</rationale>
-    </decision>
-  </tech_decisions>
-
-  <known_constraints>
-    <constraint id="PERF-001">
-      <description>Parsing and rolling 100d100 should complete in &lt;50ms</description>
-      <implication>Use efficient algorithm (no nested loops if possible)</implication>
-    </constraint>
-    <constraint id="UI-001">
-      <description>Display of 100+ individual die results must not freeze UI</description>
-      <implication>Use summary or collapsible for large roll results. Virtual rendering if needed.</implication>
-    </constraint>
-    <constraint id="COMPAT-001">
-      <description>Must maintain backward compatibility with Stories 2-3 to 2-5</description>
-      <implication>All previous notation still works. Single die rolls unaffected.</implication>
-    </constraint>
-  </known_constraints>
-
-  <environment_setup>
-    <backend_changes>
-      - Add: backend/src/services/DiceNotationParser.ts (NEW)
-        - Function: parseNotation(notation: string) → { count, size, modifier }
-        - Validate each part
-        - Throw error for invalid notation
-      - Update: backend/src/services/DiceService.ts
-        - Update roll() to accept count parameter
-        - Apply modifier to total
-      - Update: backend/src/models/Roll.ts
-        - Add diceCount, dieSize, modifierTotal, rollSubtotal fields
-      - Database migration:
-        - Add columns: modifier_total, roll_subtotal
-    </backend_changes>
-
-    <frontend_changes>
-      - Update: frontend/src/components/DiceInput.tsx
-        - Accept multi-die notation (e.g., "3d6+2")
-        - Real-time validation
-        - Error message display
-      - Update: frontend/src/components/RollResult.tsx
-        - Display breakdown: individual rolls, subtotal, modifier, total
-        - Handle 10+ dice with summary/collapsible
-      - Add: frontend/src/components/RollPresets.tsx (NEW, optional)
-      - Update: frontend/src/hooks/useRollStore.ts
-        - No state changes needed, notation is just a string
-      - Add: frontend/src/__tests__/multi-dice-rolling.test.tsx (NEW)
-    </frontend_changes>
-
-    <database_migration>
-      ALTER TABLE rolls 
-      ADD COLUMN modifier_total INTEGER DEFAULT 0,
-      ADD COLUMN roll_subtotal INTEGER;
-      
-      UPDATE rolls 
-      SET roll_subtotal = total, modifier_total = 0 
-      WHERE roll_subtotal IS NULL;
-      
-      ALTER TABLE rolls ALTER COLUMN roll_subtotal SET NOT NULL;
-    </database_migration>
-  </environment_setup>
-
-  <team_notes>
-    <note type="parser">
-      Build DiceNotationParser as a pure, testable function. Test with extensive examples and edge cases. This is a critical component.
-    </note>
-    <note type="large_rolls">
-      For 10+ dice, don't display each individual result inline. Use a collapsible section or "Rolls: 10 dice, sum: 37" format to keep history readable.
-    </note>
-    <note type="modifiers">
-      Keep modifiers simple (single +/- value). Complex calculations like "best 2 of 3d6" can be added later if needed.
-    </note>
-    <note type="backward_compat">
-      All existing rolls from Stories 2-3 to 2-5 should still work. "1d20" is still valid, and "1d20 adv" should still work. Test backward compatibility.
-    </note>
-    <note type="performance">
-      When rolling 100d100, generating and storing 100 individual results is expensive. Consider limiting stored results to top N for very large rolls (optional optimization).
-    </note>
-  </team_notes>
-
-  <testing_strategy>
-    <unit_tests>
-      <test_file>backend/tests/DiceNotationParser.test.ts (NEW)</test_file>
-      <test_case>test_parser_accepts_1d20</test_case>
-      <test_case>test_parser_accepts_3d6</test_case>
-      <test_case>test_parser_accepts_3d6_plus_2</test_case>
-      <test_case>test_parser_accepts_4d8_minus_1</test_case>
-      <test_case>test_parser_rejects_malformed_notation</test_case>
-      <test_case>test_parser_validates_count_1_to_100</test_case>
-      <test_case>test_parser_validates_modifier_minus_999_to_plus_999</test_case>
-
-      <test_file>backend/tests/DiceService.test.ts (update)</test_file>
-      <test_case>test_dice_service_rolls_3d6_correctly</test_case>
-      <test_case>test_dice_service_applies_modifier_correctly</test_case>
-      <test_case>test_dice_service_returns_all_individual_results</test_case>
-
-      <test_file>frontend/src/components/__tests__/DiceInput.test.tsx (update)</test_file>
-      <test_case>test_dice_input_accepts_multi_die_notation</test_case>
-      <test_case>test_dice_input_validates_notation_in_real_time</test_case>
-      <test_case>test_dice_input_shows_error_for_invalid_notation</test_case>
-    </unit_tests>
-
-    <integration_tests>
-      <test_file>frontend/src/__tests__/multi-dice-rolling.integration.test.tsx (NEW)</test_file>
-      <test_case>test_full_workflow_3d6_plus_2</test_case>
-      <test_case>test_roll_history_shows_breakdown</test_case>
-      <test_case>test_multiple_rolls_with_different_notations</test_case>
-    </integration_tests>
-
-    <e2e_tests>
-      <test_file>frontend/e2e/multi-dice.spec.ts (NEW)</test_file>
-      <test_case>test_player_a_rolls_3d6_plus_2_player_b_sees_breakdown</test_case>
-      <test_case>test_roll_with_negative_modifier_3d6_minus_1</test_case>
-      <test_case>test_large_roll_100d100_doesnt_freeze_ui</test_case>
-      <test_case>test_invalid_notation_shows_error_message</test_case>
-      <test_case>test_multi_dice_roll_persists_after_refresh</test_case>
-    </e2e_tests>
-  </testing_strategy>
-
-  <success_metrics>
-    <metric name="Parser Correctness">
-      <target>100% of valid D&D notations parse correctly, 100% of invalid notations rejected</target>
-      <measurement>Automated parser test suite</measurement>
-    </metric>
-    <metric name="Performance">
-      <target>100d100 roll parses and displays in &lt;100ms</target>
-      <measurement>Performance timing in E2E tests</measurement>
-    </metric>
-    <metric name="Code Coverage">
-      <target>&gt;90% for DiceNotationParser and multi-dice logic</target>
-      <measurement>Jest coverage report</measurement>
-    </metric>
-    <metric name="Backward Compatibility">
-      <target>All Story 2-3 to 2-5 notation still works</target>
-      <measurement>E2E tests comparing old and new notation</measurement>
-    </metric>
-  </success_metrics>
-
-  <open_questions>
-    <question id="Q1">
-      <text>Should we support "best 2 of 3d6" notation (keep-highest/keep-lowest)?</text>
-      <answer>Not in this story. Keep it simple. Can add in future if requested.</answer>
-    </question>
-    <question id="Q2">
-      <text>What about complex expressions like "3d6 + 2d4"?</text>
-      <answer>Not supported. Use single NdN±M notation. Can be extended later if needed.</answer>
-    </question>
-    <question id="Q3">
-      <text>Should advantage/disadvantage work with multi-dice rolls like "2d6 adv"?</text>
-      <answer>No. Advantage/disadvantage only for d20 per D&D rules. Reject "2d6 adv".</answer>
-    </question>
-  </open_questions>
-
-</story_context>
+  <tests>
+    <standards>E2E tests for multiple dice quantities. Verify all individual results display correctly.</standards>
+    <locations>
+      - frontend/e2e/multiple-dice.spec.ts (NEW)
+    </locations>
+    <ideas>
+      <test ac="7" desc="E2E test: Roll 3d6, verify 3 individual results shown">test_3d6_roll</test>
+      <test ac="8" desc="E2E test: Roll 20d6, verify all 20 results shown">test_20d6_fireball</test>
+      <test ac="9" desc="E2E test: Roll 100d6, verify performance acceptable">test_100d6_performance</test>
+      <test ac="3,4" desc="Visual test: 10+ dice display with visual grouping">test_large_quantity_display (manual)</test>
+    </ideas>
+  </tests>
+</story-context>

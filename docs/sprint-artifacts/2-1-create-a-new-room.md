@@ -1,6 +1,7 @@
 # Story 2.1: Create a New Room
 
-Status: ready-for-dev
+Status: complete
+Completed: 2025-11-23
 
 ---
 

@@ -1,0 +1,239 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>4</storyId>
+    <title>Apply Figma Design to Core Room Experience</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-23</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-4-apply-figma-design-to-core-room-experience.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>experience a polished, professional UI when creating rooms, joining rooms, and rolling dice</iWant>
+    <soThat>the application feels trustworthy and enjoyable to use</soThat>
+    <tasks>
+      - Install shadcn/ui and Design System Dependencies (Button, Input, Card, Badge, Separator, ScrollArea)
+      - Install Lucide React icons and class-variance-authority
+      - Migrate HomePage to Figma Design (centered card, shadcn components)
+      - Migrate RoomView Layout to Figma Design (three-column responsive)
+      - Migrate DiceInput to Figma Design (simple 1d20 mode)
+      - Migrate RollHistory to Figma Design (card-based with ScrollArea)
+      - Migrate PlayerList to Figma Design (collapsible drawer with badges)
+      - Cross-Component Integration Testing (responsive breakpoints)
+      - E2E Test Validation (18/18 tests must still pass)
+      - Documentation Updates (FIGMA_INTEGRATION_PLAN.md)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Design tokens imported from docs/uex/figma-design/src/styles/globals.css
+    2. shadcn/ui primitives installed and configured
+    3. HomePage matches Figma design with Create/Join Room flows
+    4. RoomView layout matches Figma design (three-column responsive)
+    5. DiceInput (simple 1d20 mode) matches Figma design
+    6. RollHistory displays with Figma styling (card-based, scrollable)
+    7. PlayerList matches Figma collapsible drawer design
+    8. Lucide React icons integrated (Dices, Users, Copy, Settings, Wifi/WifiOff)
+    9. Mobile responsive per Figma breakpoints (sm: 640px, md: 768px, lg: 1024px)
+    10. All Socket.io event handlers unchanged (NO Supabase REST API calls)
+    11. All E2E tests still pass (18/18 - 100%)
+    12. Dark mode support via CSS custom properties (optional)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/uex/figma-design/src/styles/globals.css</path>
+        <title>Figma Design Tokens</title>
+        <section>CSS Custom Properties</section>
+        <snippet>Design system tokens for colors, spacing, typography, and radius. Must be copied to frontend/src/styles/globals.css to enable shadcn/ui theming.</snippet>
+      </doc>
+      <doc>
+        <path>docs/uex/figma-design/src/components/HomePage.tsx</path>
+        <title>Figma HomePage Reference Implementation</title>
+        <section>Component Structure</section>
+        <snippet>Reference implementation showing centered card layout, shadcn Button/Input usage, Lucide icons, and responsive design patterns.</snippet>
+      </doc>
+      <doc>
+        <path>docs/uex/figma-design/src/components/RoomView.tsx</path>
+        <title>Figma RoomView Reference Implementation</title>
+        <section>Three-Column Layout</section>
+        <snippet>Three-column responsive layout: PlayerList (left, collapsible), DiceInput+RollHistory (center), Room info (right). Mobile stacks vertically.</snippet>
+      </doc>
+      <doc>
+        <path>docs/uex/FIGMA_INTEGRATION_PLAN.md</path>
+        <title>Figma Integration Plan</title>
+        <section>Phase 1 Components</section>
+        <snippet>Defines phased approach for Figma migration. Phase 1 covers Stories 2.1-2.3 components: HomePage, RoomView, DiceInput, RollHistory, PlayerList.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/adrs/007-styling-system.md</path>
+        <title>ADR-007: Styling System</title>
+        <section>Design System Choice</section>
+        <snippet>Decision to use Tailwind CSS + shadcn/ui (replacing Chakra UI from template). shadcn/ui provides accessible, unstyled primitives with Tailwind integration.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>frontend/src/pages/Home.tsx</path>
+        <kind>page</kind>
+        <symbol>Home</symbol>
+        <lines>N/A</lines>
+        <reason>Current HomePage component with basic Tailwind styling. Needs migration to shadcn Button/Input/Card components per Figma design.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/pages/RoomView.tsx</path>
+        <kind>page</kind>
+        <symbol>RoomView</symbol>
+        <lines>N/A</lines>
+        <reason>Current RoomView with basic layout. Needs migration to three-column Figma design with shadcn Card/Badge/Separator components.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/components/RollHistory.tsx</path>
+        <kind>component</kind>
+        <symbol>RollHistory</symbol>
+        <lines>1-95</lines>
+        <reason>Current roll history with basic list styling. Needs migration to card-based Figma design with shadcn ScrollArea.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/store/socketStore.ts</path>
+        <kind>store</kind>
+        <symbol>useSocketStore</symbol>
+        <lines>1-80</lines>
+        <reason>Zustand store managing Socket.io state. CRITICAL: Must preserve all socket event handlers unchanged during UI migration.</reason>
+      </artifact>
+      <artifact>
+        <path>package.json</path>
+        <kind>config</kind>
+        <symbol>dependencies</symbol>
+        <lines>18-24</lines>
+        <reason>Current dependencies. Will add: shadcn/ui components, lucide-react, class-variance-authority.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="react" version="^18.2.0" />
+        <package name="react-dom" version="^18.2.0" />
+        <package name="zustand" version="^5.0.8" />
+        <package name="socket.io-client" version="^4.8.1" />
+        <package name="react-router-dom" version="^7.9.6" />
+        <package name="lucide-react" version="latest" note="TO BE ADDED - Icon system" />
+        <package name="class-variance-authority" version="latest" note="TO BE ADDED - Component variants" />
+      </npm>
+      <devDependencies>
+        <package name="@types/react" version="^18.2.0" />
+        <package name="vitest" version="^4.0.13" />
+        <package name="@playwright/test" version="^1.56.1" />
+        <package name="tailwindcss" version="latest" note="Already installed" />
+      </devDependencies>
+      <shadcn>
+        <component name="Button" note="Primary UI control - variants: default, outline, ghost" />
+        <component name="Input" note="Form inputs with consistent styling" />
+        <component name="Card" note="Container with header/content/footer" />
+        <component name="Badge" note="Status indicators and tags" />
+        <component name="Separator" note="Visual dividers" />
+        <component name="ScrollArea" note="Custom scrollbar styling" />
+        <component name="Dialog" note="Modal overlays (optional)" />
+      </shadcn>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - CRITICAL: Preserve ALL Socket.io integration - replace ONLY UI components, not business logic
+    - NO Supabase REST API calls (Figma prototypes contain these, but architecture uses Socket.io)
+    - NO client-side roll generation (security vulnerability from Figma prototypes)
+    - NO HTTP polling (replace with WebSocket listeners)
+    - Keep all useState hooks for form state unchanged
+    - Keep all Socket.io event handlers unchanged (socket.emit, socket.on)
+    - Keep navigation logic (useNavigate) unchanged
+    - All E2E tests must continue passing (18/18)
+    - Mobile-first responsive design (Figma breakpoints: sm 640px, md 768px, lg 1024px)
+    - Use shadcn/ui components only - no custom UI components
+    - Design tokens must be copied exactly from docs/uex/figma-design/src/styles/globals.css
+    - Color scheme: neutral base, --primary for brand color
+    - Typography: System font stack from Figma design
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Socket.io Event Handlers (PRESERVE EXACTLY)</name>
+      <kind>WebSocket Events</kind>
+      <signature>
+// Create Room
+socket.emit('create_room', { player_name: string })
+socket.on('room_created', (data) => { room_code, room_state })
+
+// Join Room
+socket.emit('join_room', { room_code: string, player_name: string })
+socket.on('room_joined', (data) => { player_id, room_state })
+
+// Roll Dice
+socket.emit('roll_dice', { formula: string })
+socket.on('roll_result', (data) => { roll: RollResult })
+
+// Player Events
+socket.on('player_joined', (data) => { player: Player })
+socket.on('player_left', (data) => { player_id: string })
+      </signature>
+      <path>frontend/src/services/socket.ts, frontend/src/store/socketStore.ts</path>
+    </interface>
+    <interface>
+      <name>shadcn/ui Button Component</name>
+      <kind>React Component</kind>
+      <signature>
+&lt;Button variant="default" | "outline" | "ghost" size="sm" | "default" | "lg"&gt;
+  {children}
+&lt;/Button&gt;
+      </signature>
+      <path>frontend/src/components/ui/button.tsx (generated by shadcn CLI)</path>
+    </interface>
+    <interface>
+      <name>shadcn/ui Card Component</name>
+      <kind>React Component</kind>
+      <signature>
+&lt;Card&gt;
+  &lt;CardHeader&gt;...&lt;/CardHeader&gt;
+  &lt;CardContent&gt;...&lt;/CardContent&gt;
+  &lt;CardFooter&gt;...&lt;/CardFooter&gt;
+&lt;/Card&gt;
+      </signature>
+      <path>frontend/src/components/ui/card.tsx (generated by shadcn CLI)</path>
+    </interface>
+    <interface>
+      <name>Lucide React Icons</name>
+      <kind>React Components</kind>
+      <signature>
+import { Dices, Users, Copy, Settings, Wifi, WifiOff, Plus } from 'lucide-react'
+
+&lt;Dices className="w-6 h-6" /&gt;
+&lt;Users className="w-5 h-5" /&gt;
+&lt;Copy className="w-4 h-4" /&gt;
+      </signature>
+      <path>node_modules/lucide-react</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Project uses Vitest for unit tests and Playwright for E2E tests. All 18 E2E tests must continue passing after UI migration. Test selectors may need updates if DOM structure changes. Use data-testid attributes for stable selectors. Visual regression testing against Figma designs recommended but not required for MVP.
+    </standards>
+    <locations>
+      - frontend/e2e/*.spec.ts (18 E2E tests - must all pass)
+      - Test commands: pnpm test:e2e (Playwright)
+    </locations>
+    <ideas>
+      <test ac="3" desc="E2E test: HomePage displays with shadcn components, create/join room flows work">test_homepage_figma_design</test>
+      <test ac="4" desc="E2E test: RoomView three-column layout renders, responsive on mobile">test_roomview_layout</test>
+      <test ac="5" desc="E2E test: DiceInput simple mode with Roll button works, emits socket event">test_dice_input_figma</test>
+      <test ac="6" desc="E2E test: RollHistory displays cards with ScrollArea, rolls appear">test_roll_history_cards</test>
+      <test ac="7" desc="E2E test: PlayerList collapsible drawer works, shows player badges">test_player_list_drawer</test>
+      <test ac="8" desc="Visual test: All Lucide icons render (Dices, Users, Copy, Wifi)">test_icons_display (manual)</test>
+      <test ac="9" desc="E2E test: Responsive breakpoints work (640px, 768px, 1024px)">test_responsive_design</test>
+      <test ac="10" desc="E2E test: All Socket.io events still emit/receive correctly">test_socket_integration (covered by existing 18 tests)</test>
+      <test ac="11" desc="E2E test: Run full suite, verify 18/18 passing">pnpm test:e2e</test>
+      <test ac="12" desc="Visual test: Dark mode CSS variables apply correctly">test_dark_mode (manual, optional)</test>
+    </ideas>
+  </tests>
+</story-context>

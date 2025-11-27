@@ -21,8 +21,9 @@ class TestCreateRoomEvent:
         mock_redis.exists.return_value = False
         mock_get_redis.return_value = mock_redis
 
-        # Mock the emit method
+        # Mock the emit and enter_room methods
         sio.emit = AsyncMock()
+        sio.enter_room = AsyncMock()
 
         # Simulate client sending create_room event
         sid = "test_session_123"
@@ -106,6 +107,7 @@ class TestCreateRoomEvent:
         mock_get_redis.return_value = mock_redis
 
         sio.emit = AsyncMock()
+        sio.enter_room = AsyncMock()
 
         sid = "test_session_xss"
         data = {"player_name": "<b>Alice</b>"}

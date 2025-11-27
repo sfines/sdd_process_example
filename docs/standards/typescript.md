@@ -4,22 +4,24 @@
 
 This document defines a concise, practical TypeScript coding standard for frontend services and libraries. It is written for developers and for AI agents that will generate or review code. It includes: high-value rules, a one-page Decision Table, "bad → good" examples, tooling/config snippets (ESLint, Prettier, Vitest, tsconfig), a one-page PR checklist, CI snippet, and a migration plan.
 
+**Package Manager:** All TypeScript work uses `pnpm` exclusively. Never use `npm` or `yarn`.
+
 ## Decision Table (Top 12 rules)
 
-| #   | Rule                                               | Enforcement | Rationale                                                                    |
-| --- | -------------------------------------------------- | ----------: | ---------------------------------------------------------------------------- |
-| 1   | Use ESLint + Prettier for formatting/linting       |        FAIL | Single-source formatting + linting ensures consistent style and fast checks. |
-| 2   | Require strict type checking (`tsconfig.json`)     |        FAIL | Prevents major runtime errors and enables safe refactors.                    |
-| 3   | No `any` in new code                               |        FAIL | Avoids unsafe type assertions that undermine the type system.                |
-| 4   | Use named exports only (no `default export`)       |        FAIL | Ensures consistency and avoids naming collisions.                            |
-| 5   | Use structured logging                             |        WARN | Facilitates log parsing for observability—structured logs reduce ambiguity.  |
-| 6   | Secure secrets handling                            |        FAIL | Prevents accidental exposure of credentials and secrets.                     |
-| 7   | Use `for...of` for array iteration                 |        INFO | More readable and less error-prone than traditional `for` loops.             |
-| 8   | Use `pnpm` and a pinned Node.js version (e.g., 24) |        INFO | Standardizes local and CI environments.                                      |
-| 9   | Avoid global mutable states                        |        WARN | Easier to test and reason about code.                                        |
-| 10  | Catch explicit exceptions only                     |        FAIL | Avoids hiding unexpected errors and protects control flow.                   |
-| 11  | Use `async/await` for I/O-bound code               |        WARN | Prevents blocking and enables concurrency for web apps.                      |
-| 12  | Document public functions with JSDoc               |        INFO | Improves discoverability and guarantees clearer APIs.                        |
+| #   | Rule                                           | Enforcement | Rationale                                                                    |
+| --- | ---------------------------------------------- | ----------: | ---------------------------------------------------------------------------- |
+| 1   | Use ESLint + Prettier for formatting/linting   |        FAIL | Single-source formatting + linting ensures consistent style and fast checks. |
+| 2   | Require strict type checking (`tsconfig.json`) |        FAIL | Prevents major runtime errors and enables safe refactors.                    |
+| 3   | No `any` in new code                           |        FAIL | Avoids unsafe type assertions that undermine the type system.                |
+| 4   | Use named exports only (no `default export`)   |        FAIL | Ensures consistency and avoids naming collisions.                            |
+| 5   | Use structured logging                         |        WARN | Facilitates log parsing for observability—structured logs reduce ambiguity.  |
+| 6   | Secure secrets handling                        |        FAIL | Prevents accidental exposure of credentials and secrets.                     |
+| 7   | Use `for...of` for array iteration             |        INFO | More readable and less error-prone than traditional `for` loops.             |
+| 8   | Use `pnpm` exclusively (never npm/yarn)        |        FAIL | Standardizes local and CI environments with fast, efficient installs.        |
+| 9   | Avoid global mutable states                    |        WARN | Easier to test and reason about code.                                        |
+| 10  | Catch explicit exceptions only                 |        FAIL | Avoids hiding unexpected errors and protects control flow.                   |
+| 11  | Use `async/await` for I/O-bound code           |        WARN | Prevents blocking and enables concurrency for web apps.                      |
+| 12  | Document public functions with JSDoc           |        INFO | Improves discoverability and guarantees clearer APIs.                        |
 
 ## Core rules & explanations
 
@@ -67,6 +69,42 @@ This document defines a concise, practical TypeScript coding standard for fronte
 
 - **Throw Errors**: Always `throw new Error()`. Never throw strings or objects.
 - **Catching**: Catch as `unknown` and perform instance checks.
+
+## Package Management with pnpm
+
+**Rule:** All TypeScript projects MUST use `pnpm` as the package manager. Never use `npm` or `yarn`.
+
+**Rationale:**
+
+- Fast, disk-space efficient installations via content-addressable storage
+- Strict dependency resolution prevents phantom dependencies
+- Workspace support for monorepos
+- Consistent lockfile format (`pnpm-lock.yaml`)
+
+**Common Commands:**
+
+```bash
+pnpm install           # Install dependencies
+pnpm add <package>     # Add dependency
+pnpm add -D <package>  # Add dev dependency
+pnpm run <script>      # Run package.json script
+pnpm test              # Run tests
+pnpm lint              # Run linter
+pnpm format            # Format code
+```
+
+**Project Setup:**
+
+```bash
+# Install pnpm globally (if needed)
+npm install -g pnpm
+
+# Initialize new project
+pnpm init
+
+# Install dependencies from package.json
+pnpm install
+```
 
 ## Tooling & Config snippets
 
@@ -171,11 +209,172 @@ repos:
 8.  Tests cover new behaviors and edge cases.
 9.  Files formatted and imports sorted.
 10. Update the Decision Table if the change introduces a new rule.
+11. Verify `pnpm-lock.yaml` is committed (never `package-lock.json` or `yarn.lock`).
 
 ## Migration plan
 
-1.  Add `tsconfig.json`, `.eslintrc.cjs`, `prettier.config.js`, and `.pre-commit-config.yaml`.
-2.  Run `pnpm format --fix` and `pnpm lint --fix` to fix format and easy style errors.
-3.  Turn on incremental type checking via `pnpm typecheck` with `strict` toggles per module.
-4.  Add CI gating: lint → format → typecheck → test.
-5.  Incrementally enforce `noImplicitAny` with a targeted schedule.
+1.  Install `pnpm` globally if not present: `npm install -g pnpm`
+2.  Add `tsconfig.json`, `.eslintrc.cjs`, `prettier.config.js`, and `.pre-commit-config.yaml`.
+3.  Run `pnpm install` to generate `pnpm-lock.yaml`.
+4.  Run `pnpm format` and `pnpm lint --fix` to fix format and easy style errors.
+5.  Turn on incremental type checking via `pnpm typecheck` with `strict` toggles per module.
+6.  Add CI gating: lint → format → typecheck → test.
+7.  Incrementally enforce `noImplicitAny` with a targeted schedule.
+
+## React-Specific Patterns
+
+### Component Composition (Humble Components Pattern)
+
+**Rule:** Child components render ONLY content. Parent components provide structure (containers, headings, layout).
+
+**Rationale:** Prevents duplicate DOM elements, ensures consistency, improves reusability.
+
+**Reference:** See ADR-012: Component Composition Pattern
+
+#### Bad Example
+
+```tsx
+// PlayerList.tsx - ❌ BAD: Component includes container and heading
+export default function PlayerList({ players }: Props) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4">Players</h2>
+      <ul className="space-y-2">
+        {players.map((player) => (
+          <li key={player.id}>{player.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+#### Good Example
+
+```tsx
+// PlayerList.tsx - ✅ GOOD: Component renders only content
+export default function PlayerList({ players }: Props) {
+  return (
+    <>
+      {players.length === 0 ? (
+        <p className="text-gray-500 text-sm">No players yet</p>
+      ) : (
+        <ul className="space-y-2" role="list">
+          {players.map((player) => (
+            <li key={player.id}>{player.name}</li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
+
+// RoomView.tsx - Parent provides structure
+function RoomView() {
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-6">
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        Players ({players.length})
+      </h2>
+      <PlayerList players={players} />
+    </div>
+  );
+}
+```
+
+### React useEffect Cleanup Pattern
+
+**Rule:** Never call state reset functions in useEffect cleanup unless certain the component is unmounting, not just dependencies changing.
+
+**Rationale:** Cleanup runs on EVERY dependency change, not just unmount. Resetting state on navigation breaks user experience.
+
+**Reference:** See ADR-011: React State Persistence Pattern
+
+#### Bad Example
+
+```tsx
+// ❌ BAD: reset() called in cleanup - runs on navigate reference change
+useEffect(() => {
+  socket.on('connect', handleConnect);
+  socket.on('room_created', handleRoomCreated);
+
+  return () => {
+    socket.off('connect', handleConnect);
+    socket.off('room_created', handleRoomCreated);
+    reset(); // ❌ WRONG - clears state on navigation
+  };
+}, [handleConnect, handleRoomCreated, reset, navigate]);
+```
+
+#### Good Example
+
+```tsx
+// ✅ GOOD: No reset in cleanup - state persists across navigation
+useEffect(() => {
+  socket.on('connect', handleConnect);
+  socket.on('room_created', handleRoomCreated);
+
+  return () => {
+    socket.off('connect', handleConnect);
+    socket.off('room_created', handleRoomCreated);
+
+    // DO NOT call reset() here!
+    // This cleanup runs when dependencies change (like navigate reference),
+    // NOT just on actual component unmount. Calling reset() here clears
+    // player identity when navigating between routes.
+    // State should only be reset on explicit user actions (logout, leave room).
+  };
+}, [handleConnect, handleRoomCreated, navigate]);
+
+// Explicit state reset on user action
+function handleLeaveRoom() {
+  reset(); // ✅ GOOD - explicit user action
+  navigate('/');
+}
+```
+
+### State Management with Zustand
+
+**Rule:** Never store WebSocket or ephemeral connection state in component state. Always use Zustand store as single source of truth.
+
+**Rationale:** Ensures consistency across components, simplifies testing, enables proper state persistence.
+
+#### Bad Example
+
+```tsx
+// ❌ BAD: Component state for room data
+function RoomView() {
+  const [players, setPlayers] = useState([]);
+  const [roomCode, setRoomCode] = useState('');
+
+  useEffect(() => {
+    socket.on('player_joined', (data) => {
+      setPlayers(data.players); // ❌ State scattered
+    });
+  }, []);
+
+  return <PlayerList players={players} />;
+}
+```
+
+#### Good Example
+
+```tsx
+// ✅ GOOD: Zustand store as single source of truth
+function RoomView() {
+  const players = useSocketStore((state) => state.players);
+  const roomCode = useSocketStore((state) => state.roomCode);
+
+  // Socket updates handled in useSocket hook → updates store
+  // Components just read from store
+
+  return <PlayerList players={players} />;
+}
+```
+
+## React PR Checklist Additions
+
+11. Components follow humble components pattern (content only, no containers/headings)
+12. No state resets in useEffect cleanup (unless certain of unmount)
+13. Zustand store used for shared state, not component state
+14. Socket.io listeners in custom hook, not components directly

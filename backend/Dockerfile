@@ -21,4 +21,3 @@ EXPOSE 8000
 
 # Run the FastAPI application
 CMD ["uvicorn", "sdd_process_example.main:socket_app", "--host", "0.0.0.0", "--port", "8000"]
-

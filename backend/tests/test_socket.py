@@ -25,7 +25,7 @@ async def test_hello_message_handler() -> None:
     """Test that hello_message handler processes message and sends world_message."""
     # Valid message payload
     data = {"message": "Hello from client!"}
-    
+
     # Test that the function executes without error
     await hello_message("test_sid", data)
 
@@ -35,7 +35,7 @@ async def test_hello_message_invalid_payload() -> None:
     """Test that hello_message handler handles invalid payload gracefully."""
     # Invalid payload (missing 'message' field)
     data = {"invalid": "data"}
-    
+
     # Should not raise exception, just log error
     await hello_message("test_sid", data)
 

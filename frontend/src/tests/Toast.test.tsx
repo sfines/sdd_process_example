@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import Toast from '../components/Toast';
 
 describe('Toast', () => {
@@ -16,86 +16,86 @@ describe('Toast', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('displays success toast on toast:show event', async () => {
+  it('displays success toast on toast:show event', () => {
     render(<Toast />);
 
-    window.dispatchEvent(
-      new CustomEvent('toast:show', {
-        detail: { type: 'success', message: 'Room created!' },
-      }),
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Room created!')).toBeInTheDocument();
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: { type: 'success', message: 'Room created!' },
+        }),
+      );
     });
+
+    expect(screen.getByText('Room created!')).toBeInTheDocument();
   });
 
-  it('displays error toast on toast:show event', async () => {
+  it('displays error toast on toast:show event', () => {
     render(<Toast />);
 
-    window.dispatchEvent(
-      new CustomEvent('toast:show', {
-        detail: { type: 'error', message: 'Failed to create room' },
-      }),
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Failed to create room')).toBeInTheDocument();
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: { type: 'error', message: 'Failed to create room' },
+        }),
+      );
     });
+
+    expect(screen.getByText('Failed to create room')).toBeInTheDocument();
   });
 
-  it('auto-dismisses after 5 seconds', async () => {
+  it('auto-dismisses after 5 seconds', () => {
     render(<Toast />);
 
-    window.dispatchEvent(
-      new CustomEvent('toast:show', {
-        detail: { type: 'success', message: 'Test message' },
-      }),
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Test message')).toBeInTheDocument();
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: { type: 'success', message: 'Test message' },
+        }),
+      );
     });
+
+    expect(screen.getByText('Test message')).toBeInTheDocument();
 
     // Fast-forward 5 seconds
-    vi.advanceTimersByTime(5000);
-
-    await waitFor(() => {
-      expect(screen.queryByText('Test message')).not.toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(5000);
     });
+
+    expect(screen.queryByText('Test message')).not.toBeInTheDocument();
   });
 
-  it('applies success styling', async () => {
+  it('applies success styling', () => {
     render(<Toast />);
 
-    window.dispatchEvent(
-      new CustomEvent('toast:show', {
-        detail: { type: 'success', message: 'Success!' },
-      }),
-    );
-
-    await waitFor(() => {
-      const toast = screen.getByRole('alert');
-      expect(
-        toast.className.includes('green') || toast.className.includes('success'),
-      ).toBe(true);
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: { type: 'success', message: 'Success!' },
+        }),
+      );
     });
+
+    const toast = screen.getByRole('alert');
+    expect(
+      toast.className.includes('green') || toast.className.includes('success'),
+    ).toBe(true);
   });
 
-  it('applies error styling', async () => {
+  it('applies error styling', () => {
     render(<Toast />);
 
-    window.dispatchEvent(
-      new CustomEvent('toast:show', {
-        detail: { type: 'error', message: 'Error!' },
-      }),
-    );
-
-    await waitFor(() => {
-      const toast = screen.getByRole('alert');
-      expect(
-        toast.className.includes('red') || toast.className.includes('error'),
-      ).toBe(true);
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: { type: 'error', message: 'Error!' },
+        }),
+      );
     });
+
+    const toast = screen.getByRole('alert');
+    expect(
+      toast.className.includes('red') || toast.className.includes('error'),
+    ).toBe(true);
   });
 });

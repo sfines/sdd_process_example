@@ -1,0 +1,218 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>5</storyId>
+    <title>Roll All Standard Dice Types</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-23</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/sprint-artifacts/2-5-roll-all-standard-dice-types.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>User</asA>
+    <iWant>be able to roll any standard D&D die type (d4, d6, d8, d10, d12, d100)</iWant>
+    <soThat>I can perform any action required in the game</soThat>
+    <tasks>
+      - Backend dice parser already supports all dice types (COMPLETE)
+      - Create AdvancedDiceInput component with quantity, dice size, and modifier controls
+      - Add dice type selector (dropdown or buttons: d4, d6, d8, d10, d12, d20, d100)
+      - Add quantity input (1-100) with spinner or text input
+      - Add modifier input (-99 to +99) with +/- quick adjustment buttons
+      - Show formula preview in real-time (e.g., "3d6+2")
+      - Validate form inputs before emitting roll_dice event
+      - Update RollHistory to display formulas prominently
+      - Write unit tests for AdvancedDiceInput component
+      - Write E2E tests for d4, d6, d8, d10, d12, d20, d100 rolling
+      - Write E2E test for large quantity rolls (20d6 fireball damage)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Advanced roll toggle/button reveals dice type selection UI on Room View
+    2. Dice type selector displays all standard types: d4, d6, d8, d10, d12, d20 (default), d100
+    3. User can select dice type, enter quantity (1-100), and optional modifier
+    4. Backend correctly generates rolls for all dice types (ALREADY DONE - parser supports this)
+    5. Roll formula persists correctly (e.g., "3d6+2", "1d100-5", "20d6")
+    6. Results broadcast and appear in history with individual die results and total
+    7. Roll entry clearly shows: player name, full formula, all individual results, modifier, total
+    8. Server-side generation using secrets.SystemRandom() (ALREADY DONE)
+    9. Form validation: quantity 1-100, modifier -99 to +99, dice type valid
+    10. E2E test validates rolling d4, d6, d8, d10, d12, d20, d100 from same room
+    11. E2E test validates rolling large quantities (20d6 fireball damage, etc.)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/sprint-artifacts/tech-spec-epic-2.md</path>
+        <title>Epic Technical Specification: Core Dice Rolling</title>
+        <section>Dice Engine - Notation Support</section>
+        <snippet>Backend dice parser (Lark grammar) supports NdN±M notation. Validates up to 100 dice, 1000 sides per die. Server-side generation uses secrets.SystemRandom().</snippet>
+      </doc>
+      <doc>
+        <path>backend/src/sdd_process_example/services/dice_parser.py</path>
+        <title>Dice Parser Implementation</title>
+        <section>Lark Grammar</section>
+        <snippet>Parses dice notation: 1d20, 3d6+2, 20d6, etc. Extracts count, size, modifier. Validates ranges before rolling.</snippet>
+      </doc>
+      <doc>
+        <path>backend/src/sdd_process_example/services/dice_engine.py</path>
+        <title>Dice Engine Implementation</title>
+        <section>Roll Generation</section>
+        <snippet>Generates cryptographically secure random rolls using secrets.SystemRandom(). Returns individual results and total.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture/adrs/005-roll-generation-security.md</path>
+        <title>ADR-005: Roll Generation Security</title>
+        <section>Server-Side Only</section>
+        <snippet>ALL dice rolls MUST be generated server-side using cryptographic randomness. Client never generates rolls - security requirement.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>backend/src/sdd_process_example/services/dice_parser.py</path>
+        <kind>service</kind>
+        <symbol>parse_dice_formula</symbol>
+        <lines>N/A</lines>
+        <reason>Backend parser already supports all dice types (d4-d100). No backend changes needed for this story.</reason>
+      </artifact>
+      <artifact>
+        <path>backend/src/sdd_process_example/services/dice_engine.py</path>
+        <kind>service</kind>
+        <symbol>roll_dice</symbol>
+        <lines>N/A</lines>
+        <reason>Backend dice engine already handles multiple dice and modifiers. No backend changes needed.</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/components/RollHistory.tsx</path>
+        <kind>component</kind>
+        <symbol>RollHistory</symbol>
+        <lines>1-95</lines>
+        <reason>Current roll history displays formula and results. May need UI updates to prominently show complex formulas (3d6+2, 20d6).</reason>
+      </artifact>
+      <artifact>
+        <path>frontend/src/store/socketStore.ts</path>
+        <kind>store</kind>
+        <symbol>rollDice</symbol>
+        <lines>N/A</lines>
+        <reason>Store action that emits roll_dice event. Will be called by AdvancedDiceInput component with full formula string.</reason>
+      </artifact>
+      <artifact>
+        <path>package.json</path>
+        <kind>config</kind>
+        <symbol>dependencies</symbol>
+        <lines>18-24</lines>
+        <reason>Current dependencies sufficient. No new packages needed for this story.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <npm>
+        <package name="react" version="^18.2.0" />
+        <package name="react-dom" version="^18.2.0" />
+        <package name="zustand" version="^5.0.8" />
+        <package name="socket.io-client" version="^4.8.1" />
+      </npm>
+      <devDependencies>
+        <package name="@testing-library/react" version="^16.3.0" />
+        <package name="@playwright/test" version="^1.56.1" />
+        <package name="vitest" version="^4.0.13" />
+      </devDependencies>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - NO backend changes needed - dice parser already supports all dice types
+    - Frontend-only story focused on UI convenience
+    - Must use existing Socket.io roll_dice event (emit formula string)
+    - Dice type validation: only d4, d6, d8, d10, d12, d20, d100 allowed
+    - Quantity validation: 1-100 dice per roll
+    - Modifier validation: -99 to +99
+    - Formula format: "NdM±K" (e.g., "3d6+2", "1d20", "20d6-5")
+    - Show formula preview in real-time as user adjusts controls
+    - Advanced controls should be toggleable (simple 1d20 mode still available)
+    - All rolls still go through server-side generation (security requirement)
+    - Individual die results must be displayed in roll history
+    - Formula must be prominently displayed in roll history entries
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Socket.io roll_dice Event</name>
+      <kind>WebSocket Event</kind>
+      <signature>
+// Client emits
+socket.emit('roll_dice', {
+  formula: string  // e.g., "3d6+2", "1d20", "20d6-5"
+})
+
+// Server broadcasts
+socket.on('roll_result', (data) => {
+  roll: {
+    roll_id: string,
+    player_name: string,
+    formula: string,
+    individual_results: number[],
+    modifier: number,
+    total: number,
+    timestamp: string
+  }
+})
+      </signature>
+      <path>frontend/src/services/socket.ts, backend socket manager</path>
+    </interface>
+    <interface>
+      <name>AdvancedDiceInputProps</name>
+      <kind>TypeScript Interface</kind>
+      <signature>
+interface AdvancedDiceInputProps {
+  onRoll: (formula: string) => void;
+  isLoading: boolean;
+  defaultDiceSize?: number;  // default 20
+  defaultQuantity?: number;  // default 1
+  defaultModifier?: number;  // default 0
+}
+      </signature>
+      <path>frontend/src/components/AdvancedDiceInput.tsx (NEW)</path>
+    </interface>
+    <interface>
+      <name>Dice Formula Format</name>
+      <kind>String Pattern</kind>
+      <signature>
+// Pattern: NdM±K
+// N = number of dice (1-100)
+// M = die size (4, 6, 8, 10, 12, 20, 100)
+// K = modifier (-99 to +99, optional)
+
+Examples:
+"1d20"      // single d20, no modifier
+"3d6+2"     // 3d6 plus 2
+"20d6"      // 20d6, no modifier (fireball damage)
+"1d100-5"   // d100 minus 5
+"4d8+3"     // 4d8 plus 3
+      </signature>
+      <path>Backend parser, frontend AdvancedDiceInput</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Project uses Vitest for unit tests and Playwright for E2E tests. Unit tests for AdvancedDiceInput component logic (formula generation, validation). E2E tests for rolling each dice type and verifying results appear correctly in history.
+    </standards>
+    <locations>
+      - frontend/src/components/__tests__/AdvancedDiceInput.test.tsx (NEW - unit tests)
+      - frontend/e2e/dice-rolling.spec.ts (E2E tests)
+    </locations>
+    <ideas>
+      <test ac="2,3" desc="Unit test: AdvancedDiceInput generates correct formula for each dice type">test_formula_generation</test>
+      <test ac="3,9" desc="Unit test: Quantity input validates 1-100 range">test_quantity_validation</test>
+      <test ac="3,9" desc="Unit test: Modifier input validates -99 to +99 range">test_modifier_validation</test>
+      <test ac="2,9" desc="Unit test: Only valid dice types selectable (d4-d100)">test_dice_type_validation</test>
+      <test ac="3" desc="Unit test: Formula preview updates in real-time as controls change">test_formula_preview</test>
+      <test ac="10" desc="E2E test: Roll d4, d6, d8, d10, d12, d20, d100 in sequence, verify results">test_all_dice_types</test>
+      <test ac="11" desc="E2E test: Roll 20d6 (fireball damage), verify 20 individual results shown">test_large_quantity_roll</test>
+      <test ac="6,7" desc="E2E test: Roll 3d6+2, verify formula and individual results display in history">test_formula_display_in_history</test>
+      <test ac="5" desc="E2E test: Roll with modifier, verify modifier applied to total correctly">test_modifier_calculation</test>
+    </ideas>
+  </tests>
+</story-context>
