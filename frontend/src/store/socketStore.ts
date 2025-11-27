@@ -65,6 +65,8 @@ interface SocketState {
   addRollToHistory: (roll: DiceResult) => void;
   setRollHistory: (rolls: DiceResult[]) => void;
   setShouldAutoScroll: (value: boolean) => void;
+  updatePlayerStatus: (playerId: string, connected: boolean) => void;
+  removePlayer: (playerId: string) => void;
   reset: () => void;
 }
 
@@ -154,6 +156,20 @@ export const useSocketStore = create<SocketState>((set) => ({
 
   setShouldAutoScroll: (value: boolean) => {
     set({ shouldAutoScroll: value });
+  },
+
+  updatePlayerStatus: (playerId: string, connected: boolean) => {
+    set((state) => ({
+      players: state.players.map((player) =>
+        player.player_id === playerId ? { ...player, connected } : player,
+      ),
+    }));
+  },
+
+  removePlayer: (playerId: string) => {
+    set((state) => ({
+      players: state.players.filter((player) => player.player_id !== playerId),
+    }));
   },
 
   reset: () => set(initialState),

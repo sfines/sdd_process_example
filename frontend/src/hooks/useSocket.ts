@@ -241,6 +241,63 @@ export const useSocket = () => {
       setRollHistory(updatedHistory);
     };
 
+    // Handle player_disconnected from server (Story 3.1 - Connection Status)
+    const onPlayerDisconnected = (data: {
+      player_id: string;
+      player_name: string;
+    }) => {
+      // Update player status in store
+      const { updatePlayerStatus } = useSocketStore.getState();
+      updatePlayerStatus(data.player_id, false);
+
+      // Show toast notification
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: {
+            type: 'warning',
+            message: `${data.player_name} disconnected`,
+          },
+        }),
+      );
+    };
+
+    // Handle player_reconnected from server (Story 3.1 - Connection Status)
+    const onPlayerReconnected = (data: {
+      player_id: string;
+      player_name: string;
+    }) => {
+      // Update player status in store
+      const { updatePlayerStatus } = useSocketStore.getState();
+      updatePlayerStatus(data.player_id, true);
+
+      // Show toast notification
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: {
+            type: 'success',
+            message: `${data.player_name} reconnected`,
+          },
+        }),
+      );
+    };
+
+    // Handle player_left from server (Story 3.1 - Player leaves room)
+    const onPlayerLeft = (data: { player_id: string; player_name: string }) => {
+      // Remove player from store
+      const { removePlayer } = useSocketStore.getState();
+      removePlayer(data.player_id);
+
+      // Show toast notification
+      window.dispatchEvent(
+        new CustomEvent('toast:show', {
+          detail: {
+            type: 'info',
+            message: `${data.player_name} left the room`,
+          },
+        }),
+      );
+    };
+
     // Handle room_state response (for initial fetch only)
     const onRoomState = (data: {
       room_code: string;
@@ -290,6 +347,9 @@ export const useSocket = () => {
     socket.on('player_joined', onPlayerJoined);
     socket.on('roll_result', onRollResult);
     socket.on('roll_revealed', onRollRevealed);
+    socket.on('player_disconnected', onPlayerDisconnected);
+    socket.on('player_reconnected', onPlayerReconnected);
+    socket.on('player_left', onPlayerLeft);
     socket.on('room_state', onRoomState);
     socket.on('error', onError);
     // window.addEventListener('socket:createRoom', onCreateRoom);
@@ -306,6 +366,9 @@ export const useSocket = () => {
       socket.off('player_joined', onPlayerJoined);
       socket.off('roll_result', onRollResult);
       socket.off('roll_revealed', onRollRevealed);
+      socket.off('player_disconnected', onPlayerDisconnected);
+      socket.off('player_reconnected', onPlayerReconnected);
+      socket.off('player_left', onPlayerLeft);
       socket.off('room_state', onRoomState);
       socket.off('error', onError);
       // window.removeEventListener('socket:createRoom', onCreateRoom);
