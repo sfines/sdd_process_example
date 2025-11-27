@@ -146,8 +146,8 @@ class RoomManager:
         """
         redis_key = f"room:{room.room_code}"
 
-        # Convert room to dict for Redis storage
-        room_dict = room.model_dump()
+        # Convert room to dict for Redis storage with JSON-compatible types
+        room_dict = room.model_dump(mode="json")
 
         # Serialize complex types to JSON
         room_data = {
@@ -420,3 +420,76 @@ class RoomManager:
 
         # Convert to DiceResult objects
         return [DiceResult(**roll_data) for roll_data in paginated_data]
+
+    def update_player_status(
+        self, room_code: str, player_id: str, connected: bool
+    ) -> None:
+        """Update player connection status in room.
+
+        Args:
+            room_code: Room code
+            player_id: Player ID to update
+            connected: New connection status
+
+        Example:
+            >>> manager = RoomManager(redis_client)
+            >>> manager.update_player_status("ALPHA-1234", "player-123", False)
+        """
+        room = self.get_room(room_code)
+
+        if room is None:
+            logger.warning(
+                "update_player_status_room_not_found",
+                room_code=room_code,
+                player_id=player_id,
+            )
+            return
+
+        # Find and update player
+        player_found = False
+        for player in room.players:
+            if player.player_id == player_id:
+                player.connected = connected
+                player.last_activity = datetime.now(UTC)
+                player_found = True
+                break
+
+        if not player_found:
+            logger.warning(
+                "update_player_status_player_not_found",
+                room_code=room_code,
+                player_id=player_id,
+            )
+            return
+
+        # Store updated room
+        self._store_room(room)
+
+        logger.info(
+            "player_status_updated",
+            room_code=room_code,
+            player_id=player_id,
+            connected=connected,
+        )
+
+    def get_disconnected_players(self, room_code: str) -> list[Player]:
+        """Get list of disconnected players in a room.
+
+        Args:
+            room_code: Room code to query
+
+        Returns:
+            List of Player objects with connected=False
+
+        Example:
+            >>> manager = RoomManager(redis_client)
+            >>> disconnected = manager.get_disconnected_players("ALPHA-1234")
+            >>> for player in disconnected:
+            ...     print(f"{player.name} is disconnected")
+        """
+        room = self.get_room(room_code)
+
+        if room is None:
+            return []
+
+        return [player for player in room.players if not player.connected]

@@ -24,6 +24,8 @@ class Player(BaseModel):
     player_id: str
     name: str
     connected: bool = True
+    connected_at: datetime | None = None
+    last_activity: datetime | None = None
 
 
 class RoomState(BaseModel):

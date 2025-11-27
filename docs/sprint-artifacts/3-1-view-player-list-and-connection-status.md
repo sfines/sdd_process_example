@@ -1,6 +1,6 @@
 # Story 3.1: View Player List and Connection Status
 
-Status: ready-for-dev
+Status: in-progress
 
 ---
 
