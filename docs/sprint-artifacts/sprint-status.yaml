@@ -55,7 +55,7 @@ development_status:
 
   # Epic 3: Session Management & Presence
   epic-3: contexted
-  3-1-view-player-list-and-connection-status: drafted
+  3-1-view-player-list-and-connection-status: ready-for-dev
   3-2-room-expiration-and-warnings: backlog
   3-3-kick-a-player-from-a-room: backlog
   epic-3-retrospective: optional

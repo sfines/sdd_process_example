@@ -1,6 +1,6 @@
 # Story 3.1: View Player List and Connection Status
 
-Status: drafted
+Status: ready-for-dev
 
 ---
 
@@ -396,7 +396,7 @@ frontend/
 
 ### Context Reference
 
-<!-- Story context XML will be added by story-context workflow -->
+- [Story Context XML](./3-1-view-player-list-and-connection-status.context.xml) - Generated 2025-11-27
 
 ### Agent Model Used
 
