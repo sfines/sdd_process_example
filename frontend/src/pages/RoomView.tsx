@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import { useSocketStore } from '../store/socketStore';
 import { socket } from '../services/socket';
+import { usePing } from '../hooks/usePing';
 import { Button } from '../components/ui/button';
 import Header from '../components/Header';
 import NavigationDrawer from '../components/NavigationDrawer';
@@ -13,6 +14,9 @@ import VirtualRollHistory from '../components/VirtualRollHistory';
 export default function RoomView() {
   const { roomCode } = useParams<{ roomCode: string }>();
   const navigate = useNavigate();
+
+  // Start ping heartbeat when in room
+  usePing({ enabled: true });
 
   // Get data from Zustand store (populated by useSocket in App.tsx)
   const players = useSocketStore((state) => state.players);
